@@ -9,7 +9,7 @@ services:
       context: ./geth-config
       dockerfile: Dockerfile
     volumes:
-      - geth_data:/root/.ethereum
+      - geth_data_stable:/root/.ethereum
     ports:
       - "8545:8545"
       - "8546:8546"
@@ -69,4 +69,4 @@ services:
           memory: 256M
 
 volumes:
-  geth_data:
+  geth_data_stable:
