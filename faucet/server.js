@@ -9,14 +9,9 @@ app.use(express.static('public'));
 
 // Configuration from ENV
 const RPC_URL = process.env.RPC_URL || 'http://geth:8545';
-const PRIVATE_KEY = process.env.PRIVATE_KEY; // The genesis key
 const PORT = process.env.PORT || 3000;
 const CHAIN_ID = parseInt(process.env.CHAIN_ID || '1337');
 
-if (!PRIVATE_KEY) {
-    console.error("FATAL: PRIVATE_KEY environment variable is required.");
-    process.exit(1);
-}
 
 // Setup Provider and Signer
 let provider;
