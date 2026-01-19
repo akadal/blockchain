@@ -23,9 +23,7 @@ services:
   # [NEW] RPC Proxy (Fixes CORS/MetaMask)
   # ----------------------------
   rpc-proxy:
-    image: nginx:alpine
-    volumes:
-      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+    build: ./nginx
     expose:
       - "80" # This is important for Coolify
     depends_on:
