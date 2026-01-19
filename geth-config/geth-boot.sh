@@ -8,11 +8,14 @@ else
     echo "Blockchain data found. Skipping initialization."
 fi
 
-if [ ! -f "/root/.ethereum/keystore/UTC--2022-01-01T00-00-00.000000000Z--f39fd6e51aad88f6f4ce6ab8827279cfffb92266" ]; then
+# Check if the specific account is already imported
+if [ ! -d "/root/.ethereum/keystore" ] || [ -z "$(ls -A /root/.ethereum/keystore)" ]; then
     echo "Importing signer key..."
     echo "ac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80" > /tmp/priv.key
     geth account import --password /tmp/password /tmp/priv.key
     rm /tmp/priv.key
+else
+    echo "Keystore not empty. Skipping import."
 fi
 
 echo "Starting Geth Node..."
