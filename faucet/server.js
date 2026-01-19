@@ -18,19 +18,23 @@ if (!PRIVATE_KEY) {
     process.exit(1);
 }
 
-// Setup Provider and Wallet
+// Setup Provider and Signer
 let provider;
-let wallet;
+let signer;
 
 const connect = async () => {
     try {
         provider = new ethers.JsonRpcProvider(RPC_URL);
         const network = await provider.getNetwork();
         console.log(`Connected to network: ${network.name} (chainId: ${network.chainId})`);
-        
-        wallet = new ethers.Wallet(PRIVATE_KEY, provider);
-        console.log(`Faucet Wallet Address: ${wallet.address}`);
-        const balance = await provider.getBalance(wallet.address);
+
+        // In Geth --dev mode, the first account is unlocked and funded.
+        // We obtain a signer for that account.
+        signer = await provider.getSigner();
+        const address = await signer.getAddress();
+
+        console.log(`Faucet Wallet Address (Node Account): ${address}`);
+        const balance = await provider.getBalance(address);
         console.log(`Faucet Balance: ${ethers.formatEther(balance)} ETH`);
     } catch (e) {
         console.error("Connection error, retrying in 5s...", e);
@@ -42,7 +46,7 @@ connect();
 
 // API Endpoints
 app.post('/fund', async (req, res) => {
-    if (!wallet) return res.status(503).json({ error: "Faucet not ready" });
+    if (!signer) return res.status(503).json({ error: "Faucet not ready" });
 
     const { address, amount } = req.body;
 
@@ -50,12 +54,10 @@ app.post('/fund', async (req, res) => {
         return res.status(400).json({ error: "Invalid address" });
     }
 
-    // Limit amount to reasonable values (though user asked for "unlimited", we just mean no rate limit cap on requests)
-    // Let's allow users to request up to 1000 ETH at a time if they want.
     const ethAmount = amount ? amount.toString() : "10";
-    
+
     try {
-        const tx = await wallet.sendTransaction({
+        const tx = await signer.sendTransaction({
             to: address,
             value: ethers.parseEther(ethAmount)
         });
@@ -67,10 +69,14 @@ app.post('/fund', async (req, res) => {
     }
 });
 
-app.get('/health', (req, res) => {
-    res.json({ 
-        status: wallet ? 'ok' : 'initializing', 
-        address: wallet ? wallet.address : null 
+app.get('/health', async (req, res) => {
+    let address = null;
+    if (signer) {
+        try { address = await signer.getAddress(); } catch { }
+    }
+    res.json({
+        status: signer ? 'ok' : 'initializing',
+        address: address
     });
 });
 

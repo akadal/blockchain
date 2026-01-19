@@ -23,14 +23,13 @@ services:
       retries: 5
 
   # ----------------------------
-  # 2. Otterscan (Lightweight Explorer)
+  # 2. Explorer (Alethio Lite)
   # ----------------------------
   explorer:
-    image: otterscan/otterscan:latest
+    image: alethio/ethereum-lite-explorer:latest
     restart: always
     environment:
-      # Otterscan configuration
-      - ERIGON_URL=https://rpc.blockchain.akadal.tr
+      - APP_NODE_URL=https://rpc.blockchain.akadal.tr # External URL for the user's browser to connect to
     ports:
       - "4000:80"
 
