@@ -1,0 +1,72 @@
+version: '3.8'
+
+services:
+  # ----------------------------
+  # 1. Geth Node (Optimized for Low RAM)
+  # ----------------------------
+  geth:
+    image: ethereum/client-go:stable
+    command: >
+      --dev  --dev.period 0  --http  --http.addr 0.0.0.0  --http.port 8545  --http.vhosts "*"  --http.corsdomain "*"  --http.api "eth,net,web3,debug,personal,txpool"  --ws  --ws.addr 0.0.0.0  --ws.port 8546 --ws.origins "*" --ws.api "eth,net,web3,debug,personal,txpool" --networkid 1337 --cache 256 --gcmode archive --allow-insecure-unlock
+    ports:
+      - "8545:8545" # RPC
+      - "8546:8546" # WS
+    volumes:
+      - geth_data:/root/.ethereum
+    restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 1G # Hard limit for low-spec VPS
+    healthcheck:
+      test: [ "CMD", "wget", "-qO-", "http://localhost:8545", "--post-data='{\"jsonrpc\":\"2.0\",\"method\":\"eth_blockNumber\",\"params\":[],\"id\":1}'", "--header='Content-Type: application/json'" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ----------------------------
+  # 2. Otterscan (Lightweight Explorer)
+  # ----------------------------
+  # Otterscan is a React app. It needs the Erigon URL typically, but works with Geth
+  # if we configure it to point to the RPC.
+  # Since it's client-side rendering, we just need to serve the assets.
+  explorer:
+    image: otterscan/otterscan:latest
+    restart: always
+    environment:
+      - ERIGON_URL=http://localhost:8545 # It defaults to trying to look here
+      # Actually, better to configure the default node to point to our RPC
+      # But since it's client side, the browser connects to RPC, not the container.
+      # Wait, Otterscan container usually just serves the Nginx.
+      # We need to inject a config.json or similar.
+      # Otterscan v2 allows setting the default provider via query param or config. 
+      # Let's keep it simple. User might need to enter RPC URL or we bake it in.
+      # The entrypoint script in the image might allow env vars.
+      # Checking docs... Environment variable `ERIGON_URL` is used to configure the json file in the container.
+      # BUT, this URL must be reachable from the USER'S BROWSER.
+      # So we should put the PUBLIC URL here.
+      - ERIGON_URL=https://rpc.blockchain.akadal.tr
+    ports:
+      - "4000:80"
+
+  # ----------------------------
+  # 3. Faucet
+  # ----------------------------
+  faucet:
+    build: ./faucet
+    restart: always
+    environment:
+      - RPC_URL=http://geth:8545
+      - PRIVATE_KEY=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
+      - PORT=3000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - geth
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+
+volumes:
+  geth_data:

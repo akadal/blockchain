@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Educational Blockchain Faucet</title>
+    <style>
+        :root {
+            --primary: #6366f1;
+            --bg: #0f172a;
+            --card: #1e293b;
+            --text: #f8fafc;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background-color: var(--card);
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+            width: 100%;
+            max-width: 450px;
+            text-align: center;
+        }
+        h1 { margin-bottom: 0.5rem; color: var(--primary); }
+        p { color: #94a3b8; margin-bottom: 2rem; }
+        
+        input {
+            width: 90%;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            border: 1px solid #334155;
+            background: #0f172a;
+            color: white;
+            margin-bottom: 1rem;
+            font-size: 1rem;
+            text-align: center;
+        }
+        input:focus { outline: 2px solid var(--primary); border-color: transparent; }
+
+        .buttons { display: flex; gap: 0.5rem; justify-content: center; margin-bottom: 1.5rem; }
+        .amount-btn {
+            background: #334155;
+            border: none;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .amount-btn:hover, .amount-btn.active { background: var(--primary); }
+
+        .submit-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 0.5rem;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            transition: transform 0.1s;
+        }
+        .submit-btn:active { transform: scale(0.98); }
+        .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        #status {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            display: none;
+            word-break: break-all;
+        }
+        .success { background-color: rgba(16, 185, 129, 0.2); color: #34d399; }
+        .error { background-color: rgba(239, 68, 68, 0.2); color: #f87171; }
+        
+        .add-metamask {
+            margin-top: 1rem;
+            background: transparent;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Student Faucet</h1>
+        <p>Get test ETH for your educational chain.</p>
+
+        <input type="text" id="address" placeholder="0x..." />
+        
+        <div class="buttons">
+            <button class="amount-btn" onclick="setAmount(1)">1 ETH</button>
+            <button class="amount-btn active" onclick="setAmount(10)">10 ETH</button>
+            <button class="amount-btn" onclick="setAmount(100)">100 ETH</button>
+        </div>
+
+        <button class="submit-btn" onclick="requestFunds()" id="submitBtn">Send Me ETH</button>
+
+        <div id="status"></div>
+
+        <button class="add-metamask" onclick="addNetwork()">🦊 Add Network to MetaMask</button>
+    </div>
+
+    <script>
+        let selectedAmount = 10;
+        
+        window.onload = async () => {
+            if (window.ethereum) {
+                const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+                if (accounts.length > 0) {
+                    document.getElementById('address').value = accounts[0];
+                }
+            }
+        }
+        
+        function setAmount(val) {
+            selectedAmount = val;
+            document.querySelectorAll('.amount-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        async function requestFunds() {
+            const address = document.getElementById('address').value;
+            const btn = document.getElementById('submitBtn');
+            const status = document.getElementById('status');
+
+            if (!address) return;
+
+            btn.disabled = true;
+            btn.innerText = "Sending...";
+            status.style.display = 'none';
+
+            try {
+                const res = await fetch('/fund', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ address, amount: selectedAmount })
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    status.className = 'success';
+                    status.innerHTML = `Success! Tx: <a href="/explorer/tx/${data.txHash}" target="_blank" style="color:inherit">${data.txHash}</a>`;
+                } else {
+                    status.className = 'error';
+                    status.innerText = data.error || "Failed";
+                }
+            } catch (e) {
+                status.className = 'error';
+                status.innerText = "Network Error";
+            } finally {
+                status.style.display = 'block';
+                btn.disabled = false;
+                btn.innerText = "Send Me ETH";
+            }
+        }
+
+        async function addNetwork() {
+            if (!window.ethereum) return alert("MetaMask not found!");
+            
+            // Allow dynamic host substitution
+            const location = window.location;
+            const rpcUrl = `${location.protocol}//rpc.${location.host.replace('blockchain.', '').replace('faucet.', '')}`; // Heuristic to guess RPC if subdomains usage, otherwise assume hardcoded or standard entry
+            // Actually, better to hardcode or use env configs injected into HTML.
+            // For now, let's assume standard Coolify URL pattern provided by user:
+            // "https://rpc.blockchain.akadal.tr"
+            
+            // We can try to deduce it or just use the relative logic if routed correctly.
+            // Let's use a safe prompt.
+            
+            try {
+                await window.ethereum.request({
+                    method: 'wallet_addEthereumChain',
+                    params: [{
+                        chainId: '0x539', // 1337
+                        chainName: 'Akadal Educational Chain',
+                        nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
+                        rpcUrls: ['https://rpc.blockchain.akadal.tr'], // IMPORTANT: Update this if domain changes
+                        blockExplorerUrls: ['https://explorer.blockchain.akadal.tr']
+                    }]
+                });
+            } catch (error) {
+                console.error(error);
+                alert("Failed to add network. check console.");
+            }
+        }
+    </script>
+</body>
+</html>
