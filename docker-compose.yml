@@ -2,12 +2,14 @@ version: '3.8'
 
 services:
   # ----------------------------
-  # 1. Geth Node (Persistent & Baked Config)
+  # 1. Geth Node (v1.12.2 - Stable PoA)
   # ----------------------------
   geth:
-    build: ./geth-config
+    build:
+      context: ./geth-config
+      dockerfile: Dockerfile
     volumes:
-      - geth_data:/root/.ethereum # Persistence for chain data
+      - geth_data:/root/.ethereum
     ports:
       - "8545:8545"
       - "8546:8546"
@@ -20,14 +22,14 @@ services:
           memory: 1G
 
   # ----------------------------
-  # 2. RPC Proxy (CORS Fixer)
+  # 2. RPC Proxy (Nginx with Dynamic Resolver)
   # ----------------------------
   rpc-proxy:
-    build: ./nginx
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
     expose:
       - "80"
-    depends_on:
-      - geth
     restart: always
 
   # ----------------------------
@@ -47,7 +49,9 @@ services:
   # 4. Faucet
   # ----------------------------
   faucet:
-    build: ./faucet
+    build:
+      context: ./faucet
+      dockerfile: Dockerfile
     restart: always
     environment:
       - RPC_URL=http://geth:8545
