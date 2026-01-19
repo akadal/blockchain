@@ -1,70 +1,105 @@
-# Akadal Chain (Lite Version)
+# Educational Ethereum Private Network (Coolify Ready)
 
-Bu proje, **Coolify** üzerinde çalışacak şekilde tasarlanmış, **düşük kaynak tüketimli** (Low Resource) bir Ethereum blokzincir ortamıdır.
+This project provides a **production-ready, lightweight Ethereum Blockchain Environment** designed for educational purposes. It is optimized for easy deployment on **Coolify** or any Docker-based environment.
 
-## 🚀 Bileşenler
-1.  **Geth Node**: Ethereum zinciri (Dev mode, ~256MB Cache limitli).
-2.  **Otterscan Explorer**: Hafif, istemci tabanlı gezgin (Database gerektirmez).
-3.  **Faucet**: Öğrenciler için test ETH dağıtıcısı (Node.js).
+It includes everything you need to start teaching or learning Ethereum development:
+1.  **Geth Node**: A stable Proof-of-Authority (Clique) blockchain.
+2.  **Explorer**: A lightweight block explorer (Alethio) to view transactions.
+3.  **Faucet**: A web interface to get free test ETH (`10 ETH` per request).
+4.  **RPC Proxy**: A pre-configured Nginx proxy to handle CORS and SSL correctly for MetaMask connectivity.
 
 ---
 
-## 🔐 SSL ve HTTPS Kurulumu (ÖNEMLİ)
+## 🚀 Architecture
 
-Bu altyapıda **SSL (HTTPS)** işlemleri tamamen **Coolify (veya Cloudflare)** tarafından yönetilir. Container'lar kendi içlerinde SSL sertifikası barındırmaz, HTTP konuşurlar.
+The system is composed of 4 Docker services:
 
-### Coolify Üzerinden Yapılandırma
-Sistemi deploy ettikten sonra Coolify panelinde servis ayarlarına gidin ve portları domainlere şu şekilde eşleştirin:
-
-| Servis Parçası | Domain (Örnek) | Container Portu |
+| Service | Port (Internal) | Description |
 | :--- | :--- | :--- |
-| **Geth (RPC)** | `https://rpc.blockchain.akadal.tr` | `8545` |
-| **Faucet (Web)** | `https://blockchain.akadal.tr` | `3000` |
-| **Otterscan** | `https://explorer.blockchain.akadal.tr` | `80` (Dikkat: 4000 değil, Coolify iç port olan 80'i görür) |
+| **geth** | `8545`, `8546` | The Ethereum Node (v1.12.2). Runs via `geth-boot.sh`. |
+| **rpc-proxy** | `80` | **Crucial Component**. Nginx proxy that forwards requests to Geth and handles **CORS headers** to ensure MetaMask works. |
+| **explorer** | `80` | Alethio Lite Explorer. Visualizes blocks/txs. |
+| **faucet** | `3000` | Node.js App. Sends ETH to users using the Genesis Master Key. |
 
-> **Not:** Eğer Coolify'da "Port Mapping" kısmında container adı seçiyorsanız, `otterscan` container'ı için port `80`, `faucet` için `3000`, `geth` için `8545` seçin.
-
-### Cloudflare Kullanımı
-Eğer DNS yönetiminiz Cloudflare'de ise iki seçeneğiniz var:
-1.  **DNS Only (Gri Bulut)**: SSL sertifikasını Coolify (Let's Encrypt) otomatik üretir. **Önerilen.**
-2.  **Proxied (Turuncu Bulut)**: Cloudflare SSL/TLS ayarınızı **"Full"** (Strict değil) yapın. Coolify yine HTTP/HTTPS karşılar.
+### Why Geth v1.12?
+We explicitly use **Geth v1.12.2** because newer versions (v1.14+) require complex Proof-of-Stake (Merge) configurations (Beacon Chain, Prysm, etc.) which are overkill for a simple educational chain. v1.12 is the "Gold Standard" for stable, simple PoA chains.
 
 ---
 
-## 🛠️ Kurulum Adımları
+## 🛠 Prerequisites
 
-1.  **Coolify'a Ekle**: Bu repoyu "Docker Compose" projesi olarak ekleyin.
-2.  **Environment Variables**:
-    Hiçbir ayar gerekmez. Varsayılanlar:
-    *   `CHAIN_ID`: 1337
-    *   `RPC_URL`: Container içi iletişim otomatik.
-3.  **Deploy**: Başlatın.
+- **Coolify** (Recommended) or Docker & Docker Compose installed locally.
+- A domain name (e.g., `blockchain.yourdomain.com`).
 
 ---
 
-## 🧪 Sistemi Test Etme (Deploy Sonrası)
+## 📦 Deployment Guide within Coolify
 
-Deploy bittikten sonra şu adımları takip edin:
+1.  **Create a New Service**: Choose "Docker Compose".
+2.  **Paste Configuration**: Copy the contents of `docker-compose.yml`.
+3.  **Configure Domains**:
+    Go to the **Configuration** tab in Coolify and set the domains as follows. **This is critical.**
 
-1.  **Explorer'ı Aç**: `https://explorer.blockchain.akadal.tr` adresine gidin.
-    *   Sayfa açılıyorsa Explorer çalışıyordur.
-    *   *İlk seferde bağlantı hatası verirse, sağ üstten RPC adresini kontrol edin.*
-2.  **Faucet'i Aç**: `https://blockchain.akadal.tr` adresine gidin.
-    *   Kendi cüzdan adresinizi yazın ve ETH isteyin.
-    *   Transaction hash ("0x...") görürseniz sistem çalışıyor demektir.
-3.  **MetaMask Bağla**:
-    *   **RPC URL**: `https://rpc.blockchain.akadal.tr`
-    *   **Chain ID**: 1337
-    *   **Symbol**: ETH
-    *   Bakiyenizin geldiğini görün.
+    *   **Domains for rpc-proxy**: `https://rpc.yourdomain.com:80`
+        *   *Note: Do NOT expose `geth` directly. MetaMask connects here.*
+    *   **Domains for explorer**: `https://explorer.yourdomain.com:80`
+    *   **Domains for faucet**: `https://faucet.yourdomain.com:3000`
+
+    *(Make sure to append the internal ports like `:80` or `:3000` so Coolify knows where to map).*
+
+4.  **Deploy**: Click "Deploy". The initial build might take 1-2 minutes.
 
 ---
 
-## ⚠️ Düşük Kaynak Uyarısı (Low RAM VPS)
+## 🔌 Connection Details for Users
 
-Sistem **1GB - 2GB RAM** aralığındaki sunucular için optimize edilmiştir:
-- **Geth**: Ram usage ~500MB-1GB arasına sınırlandı.
-- **Otterscan**: Sadece statik dosya sunar, RAM yemez.
-- **Faucet**: ~50-100MB RAM.
+To use this blockchain, users (Students/Developers) should configure their **MetaMask** as follows:
 
-Eğer sunucunuzda **Swap** alanı yoksa mutlaka oluşturun (Coolify genelde bunu yönetir ama manuel kontrol etmekte fayda var).
+- **Network Name**: `My Edu Chain` (or any name)
+- **RPC URL**: `https://rpc.yourdomain.com` (The domain you assigned to `rpc-proxy`)
+- **Chain ID**: `1337`
+- **Currency Symbol**: `ETH`
+- **Block Explorer URL**: `https://explorer.yourdomain.com`
+
+---
+
+## 💰 How to Get Funds (Faucet)
+
+1.  Open the Faucet URL (`https://faucet.yourdomain.com`).
+2.  Paste your MetaMask address.
+3.  Click **"Send Me ETH"**.
+4.  You will receive **10 ETH** instantly.
+
+---
+
+## 🔧 Troubleshooting
+
+### 1. MetaMask says "Failed to fetch chain ID"
+*   **Cause**: This is usually a CORS (Cross-Origin Resource Sharing) issue.
+*   **Fix**: Ensure you are connecting to the `rpc-proxy` domain, **NOT** the raw Geth domain. The Proxy (`nginx/default.conf`) is specially configured to add the necessary `Access-Control-Allow-Origin: *` headers.
+
+### 2. Faucet says "Insufficient funds"
+*   **Cause**: The master account might be empty (unlikely as it has 1 Billion ETH).
+*   **Fix**: Check the `faucet` logs. Ensure the `PRIVATE_KEY` in `docker-compose.yml` matches the one in `genesis.json` (Hint: It is `0xac09...`).
+
+### 3. Explorer shows nothing
+*   **Cause**: Explorer cannot reach the RPC.
+*   **Fix**: Check the `APP_NODE_URL` environment variable in `docker-compose.yml`. It must point to the **public** HTTPS RPC URL (`https://rpc.yourdomain.com`).
+
+---
+
+## 📂 File Structure
+
+- `docker-compose.yml`: Main orchestration file.
+- `geth-config/`:
+    - `genesis.json`: Defines the blockchain rules (Chain ID 1337).
+    - `geth-boot.sh`: Startup script (Initializes genesis if empty).
+    - `Dockerfile`: Builds the custom Geth image.
+- `nginx/`:
+    - `default.conf`: Proxy configuration for CORS.
+    - `Dockerfile`: Builds the Proxy image.
+- `faucet/`: Source code for the Node.js Faucet app.
+
+---
+
+**Happy Hacking!** 🚀
