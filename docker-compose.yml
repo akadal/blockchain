@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # ----------------------------
   # 1. Geth Node (Optimized for Low RAM)
@@ -27,24 +25,11 @@ services:
   # ----------------------------
   # 2. Otterscan (Lightweight Explorer)
   # ----------------------------
-  # Otterscan is a React app. It needs the Erigon URL typically, but works with Geth
-  # if we configure it to point to the RPC.
-  # Since it's client-side rendering, we just need to serve the assets.
   explorer:
     image: otterscan/otterscan:latest
     restart: always
     environment:
-      - ERIGON_URL=http://localhost:8545 # It defaults to trying to look here
-      # Actually, better to configure the default node to point to our RPC
-      # But since it's client side, the browser connects to RPC, not the container.
-      # Wait, Otterscan container usually just serves the Nginx.
-      # We need to inject a config.json or similar.
-      # Otterscan v2 allows setting the default provider via query param or config. 
-      # Let's keep it simple. User might need to enter RPC URL or we bake it in.
-      # The entrypoint script in the image might allow env vars.
-      # Checking docs... Environment variable `ERIGON_URL` is used to configure the json file in the container.
-      # BUT, this URL must be reachable from the USER'S BROWSER.
-      # So we should put the PUBLIC URL here.
+      # Otterscan configuration
       - ERIGON_URL=https://rpc.blockchain.akadal.tr
     ports:
       - "4000:80"
