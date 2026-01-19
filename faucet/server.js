@@ -62,7 +62,10 @@ app.post('/fund', async (req, res) => {
             value: ethers.parseEther(ethAmount)
         });
         console.log(`Sent ${ethAmount} ETH to ${address}. Tx: ${tx.hash}`);
-        res.json({ success: true, txHash: tx.hash, amount: ethAmount });
+
+        // Return explorer base URL from env or default
+        const explorerUrl = process.env.EXPLORER_URL || "https://explorer.blockchain.akadal.tr";
+        res.json({ success: true, txHash: tx.hash, amount: ethAmount, explorerUrl });
     } catch (error) {
         console.error("Transaction failed:", error);
         res.status(500).json({ error: error.message });

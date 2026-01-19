@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,6 +12,7 @@
             --card: #1e293b;
             --text: #f8fafc;
         }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background-color: var(--bg);
@@ -21,6 +23,7 @@
             min-height: 100vh;
             margin: 0;
         }
+
         .container {
             background-color: var(--card);
             padding: 2rem;
@@ -30,9 +33,17 @@
             max-width: 450px;
             text-align: center;
         }
-        h1 { margin-bottom: 0.5rem; color: var(--primary); }
-        p { color: #94a3b8; margin-bottom: 2rem; }
-        
+
+        h1 {
+            margin-bottom: 0.5rem;
+            color: var(--primary);
+        }
+
+        p {
+            color: #94a3b8;
+            margin-bottom: 2rem;
+        }
+
         input {
             width: 90%;
             padding: 0.75rem;
@@ -44,9 +55,19 @@
             font-size: 1rem;
             text-align: center;
         }
-        input:focus { outline: 2px solid var(--primary); border-color: transparent; }
 
-        .buttons { display: flex; gap: 0.5rem; justify-content: center; margin-bottom: 1.5rem; }
+        input:focus {
+            outline: 2px solid var(--primary);
+            border-color: transparent;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+        }
+
         .amount-btn {
             background: #334155;
             border: none;
@@ -56,7 +77,11 @@
             cursor: pointer;
             transition: all 0.2s;
         }
-        .amount-btn:hover, .amount-btn.active { background: var(--primary); }
+
+        .amount-btn:hover,
+        .amount-btn.active {
+            background: var(--primary);
+        }
 
         .submit-btn {
             background: var(--primary);
@@ -70,8 +95,15 @@
             width: 100%;
             transition: transform 0.1s;
         }
-        .submit-btn:active { transform: scale(0.98); }
-        .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .submit-btn:active {
+            transform: scale(0.98);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
 
         #status {
             margin-top: 1.5rem;
@@ -80,9 +112,17 @@
             display: none;
             word-break: break-all;
         }
-        .success { background-color: rgba(16, 185, 129, 0.2); color: #34d399; }
-        .error { background-color: rgba(239, 68, 68, 0.2); color: #f87171; }
-        
+
+        .success {
+            background-color: rgba(16, 185, 129, 0.2);
+            color: #34d399;
+        }
+
+        .error {
+            background-color: rgba(239, 68, 68, 0.2);
+            color: #f87171;
+        }
+
         .add-metamask {
             margin-top: 1rem;
             background: transparent;
@@ -95,13 +135,14 @@
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <h1>Student Faucet</h1>
         <p>Get test ETH for your educational chain.</p>
 
         <input type="text" id="address" placeholder="0x..." />
-        
+
         <div class="buttons">
             <button class="amount-btn" onclick="setAmount(1)">1 ETH</button>
             <button class="amount-btn active" onclick="setAmount(10)">10 ETH</button>
@@ -117,7 +158,23 @@
 
     <script>
         let selectedAmount = 10;
-        
+
+        // Configuration
+        // We assume the RPC is on the 'rpc' subdomain of the same parent domain
+        const getRpcUrl = () => {
+            const host = window.location.hostname;
+            const parts = host.split('.');
+            // e.g. blockchain.akadal.tr -> rpc.blockchain.akadal.tr
+            if (parts.length > 2) {
+                parts[0] = 'rpc';
+                return `https://${parts.join('.')}`;
+            }
+            return 'https://rpc.blockchain.akadal.tr'; // Fallback
+        };
+
+        const RPC_URL = "https://rpc.blockchain.akadal.tr"; // Hardcoded for simplicity as per user config
+        const CHAIN_ID = 1337;
+
         window.onload = async () => {
             if (window.ethereum) {
                 const accounts = await window.ethereum.request({ method: 'eth_accounts' });
@@ -125,8 +182,50 @@
                     document.getElementById('address').value = accounts[0];
                 }
             }
+            checkRpcConnection();
         }
-        
+
+        async function checkRpcConnection() {
+            const statusDiv = document.getElementById('rpc-status') || createStatusDiv();
+            statusDiv.innerHTML = "Checking RPC connectivity...";
+            statusDiv.style.color = "orange";
+
+            try {
+                // Try a simple POST to RPC
+                const res = await fetch(RPC_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        jsonrpc: "2.0",
+                        method: "eth_blockNumber",
+                        params: [],
+                        id: 1
+                    })
+                });
+                const data = await res.json();
+                if (data.result) {
+                    const blockNum = parseInt(data.result, 16);
+                    statusDiv.innerHTML = `✅ RPC Connected (Block: ${blockNum})`;
+                    statusDiv.style.color = "#34d399";
+                } else {
+                    throw new Error("Invalid response");
+                }
+            } catch (e) {
+                console.error("RPC Check Failed:", e);
+                statusDiv.innerHTML = `❌ RPC Connection Failed! Check Console. (${e.message})`;
+                statusDiv.style.color = "#f87171";
+            }
+        }
+
+        function createStatusDiv() {
+            const div = document.createElement('div');
+            div.id = 'rpc-status';
+            div.style.marginTop = '1rem';
+            div.style.fontSize = '0.8rem';
+            document.querySelector('.container').appendChild(div);
+            return div;
+        }
+
         function setAmount(val) {
             selectedAmount = val;
             document.querySelectorAll('.amount-btn').forEach(btn => btn.classList.remove('active'));
@@ -153,8 +252,12 @@
                 const data = await res.json();
 
                 if (data.success) {
+                    // Use server provided explorer URL or fallback
+                    const explorerBase = data.explorerUrl || "https://explorer.blockchain.akadal.tr";
+                    const txLink = `${explorerBase}/tx/${data.txHash}`;
+
                     status.className = 'success';
-                    status.innerHTML = `Success! Tx: <a href="/explorer/tx/${data.txHash}" target="_blank" style="color:inherit">${data.txHash}</a>`;
+                    status.innerHTML = `Success! <a href="${txLink}" target="_blank" style="color:white; text-decoration: underline;">View TX</a>`;
                 } else {
                     status.className = 'error';
                     status.innerText = data.error || "Failed";
@@ -171,17 +274,7 @@
 
         async function addNetwork() {
             if (!window.ethereum) return alert("MetaMask not found!");
-            
-            // Allow dynamic host substitution
-            const location = window.location;
-            const rpcUrl = `${location.protocol}//rpc.${location.host.replace('blockchain.', '').replace('faucet.', '')}`; // Heuristic to guess RPC if subdomains usage, otherwise assume hardcoded or standard entry
-            // Actually, better to hardcode or use env configs injected into HTML.
-            // For now, let's assume standard Coolify URL pattern provided by user:
-            // "https://rpc.blockchain.akadal.tr"
-            
-            // We can try to deduce it or just use the relative logic if routed correctly.
-            // Let's use a safe prompt.
-            
+
             try {
                 await window.ethereum.request({
                     method: 'wallet_addEthereumChain',
@@ -189,7 +282,7 @@
                         chainId: '0x539', // 1337
                         chainName: 'Akadal Educational Chain',
                         nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
-                        rpcUrls: ['https://rpc.blockchain.akadal.tr'], // IMPORTANT: Update this if domain changes
+                        rpcUrls: [RPC_URL],
                         blockExplorerUrls: ['https://explorer.blockchain.akadal.tr']
                     }]
                 });
@@ -200,4 +293,5 @@
         }
     </script>
 </body>
+
 </html>
