@@ -5,7 +5,7 @@ services:
   geth:
     image: ethereum/client-go:stable
     command: >
-      --dev  --dev.period 0  --http  --http.addr 0.0.0.0  --http.port 8545  --http.vhosts "*"  --http.corsdomain "*"  --http.api "eth,net,web3,debug,personal,txpool"  --ws  --ws.addr 0.0.0.0  --ws.port 8546 --ws.origins "*" --ws.api "eth,net,web3,debug,personal,txpool" --networkid 1337 --cache 256 --gcmode archive --allow-insecure-unlock
+      --dev  --dev.period 0  --http  --http.addr 0.0.0.0  --http.port 8545  --http.vhosts "*"  --http.corsdomain "*"  --http.api "eth,net,web3,debug,personal,txpool"  --ws  --ws.addr 0.0.0.0  --ws.port 8546 --ws.origins "*" --ws.api "eth,net,web3,debug,personal,txpool" --cache 256 --gcmode archive
     ports:
       - "8545:8545" # RPC
       - "8546:8546" # WS
