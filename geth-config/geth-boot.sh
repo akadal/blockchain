@@ -1,12 +1,10 @@
 #!/bin/sh
 
-# Initialize only if not already done
-if [ ! -d "/root/.ethereum/geth/chaindata" ]; then
-    echo "Initializing Genesis Block..."
-    geth init /root/genesis.json
-else
-    echo "Blockchain data found. Skipping initialization."
-fi
+# Update or Initialize Genesis Configuration
+# Executing geth init on an existing data directory SAFELY updates chain configuration 
+# without destroying existing blocks or state.
+echo "Initializing/Updating Genesis Block Configuration..."
+geth init /root/genesis.json
 
 # Check if the specific account is already imported
 if [ ! -d "/root/.ethereum/keystore" ] || [ -z "$(ls -A /root/.ethereum/keystore)" ]; then
