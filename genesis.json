@@ -15,8 +15,8 @@
         "arrowGlacierBlock": 0,
         "grayGlacierBlock": 0,
         "mergeNetsplitBlock": 0,
-        "shanghaiTime": 0,
-        "cancunTime": 0,
+        "shanghaiTime": 1773262609,
+        "cancunTime": 1773262609,
         "clique": {
             "period": 5,
             "epoch": 30000

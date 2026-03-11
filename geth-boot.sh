@@ -1,8 +1,15 @@
 #!/bin/sh
 
 # Update or Initialize Genesis Configuration
-# Executing geth init on an existing data directory SAFELY updates chain configuration 
-# without destroying existing blocks or state.
+# Calculate a timestamp 3 minutes into the future to safely apply the hardfork
+# without causing a block rewind error on existing databases.
+FUTURE_TIME=$(($(date +%s) + 180))
+echo "Setting Shanghai and Cancun hardfork activation time to: $FUTURE_TIME"
+
+# Inject the dynamic timestamp into the genesis file using jq
+jq ".config.shanghaiTime = $FUTURE_TIME | .config.cancunTime = $FUTURE_TIME" /root/genesis.json > /tmp/genesis_temp.json
+mv /tmp/genesis_temp.json /root/genesis.json
+
 echo "Initializing/Updating Genesis Block Configuration..."
 geth init /root/genesis.json
 
