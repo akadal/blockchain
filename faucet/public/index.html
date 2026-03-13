@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Akadal Educational Chain</title>
+    <title>Akadal Chain</title>
     <style>
         :root {
             --primary: #6366f1;
@@ -380,8 +380,12 @@
 
         <main>
             <section class="hero">
-                <h1>Educational Ethereum Environment</h1>
+                <h1>Akadal Chain</h1>
                 <p>A fast, reliable, and free Proof-of-Authority blockchain for testing, learning, and developing decentralized applications.</p>
+
+                <div style="margin-bottom: 2rem;">
+                    <a href="https://demo.blockchain.akadal.tr" target="_blank" class="submit-btn" style="display: inline-block; width: auto; text-decoration: none; padding: 0.75rem 1.5rem; background-color: var(--success-text);">🎓 Interactive Learning Lab</a>
+                </div>
 
                 <div class="search-bar">
                     <input type="text" id="searchInput" placeholder="Search by Address / Txn Hash / Block" onkeypress="handleSearch(event)" />
@@ -392,18 +396,12 @@
             <div class="grid">
                 <!-- Faucet Section -->
                 <div class="card">
-                    <h2>Student Faucet</h2>
-                    <p style="color: var(--text-muted); margin-bottom: 1.5rem; font-size: 0.95rem;">Enter your address to receive test ETH.</p>
+                    <h2>Akadal Faucet</h2>
+                    <p style="color: var(--text-muted); margin-bottom: 1.5rem; font-size: 0.95rem;">Enter your address to receive 10 test ETH.</p>
 
                     <input type="text" id="address" class="faucet-input" placeholder="0x..." />
 
-                    <div class="buttons">
-                        <button class="amount-btn" onclick="setAmount(1)">1 ETH</button>
-                        <button class="amount-btn active" onclick="setAmount(10)">10 ETH</button>
-                        <button class="amount-btn" onclick="setAmount(100)">100 ETH</button>
-                    </div>
-
-                    <button class="submit-btn" onclick="requestFunds()" id="submitBtn">Send Me ETH</button>
+                    <button class="submit-btn" onclick="requestFunds()" id="submitBtn">Send Me 10 ETH</button>
 
                     <div id="status"></div>
                     <div id="rpc-status"></div>
@@ -415,7 +413,7 @@
                     <ul class="network-details">
                         <li>
                             <span class="label">Network Name</span>
-                            <span class="value">Akadal Educational Chain</span>
+                            <span class="value">Akadal Chain</span>
                         </li>
                         <li>
                             <span class="label">RPC URL</span>
@@ -672,7 +670,7 @@
                     method: 'wallet_addEthereumChain',
                     params: [{
                         chainId: '0x539', // 1337
-                        chainName: 'Akadal Educational Chain',
+                        chainName: 'Akadal Chain',
                         nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
                         rpcUrls: [RPC_URL],
                         blockExplorerUrls: [EXPLORER_URL]
