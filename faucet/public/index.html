@@ -1,62 +1,188 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Educational Blockchain Faucet</title>
+    <title>Akadal Educational Chain</title>
     <style>
         :root {
             --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --text: #0f172a;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --input-bg: #f1f5f9;
+            --success-bg: rgba(16, 185, 129, 0.2);
+            --success-text: #059669;
+            --error-bg: rgba(239, 68, 68, 0.2);
+            --error-text: #dc2626;
+        }
+
+        [data-theme="dark"] {
+            --primary: #6366f1;
+            --primary-hover: #818cf8;
             --bg: #0f172a;
             --card: #1e293b;
             --text: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --input-bg: #0f172a;
+            --success-bg: rgba(16, 185, 129, 0.2);
+            --success-text: #34d399;
+            --error-bg: rgba(239, 68, 68, 0.2);
+            --error-text: #f87171;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
         }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background-color: var(--bg);
             color: var(--text);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
+            transition: background-color 0.3s, color 0.3s;
+            line-height: 1.6;
         }
 
         .container {
-            background-color: var(--card);
-            padding: 2rem;
-            border-radius: 1rem;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
-            width: 100%;
-            max-width: 450px;
-            text-align: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
         }
 
-        h1 {
-            margin-bottom: 0.5rem;
-            color: var(--primary);
-        }
-
-        p {
-            color: #94a3b8;
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem 0;
+            border-bottom: 1px solid var(--border);
             margin-bottom: 2rem;
         }
 
-        input {
-            width: 90%;
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        .theme-toggle {
+            background: none;
+            border: none;
+            color: var(--text);
+            cursor: pointer;
+            font-size: 1.2rem;
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            transition: background-color 0.2s;
+        }
+
+        .theme-toggle:hover {
+            background-color: var(--border);
+        }
+
+        .hero {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .hero h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .hero p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto 2rem;
+        }
+
+        .search-bar {
+            display: flex;
+            max-width: 600px;
+            margin: 0 auto;
+            gap: 0.5rem;
+        }
+
+        .search-bar input {
+            flex: 1;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            background: var(--input-bg);
+            color: var(--text);
+            font-size: 1rem;
+        }
+
+        .search-bar input:focus {
+            outline: 2px solid var(--primary);
+            border-color: transparent;
+        }
+
+        .search-bar button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0 1.5rem;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .search-bar button:hover {
+            background: var(--primary-hover);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        @media (min-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .card {
+            background-color: var(--card);
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            border: 1px solid var(--border);
+        }
+
+        .card h2 {
+            margin-bottom: 1.5rem;
+            color: var(--text);
+            font-size: 1.5rem;
+        }
+
+        /* Faucet Styles */
+        .faucet-input {
+            width: 100%;
             padding: 0.75rem;
             border-radius: 0.5rem;
-            border: 1px solid #334155;
-            background: #0f172a;
-            color: white;
+            border: 1px solid var(--border);
+            background: var(--input-bg);
+            color: var(--text);
             margin-bottom: 1rem;
             font-size: 1rem;
             text-align: center;
         }
 
-        input:focus {
+        .faucet-input:focus {
             outline: 2px solid var(--primary);
             border-color: transparent;
         }
@@ -69,18 +195,20 @@
         }
 
         .amount-btn {
-            background: #334155;
+            background: var(--border);
             border: none;
-            color: white;
+            color: var(--text);
             padding: 0.5rem 1rem;
             border-radius: 0.5rem;
             cursor: pointer;
             transition: all 0.2s;
+            flex: 1;
         }
 
         .amount-btn:hover,
         .amount-btn.active {
             background: var(--primary);
+            color: white;
         }
 
         .submit-btn {
@@ -93,7 +221,7 @@
             font-weight: bold;
             cursor: pointer;
             width: 100%;
-            transition: transform 0.1s;
+            transition: transform 0.1s, opacity 0.2s;
         }
 
         .submit-btn:active {
@@ -111,119 +239,381 @@
             border-radius: 0.5rem;
             display: none;
             word-break: break-all;
+            text-align: center;
         }
 
         .success {
-            background-color: rgba(16, 185, 129, 0.2);
-            color: #34d399;
+            background-color: var(--success-bg);
+            color: var(--success-text);
         }
 
         .error {
-            background-color: rgba(239, 68, 68, 0.2);
-            color: #f87171;
+            background-color: var(--error-bg);
+            color: var(--error-text);
+        }
+
+        /* Network Info Styles */
+        .network-details {
+            list-style: none;
+            margin-bottom: 1.5rem;
+        }
+
+        .network-details li {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border);
+            align-items: center;
+        }
+
+        .network-details li:last-child {
+            border-bottom: none;
+        }
+
+        .network-details span.label {
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .network-details span.value {
+            font-family: monospace;
+            background: var(--input-bg);
+            padding: 0.2rem 0.5rem;
+            border-radius: 0.25rem;
         }
 
         .add-metamask {
-            margin-top: 1rem;
+            width: 100%;
             background: transparent;
             border: 1px solid var(--primary);
             color: var(--primary);
-            padding: 0.5rem;
+            padding: 0.75rem;
             border-radius: 0.5rem;
             cursor: pointer;
-            font-size: 0.8rem;
+            font-size: 1rem;
+            font-weight: bold;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .add-metamask:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* Blocks Section */
+        .blocks-section {
+            margin-bottom: 3rem;
+        }
+
+        .blocks-section h2 {
+            margin-bottom: 1rem;
+        }
+
+        .block-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .block-item {
+            background: var(--card);
+            border: 1px solid var(--border);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .block-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .block-number {
+            font-weight: bold;
+            color: var(--primary);
+            font-family: monospace;
+            font-size: 1.1rem;
+        }
+
+        .block-txs {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .block-hash {
+            font-family: monospace;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 600px) {
+            .block-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+        }
+
+        #rpc-status {
+            text-align: center;
+            margin-top: 1rem;
+            font-size: 0.9rem;
         }
     </style>
 </head>
 
 <body>
     <div class="container">
-        <h1>Student Faucet</h1>
-        <p>Get test ETH for your educational chain.</p>
+        <header>
+            <a href="/" class="logo">Akadal Chain</a>
+            <button class="theme-toggle" onclick="toggleTheme()" id="themeToggleBtn">
+                ☀️ Light
+            </button>
+        </header>
 
-        <input type="text" id="address" placeholder="0x..." />
+        <main>
+            <section class="hero">
+                <h1>Educational Ethereum Environment</h1>
+                <p>A fast, reliable, and free Proof-of-Authority blockchain for testing, learning, and developing decentralized applications.</p>
 
-        <div class="buttons">
-            <button class="amount-btn" onclick="setAmount(1)">1 ETH</button>
-            <button class="amount-btn active" onclick="setAmount(10)">10 ETH</button>
-            <button class="amount-btn" onclick="setAmount(100)">100 ETH</button>
-        </div>
+                <div class="search-bar">
+                    <input type="text" id="searchInput" placeholder="Search by Address / Txn Hash / Block" onkeypress="handleSearch(event)" />
+                    <button onclick="performSearch()">Search</button>
+                </div>
+            </section>
 
-        <button class="submit-btn" onclick="requestFunds()" id="submitBtn">Send Me ETH</button>
+            <div class="grid">
+                <!-- Faucet Section -->
+                <div class="card">
+                    <h2>Student Faucet</h2>
+                    <p style="color: var(--text-muted); margin-bottom: 1.5rem; font-size: 0.95rem;">Enter your address to receive test ETH.</p>
 
-        <div id="status"></div>
+                    <input type="text" id="address" class="faucet-input" placeholder="0x..." />
 
-        <button class="add-metamask" onclick="addNetwork()">🦊 Add Network to MetaMask</button>
+                    <div class="buttons">
+                        <button class="amount-btn" onclick="setAmount(1)">1 ETH</button>
+                        <button class="amount-btn active" onclick="setAmount(10)">10 ETH</button>
+                        <button class="amount-btn" onclick="setAmount(100)">100 ETH</button>
+                    </div>
+
+                    <button class="submit-btn" onclick="requestFunds()" id="submitBtn">Send Me ETH</button>
+
+                    <div id="status"></div>
+                    <div id="rpc-status"></div>
+                </div>
+
+                <!-- Network Info Section -->
+                <div class="card">
+                    <h2>Network Details</h2>
+                    <ul class="network-details">
+                        <li>
+                            <span class="label">Network Name</span>
+                            <span class="value">Akadal Educational Chain</span>
+                        </li>
+                        <li>
+                            <span class="label">RPC URL</span>
+                            <span class="value">https://rpc.blockchain.akadal.tr</span>
+                        </li>
+                        <li>
+                            <span class="label">Chain ID</span>
+                            <span class="value">1337</span>
+                        </li>
+                        <li>
+                            <span class="label">Currency Symbol</span>
+                            <span class="value">ETH</span>
+                        </li>
+                        <li>
+                            <span class="label">Block Explorer</span>
+                            <span class="value"><a href="https://explorer.blockchain.akadal.tr" target="_blank" style="color: var(--primary); text-decoration: none;">explorer.blockchain.akadal.tr</a></span>
+                        </li>
+                    </ul>
+
+                    <button class="add-metamask" onclick="addNetwork()">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M21.1469 5.8697L15.3533 1.95657C15.1119 1.79468 14.8115 1.74558 14.5303 1.8217L9.75231 3.09068L5.05471 1.77262C4.77351 1.6965 4.4731 1.74558 4.2317 1.90747L-0.0191549 4.79379V5.5786C-0.0191549 5.92211 0.161746 6.22639 0.463246 6.36384L5.61749 8.71887V9.61191L3.00445 10.9961L2.84365 11.0845C2.55219 11.2317 2.3713 11.536 2.3713 11.8601V13.8037C2.3713 14.157 2.56224 14.4711 2.87381 14.6184L6.96422 16.5913C7.26572 16.7386 7.62751 16.7092 7.9089 16.5129L10.3511 14.7753V15.7766L7.9089 17.5142C7.62751 17.7105 7.26572 17.7399 6.96422 17.5927L2.87381 15.6197C2.56224 15.4725 2.3713 15.1583 2.3713 14.8051V12.8614L4.98436 11.4772V10.5842L-0.169956 8.22915C-0.471457 8.0917 -0.652358 7.78742 -0.652358 7.44391V6.65911L4.2317 3.77279C4.4731 3.6109 4.77351 3.56182 5.05471 3.63794L9.75231 4.956L14.5303 3.68702C14.8115 3.6109 15.1119 3.66001 15.3533 3.82189L21.1469 7.73502C21.4685 7.951 21.6594 8.31422 21.6594 8.70689V14.1669C21.6594 14.7363 21.1972 15.1985 20.6278 15.1985C20.0583 15.1985 19.5962 14.7363 19.5962 14.1669V9.56281L16.2093 7.25585L16.149 7.21658C15.8676 7.03006 15.5159 7.00061 15.2043 7.14785L10.6014 9.32731L6.68187 7.4719C6.38037 7.32466 6.01858 7.35411 5.73719 7.55045L3.29495 9.288V10.2893L5.73719 8.55171C6.01858 8.35538 6.38037 8.32593 6.68187 8.47317L10.6014 10.3286L15.2043 8.14912C15.5159 8.00188 15.8676 8.03133 16.149 8.21785L19.5359 10.5248V14.1669C19.5359 15.2861 20.4436 16.1938 21.5628 16.1938C22.682 16.1938 23.5897 15.2861 23.5897 14.1669V8.70689C23.5897 8.31422 23.3988 7.951 23.0772 7.73502L21.1469 5.8697Z" fill="currentColor"/>
+                        </svg>
+                        Add Network to MetaMask
+                    </button>
+                </div>
+            </div>
+
+            <!-- Latest Blocks Section -->
+            <section class="blocks-section">
+                <h2>Latest Blocks</h2>
+                <div class="block-list" id="blockList">
+                    <div class="block-item" style="justify-content: center; color: var(--text-muted);">
+                        Fetching latest blocks...
+                    </div>
+                </div>
+            </section>
+        </main>
     </div>
 
     <script>
         let selectedAmount = 10;
+        const RPC_URL = "https://rpc.blockchain.akadal.tr";
+        const EXPLORER_URL = "https://explorer.blockchain.akadal.tr";
 
-        // Configuration
-        // We assume the RPC is on the 'rpc' subdomain of the same parent domain
-        const getRpcUrl = () => {
-            const host = window.location.hostname;
-            const parts = host.split('.');
-            // e.g. blockchain.akadal.tr -> rpc.blockchain.akadal.tr
-            if (parts.length > 2) {
-                parts[0] = 'rpc';
-                return `https://${parts.join('.')}`;
+        // Theme Management
+        function initTheme() {
+            // First checking local storage for a previously saved preference
+            const savedTheme = localStorage.getItem('theme');
+            // Check the system default if no preference is saved
+            const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+            if (savedTheme === 'light') {
+                document.documentElement.setAttribute('data-theme', 'light');
+                document.getElementById('themeToggleBtn').innerText = '🌙 Dark';
+            } else if (savedTheme === 'dark' || prefersDark) {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                document.getElementById('themeToggleBtn').innerText = '☀️ Light';
+            } else {
+                document.documentElement.setAttribute('data-theme', 'light');
+                document.getElementById('themeToggleBtn').innerText = '🌙 Dark';
             }
-            return 'https://rpc.blockchain.akadal.tr'; // Fallback
-        };
-
-        const RPC_URL = "https://rpc.blockchain.akadal.tr"; // Hardcoded for simplicity as per user config
-        const CHAIN_ID = 1337;
-
-        window.onload = async () => {
-            if (window.ethereum) {
-                const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-                if (accounts.length > 0) {
-                    document.getElementById('address').value = accounts[0];
-                }
-            }
-            checkRpcConnection();
         }
 
-        async function checkRpcConnection() {
-            const statusDiv = document.getElementById('rpc-status') || createStatusDiv();
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const btn = document.getElementById('themeToggleBtn');
+
+            if (currentTheme === 'dark') {
+                document.documentElement.setAttribute('data-theme', 'light');
+                localStorage.setItem('theme', 'light');
+                btn.innerText = '🌙 Dark';
+            } else {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                localStorage.setItem('theme', 'dark');
+                btn.innerText = '☀️ Light';
+            }
+        }
+
+        // Search Functionality
+        function handleSearch(e) {
+            if (e.key === 'Enter') {
+                performSearch();
+            }
+        }
+
+        function performSearch() {
+            const query = document.getElementById('searchInput').value.trim();
+            if (!query) return;
+
+            let path = '';
+
+            if (query.startsWith('0x')) {
+                if (query.length === 42) {
+                    path = `/account/${query}`;
+                } else if (query.length === 66) {
+                    path = `/tx/${query}`;
+                } else {
+                    path = `/block/${query}`;
+                }
+            } else if (!isNaN(query)) {
+                path = `/block/${query}`;
+            } else {
+                alert('Invalid search query. Enter an address, transaction hash, or block number.');
+                return;
+            }
+
+            window.open(`${EXPLORER_URL}${path}`, '_blank');
+        }
+
+        // Faucet Logic
+        window.onload = async () => {
+            initTheme();
+
+            if (window.ethereum) {
+                try {
+                    const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+                    if (accounts.length > 0) {
+                        document.getElementById('address').value = accounts[0];
+                    }
+                } catch (e) {
+                    console.log("Could not fetch eth_accounts");
+                }
+            }
+
+            checkRpcConnectionAndFetchBlocks();
+        }
+
+        async function rpcCall(method, params = []) {
+            const res = await fetch(RPC_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    jsonrpc: "2.0",
+                    method: method,
+                    params: params,
+                    id: 1
+                })
+            });
+            const data = await res.json();
+            if (data.error) throw new Error(data.error.message);
+            return data.result;
+        }
+
+        async function checkRpcConnectionAndFetchBlocks() {
+            const statusDiv = document.getElementById('rpc-status');
             statusDiv.innerHTML = "Checking RPC connectivity...";
-            statusDiv.style.color = "orange";
+            statusDiv.style.color = "var(--text-muted)";
 
             try {
-                // Try a simple POST to RPC
-                const res = await fetch(RPC_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        jsonrpc: "2.0",
-                        method: "eth_blockNumber",
-                        params: [],
-                        id: 1
-                    })
-                });
-                const data = await res.json();
-                if (data.result) {
-                    const blockNum = parseInt(data.result, 16);
-                    statusDiv.innerHTML = `✅ RPC Connected (Block: ${blockNum})`;
-                    statusDiv.style.color = "#34d399";
-                } else {
-                    throw new Error("Invalid response");
-                }
+                const latestBlockHex = await rpcCall("eth_blockNumber");
+                const latestBlockNum = parseInt(latestBlockHex, 16);
+
+                statusDiv.innerHTML = `✅ RPC Connected (Current Block: ${latestBlockNum})`;
+                statusDiv.style.color = "var(--success-text)";
+
+                fetchLatestBlocks(latestBlockNum);
             } catch (e) {
                 console.error("RPC Check Failed:", e);
-                statusDiv.innerHTML = `❌ RPC Connection Failed! Check Console. (${e.message})`;
-                statusDiv.style.color = "#f87171";
+                statusDiv.innerHTML = `❌ RPC Connection Failed! (${e.message})`;
+                statusDiv.style.color = "var(--error-text)";
+                document.getElementById('blockList').innerHTML = `<div class="block-item" style="justify-content: center; color: var(--error-text);">Failed to fetch blocks from RPC.</div>`;
             }
         }
 
-        function createStatusDiv() {
-            const div = document.createElement('div');
-            div.id = 'rpc-status';
-            div.style.marginTop = '1rem';
-            div.style.fontSize = '0.8rem';
-            document.querySelector('.container').appendChild(div);
-            return div;
+        async function fetchLatestBlocks(latestBlockNum) {
+            const blockList = document.getElementById('blockList');
+            blockList.innerHTML = ''; // clear
+
+            const blocksToFetch = Math.min(5, latestBlockNum + 1);
+
+            for (let i = 0; i < blocksToFetch; i++) {
+                const blockNumHex = "0x" + (latestBlockNum - i).toString(16);
+                try {
+                    const block = await rpcCall("eth_getBlockByNumber", [blockNumHex, false]);
+                    if (block) {
+                        const txCount = block.transactions.length;
+                        const blockNum = parseInt(block.number, 16);
+
+                        const el = document.createElement('div');
+                        el.className = 'block-item';
+                        el.innerHTML = `
+                            <div class="block-info">
+                                <div class="block-number">
+                                    <a href="${EXPLORER_URL}/block/${blockNum}" target="_blank" style="color: inherit; text-decoration: none;">#${blockNum}</a>
+                                </div>
+                                <div class="block-txs">${txCount} txn${txCount !== 1 ? 's' : ''}</div>
+                            </div>
+                            <div class="block-hash">
+                                ${block.hash.substring(0, 16)}...${block.hash.substring(block.hash.length - 12)}
+                            </div>
+                        `;
+                        blockList.appendChild(el);
+                    }
+                } catch (e) {
+                    console.error("Failed to fetch block", blockNumHex, e);
+                }
+            }
         }
 
         function setAmount(val) {
@@ -252,12 +642,14 @@
                 const data = await res.json();
 
                 if (data.success) {
-                    // Use server provided explorer URL or fallback
-                    const explorerBase = data.explorerUrl || "https://explorer.blockchain.akadal.tr";
+                    const explorerBase = data.explorerUrl || EXPLORER_URL;
                     const txLink = `${explorerBase}/tx/${data.txHash}`;
 
                     status.className = 'success';
-                    status.innerHTML = `Success! <a href="${txLink}" target="_blank" style="color:white; text-decoration: underline;">View TX</a>`;
+                    status.innerHTML = `Success! <a href="${txLink}" target="_blank" style="color: inherit; text-decoration: underline; font-weight: bold;">View TX on Explorer</a>`;
+
+                    // Refresh blocks in background
+                    setTimeout(() => checkRpcConnectionAndFetchBlocks(), 2000);
                 } else {
                     status.className = 'error';
                     status.innerText = data.error || "Failed";
@@ -273,7 +665,7 @@
         }
 
         async function addNetwork() {
-            if (!window.ethereum) return alert("MetaMask not found!");
+            if (!window.ethereum) return alert("MetaMask not found! Please install the MetaMask extension.");
 
             try {
                 await window.ethereum.request({
@@ -283,12 +675,12 @@
                         chainName: 'Akadal Educational Chain',
                         nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
                         rpcUrls: [RPC_URL],
-                        blockExplorerUrls: ['https://explorer.blockchain.akadal.tr']
+                        blockExplorerUrls: [EXPLORER_URL]
                     }]
                 });
             } catch (error) {
                 console.error(error);
-                alert("Failed to add network. check console.");
+                alert("Failed to add network. Check console for details.");
             }
         }
     </script>

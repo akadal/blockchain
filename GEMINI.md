@@ -34,8 +34,8 @@ The system is orchestrated via `docker-compose.yml` and consists of 4 main servi
 - **Routing:** Forwards requests to `http://geth:8545`. Uses Docker's internal DNS (`127.0.0.11`) dynamically so Nginx doesn't crash if Geth is slow to start.
 - **Exposure:** Port `80` internal, mapped externally via Coolify (e.g., `https://rpc.yourdomain.com`).
 
-### 2.3 Faucet (`faucet`)
-- **Role:** Node.js Express application distributing test ETH (10 ETH per request).
+### 2.3 Faucet & Landing Page (`faucet`)
+- **Role:** Node.js Express application distributing test ETH (10 ETH per request) and serving as the primary **Landing Page** for the Akadal Educational Chain. The frontend (`faucet/public/index.html`) includes network details, MetaMask integration, a search bar directing to the Explorer, and a dynamic display of recent blocks fetched from the RPC.
 - **Setup:** Connects to `geth` via `RPC_URL=http://geth:8545`.
 - **Funding Source:** It uses the unlocked master account (`0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266`) which is heavily funded in the genesis block.
 - **Exposure:** Port `3000` internal and host.
