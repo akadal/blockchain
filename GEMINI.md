@@ -45,6 +45,11 @@ The system is orchestrated via `docker-compose.yml` and consists of 4 main servi
 - **Setup:** Configured via `APP_NODE_URL` to point to the **public RPC URL** (e.g., `https://rpc.blockchain.akadal.tr`). This is important because the explorer client runs in the user's browser, not server-side.
 - **Exposure:** Port `80` internal, mapped to host port `4000` to avoid conflicts on the VPS.
 
+### 2.5 Interactive Demo (`demo`)
+- **Role:** Visual Blockchain Demo application (merged from `akadal/blockchaindemo`) for educational purposes. Allows users to interact with concepts like hashing, blocks, and distributed networks interactively.
+- **Setup:** Fully isolated Node.js application. Configured with environment variables `DEMO_URL`, `RPC_URL`, `EXPLORER_URL`, and `MAIN_URL` which can be managed dynamically via Coolify.
+- **Exposure:** Port `3000` internal, mapped to host port `5454`. Accessed publicly via subdomain `demo.blockchain.akadal.tr`.
+
 ## 3. Key Configurations & Networking details
 - **Pre-funded Master Account:**
   - **Address:** `0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266`
@@ -53,6 +58,7 @@ The system is orchestrated via `docker-compose.yml` and consists of 4 main servi
   - RPC/MetaMask: `rpc.domain.com` -> `rpc-proxy:80`
   - Explorer: `explorer.domain.com` -> `explorer:4000`
   - Faucet: `faucet.domain.com` -> `faucet:3000`
+  - Demo: `demo.domain.com` -> `demo:5454`
 
 ## 4. Common Troubleshooting / Edge Cases
 - **MetaMask Chain ID Issues:** Usually caused by connecting directly to the Geth node bypassing the Nginx `rpc-proxy`. The proxy *must* be used for correct CORS headers.
