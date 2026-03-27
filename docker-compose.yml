@@ -68,5 +68,27 @@ services:
         limits:
           memory: 256M
 
+  # ----------------------------
+  # 5. Interactive Demo (Blockchain Demo)
+  # ----------------------------
+  demo:
+    build:
+      context: ./demo
+      dockerfile: Dockerfile
+    restart: always
+    environment:
+      - DEMO_URL=https://demo.blockchain.akadal.tr
+      - RPC_URL=https://rpc.blockchain.akadal.tr
+      - EXPLORER_URL=https://explorer.blockchain.akadal.tr
+      - MAIN_URL=https://blockchain.akadal.tr
+    ports:
+      - "5454:3000"
+    expose:
+      - "3000"
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+
 volumes:
   geth_data_v2:
