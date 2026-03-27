@@ -81,6 +81,7 @@ services:
       - RPC_URL=https://rpc.blockchain.akadal.tr
       - EXPLORER_URL=https://explorer.blockchain.akadal.tr
       - MAIN_URL=https://blockchain.akadal.tr
+      - PORT=3000
     ports:
       - "5454:3000"
     expose:
