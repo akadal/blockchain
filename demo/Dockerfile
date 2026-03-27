@@ -1,15 +1,13 @@
-FROM       node:alpine
+FROM node:18-alpine
 
-MAINTAINER https://github.com/anders94/blockchain-demo
+WORKDIR /app
 
-EXPOSE     3000
+COPY package.json package-lock.json* ./
 
-WORKDIR    /blockchain-demo
+RUN npm install
 
-COPY       package.json /blockchain-demo
+COPY . .
 
-RUN        npm install
+EXPOSE 3000
 
-COPY       . /blockchain-demo
-
-CMD        ["node", "bin/www"]
+CMD ["npm", "start"]
