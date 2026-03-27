@@ -77,10 +77,10 @@ services:
       dockerfile: Dockerfile
     restart: always
     environment:
-      - DEMO_URL=https://demo.blockchain.akadal.tr
-      - RPC_URL=https://rpc.blockchain.akadal.tr
-      - EXPLORER_URL=https://explorer.blockchain.akadal.tr
-      - MAIN_URL=https://blockchain.akadal.tr
+      - DEMO_URL=${DEMO_URL:-https://demo.blockchain.akadal.tr}
+      - RPC_URL=${RPC_URL:-https://rpc.blockchain.akadal.tr}
+      - EXPLORER_URL=${EXPLORER_URL:-https://explorer.blockchain.akadal.tr}
+      - MAIN_URL=${MAIN_URL:-https://blockchain.akadal.tr}
       - PORT=3000
     ports:
       - "5454:3000"
