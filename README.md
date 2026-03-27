@@ -16,13 +16,13 @@ The system is composed of 4 Docker services:
 
 | Service | Port (Internal) | Description |
 | :--- | :--- | :--- |
-| **geth** | `8545`, `8546` | The Ethereum Node (v1.12.2). Runs via `geth-boot.sh`. |
+| **geth** | `8545`, `8546` | The Ethereum Node (v1.13.15). Runs via `geth-boot.sh`. |
 | **rpc-proxy** | `80` | **Crucial Component**. Nginx proxy that forwards requests to Geth and handles **CORS headers** to ensure MetaMask works. |
 | **explorer** | `80` | Alethio Lite Explorer. Visualizes blocks/txs. |
 | **faucet** | `3000` | Node.js App. Sends ETH to users using the Genesis Master Key. |
 
-### Why Geth v1.12?
-We explicitly use **Geth v1.12.2** because newer versions (v1.14+) require complex Proof-of-Stake (Merge) configurations (Beacon Chain, Prysm, etc.) which are overkill for a simple educational chain. v1.12 is the "Gold Standard" for stable, simple PoA chains.
+### Why Geth v1.13?
+We explicitly use **Geth v1.13.15** because newer versions (v1.14+) require complex Proof-of-Stake (Merge) configurations (Beacon Chain, Prysm, etc.) which are overkill for a simple educational chain. v1.13 is the "Gold Standard" for stable, simple PoA chains supporting Paris EVM features.
 
 ---
 

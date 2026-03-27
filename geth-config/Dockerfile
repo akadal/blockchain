@@ -1,4 +1,4 @@
-FROM ethereum/client-go:v1.12.2
+FROM ethereum/client-go:v1.13.15
 
 # Copy configuration files into the image
 COPY geth-boot.sh /root/geth-boot.sh
