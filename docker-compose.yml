@@ -2,14 +2,14 @@ version: '3.8'
 
 services:
   # ----------------------------
-  # 1. Geth Node (v1.12.2 - Stable PoA)
+  # 1. Geth Node (v1.13.15 - Stable PoA)
   # ----------------------------
   geth:
     build:
       context: ./geth-config
       dockerfile: Dockerfile
     volumes:
-      - geth_data_stable:/root/.ethereum
+      - geth_data_v2:/root/.ethereum
     ports:
       - "8545:8545"
       - "8546:8546"
@@ -19,7 +19,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 1G
+          memory: 1.5G
 
   # ----------------------------
   # 2. RPC Proxy (Nginx with Dynamic Resolver)
@@ -69,4 +69,4 @@ services:
           memory: 256M
 
 volumes:
-  geth_data_stable:
+  geth_data_v2:

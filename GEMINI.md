@@ -10,23 +10,23 @@
 **Purpose:** A production-ready, lightweight Ethereum Blockchain Environment designed strictly for educational purposes.
 **Deployment Target:** Optimized for Docker and specifically **Coolify** on constrained environments (like Hetzner VPS).
 **Network Specifications:**
-- **Consensus mechanism:** Proof-of-Authority (PoA - Clique)
+- **Consensus mechanism:** Proof-of-Authority (PoA - Clique, 15s period)
 - **Chain ID:** 1337
 - **Base Currency:** ETH
-- **Network Version:** Stable Geth v1.12.2 (Chosen intentionally to avoid complex PoS/Merge requirements of v1.14+).
+- **Network Version:** Stable Geth v1.13.15 (Chosen intentionally to avoid complex PoS/Merge requirements of v1.14+). EVM target is strictly set to 'Paris'.
 
 ## 2. Architecture & Core Services
 The system is orchestrated via `docker-compose.yml` and consists of 4 main services:
 
 ### 2.1 Geth Node (`geth`)
-- **Version:** `ethereum/client-go:v1.12.2`
+- **Version:** `ethereum/client-go:v1.13.15`
 - **Role:** The core blockchain node running PoA (Clique) consensus.
 - **Initialization:** Managed by `geth-boot.sh`.
-  - Dynamically injects `shanghaiTime` and `cancunTime` hardfork timestamps (3 minutes in the future) into `genesis.json` on the first run using `jq` to avoid rewinds.
   - Automatically imports the pre-funded signer key from `genesis.json` (extraData).
-- **Execution flags:** Runs with `--dev` avoided to ensure data persistence. Uses `--mine`, `--allow-insecure-unlock`, `--nodiscover`, and `--gcmode archive`.
+- **Execution flags:** Runs with `--dev` avoided to ensure data persistence. Uses `--mine`, `--miner.gaslimit 800000000`, `--allow-insecure-unlock`, `--nodiscover`, and `--gcmode archive`.
 - **Ports:** `8545` (HTTP RPC) & `8546` (WS).
-- **Persistence:** Volume `geth_data_stable` mapped to `/root/.ethereum`. Data persistence is critical.
+- **Memory Limit:** 1.5GB
+- **Persistence:** Volume `geth_data_v2` mapped to `/root/.ethereum`. Data persistence is critical.
 
 ### 2.2 RPC Proxy (`rpc-proxy`)
 - **Role:** Nginx reverse proxy sitting in front of the `geth` node.
@@ -56,7 +56,6 @@ The system is orchestrated via `docker-compose.yml` and consists of 4 main servi
 
 ## 4. Common Troubleshooting / Edge Cases
 - **MetaMask Chain ID Issues:** Usually caused by connecting directly to the Geth node bypassing the Nginx `rpc-proxy`. The proxy *must* be used for correct CORS headers.
-- **Blockchain Resets:** The hardfork timestamp injection (`shanghai_time.txt`) prevents the chain from throwing a rewind error upon container rebuilds in Coolify by saving the generated timestamp into the persistent volume.
 
 ## 5. Development Guidelines for AI
 - **Modifying Geth:** If changing `genesis.json` or `geth-boot.sh`, remember the PoA rules. The master account must be both funded in the alloc block AND defined in the `extraData` block for mining permissions.

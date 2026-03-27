@@ -1,24 +1,6 @@
 #!/bin/sh
 
-# Update or Initialize Genesis Configuration
-# Calculate a timestamp 3 minutes into the future to safely apply the hardfork
-# without causing a block rewind error on existing databases.
-# We store this timestamp in a persistent volume so on future Coolify rebuilds
-# the node doesn't generate a new timestamp (which would crash geth with a mismatch error).
-HF_TIME_FILE="/root/.ethereum/shanghai_time.txt"
-if [ -f "$HF_TIME_FILE" ]; then
-    FUTURE_TIME=$(cat "$HF_TIME_FILE")
-    echo "Loaded existing hardfork activation time from volume: $FUTURE_TIME"
-else
-    FUTURE_TIME=$(($(date +%s) + 180))
-    echo "$FUTURE_TIME" > "$HF_TIME_FILE"
-    echo "Setting NEW Shanghai and Cancun hardfork activation time to: $FUTURE_TIME"
-fi
-
-# Inject the dynamic timestamp into the genesis file using jq
-jq ".config.shanghaiTime = $FUTURE_TIME | .config.cancunTime = $FUTURE_TIME" /root/genesis.json > /tmp/genesis_temp.json
-mv /tmp/genesis_temp.json /root/genesis.json
-
+# Initialize Genesis Configuration
 echo "Initializing/Updating Genesis Block Configuration..."
 geth init /root/genesis.json
 
@@ -48,6 +30,7 @@ exec geth \
   --ws.api "eth,net,web3,debug,txpool,miner" \
   --mine \
   --miner.etherbase 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 \
+  --miner.gaslimit 800000000 \
   --unlock 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 \
   --password /tmp/password \
   --allow-insecure-unlock \
