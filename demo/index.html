@@ -1,0 +1,2427 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Blockchain Demo — Interactive Learning Lab</title>
+    <meta name="description"
+        content="Learn blockchain fundamentals step by step: hashing, encryption, digital signatures, blocks, chains, wallets, and transactions.">
+    <meta name="author" content="akadal">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+    <!-- Mobile Header -->
+    <div class="mobile-header">
+        <h1>BLOCKCHAIN DEMO</h1>
+        <button class="mobile-menu-btn" id="mobileMenuBtn" onclick="toggleMobileMenu()">☰</button>
+    </div>
+
+    <div class="app-layout">
+
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-brand">
+                <h1>Blockchain Demo</h1>
+                <p>Interactive Learning Lab</p>
+            </div>
+
+            <nav class="sidebar-nav">
+                <a class="nav-item active" data-tab="hash" onclick="switchTab('hash')">
+                    <span class="nav-number">01</span>
+                    <span class="nav-icon">🔑</span>
+                    <span>Hash Functions</span>
+                </a>
+                <a class="nav-item" data-tab="symmetric" onclick="switchTab('symmetric')">
+                    <span class="nav-number">02</span>
+                    <span class="nav-icon">🔐</span>
+                    <span>Symmetric Encryption</span>
+                </a>
+                <a class="nav-item" data-tab="asymmetric" onclick="switchTab('asymmetric')">
+                    <span class="nav-number">03</span>
+                    <span class="nav-icon">🗝️</span>
+                    <span>Asymmetric Encryption</span>
+                </a>
+                <a class="nav-item" data-tab="signing" onclick="switchTab('signing')">
+                    <span class="nav-number">04</span>
+                    <span class="nav-icon">✍️</span>
+                    <span>Digital Signatures</span>
+                </a>
+                <a class="nav-item" data-tab="consensus" onclick="switchTab('consensus')">
+                    <span class="nav-number">05</span>
+                    <span class="nav-icon">⚖️</span>
+                    <span>Consensus</span>
+                </a>
+                <a class="nav-item" data-tab="block" onclick="switchTab('block')">
+                    <span class="nav-number">06</span>
+                    <span class="nav-icon">📦</span>
+                    <span>Block</span>
+                </a>
+                <a class="nav-item" data-tab="blockchain" onclick="switchTab('blockchain')">
+                    <span class="nav-number">07</span>
+                    <span class="nav-icon">⛓️</span>
+                    <span>Blockchain</span>
+                </a>
+                <a class="nav-item" data-tab="distributed" onclick="switchTab('distributed')">
+                    <span class="nav-number">08</span>
+                    <span class="nav-icon">🌐</span>
+                    <span>Distributed</span>
+                </a>
+                <a class="nav-item" data-tab="wallet" onclick="switchTab('wallet')">
+                    <span class="nav-number">09</span>
+                    <span class="nav-icon">👛</span>
+                    <span>Wallet</span>
+                </a>
+                <a class="nav-item" data-tab="transaction" onclick="switchTab('transaction')">
+                    <span class="nav-number">10</span>
+                    <span class="nav-icon">💸</span>
+                    <span>Transaction</span>
+                </a>
+                <a class="nav-item" data-tab="contracts" onclick="switchTab('contracts')">
+                    <span class="nav-number">11</span>
+                    <span class="nav-icon">📜</span>
+                    <span>Smart Contracts</span>
+                </a>
+                <a class="nav-item" data-tab="tokenomics" onclick="switchTab('tokenomics')">
+                    <span class="nav-number">12</span>
+                    <span class="nav-icon">🪙</span>
+                    <span>Tokenomics</span>
+                </a>
+                <a class="nav-item" data-tab="nft" onclick="switchTab('nft')">
+                    <span class="nav-number">13</span>
+                    <span class="nav-icon">🖼️</span>
+                    <span>NFT & RWA</span>
+                </a>
+                <a class="nav-item" data-tab="defi" onclick="switchTab('defi')">
+                    <span class="nav-number">14</span>
+                    <span class="nav-icon">🏦</span>
+                    <span>DeFi</span>
+                </a>
+                <a class="nav-item" data-tab="dao" onclick="switchTab('dao')">
+                    <span class="nav-number">15</span>
+                    <span class="nav-icon">🏛️</span>
+                    <span>DAO</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()"
+                    title="Toggle Light/Dark Mode">☀️</button>
+                <a href="https://akadal.tr" target="_blank">akadal.tr</a>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+
+            <!-- ============ SECTION 1: HASH ============ -->
+            <div class="section active" id="section-hash">
+                <div class="section-header">
+                    <h2>🔑 Hash Functions</h2>
+                    <p class="section-subtitle">A hash function takes any input and produces a fixed-length fingerprint.
+                        Even a tiny change completely alters the output.</p>
+                </div>
+
+                <div class="info-box">
+                    <strong>How it works:</strong> SHA-256 always produces a 64-character hex string, no matter how long
+                    or short the input. It's a one-way function — you can't reverse-engineer the input from the hash.
+                </div>
+
+                <div class="card">
+                    <div class="card-title" style="color: var(--accent-cyan);">SHA-256 Hash Generator</div>
+
+                    <div class="form-group">
+                        <label class="form-label">Data</label>
+                        <textarea id="hashInput" class="form-textarea" placeholder="Type anything here..."
+                            oninput="updateHash()"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Hash Output</label>
+                        <div id="hashOutput" class="hash-output">
+                            e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855</div>
+                    </div>
+                </div>
+
+                <div class="info-box info-orange">
+                    <strong>Try it:</strong> Type "hello" then change it to "Hello" — notice how completely different
+                    the hashes are? This is called the <strong>avalanche effect</strong>.
+                </div>
+            </div>
+
+            <!-- ============ SECTION 2: SYMMETRIC ============ -->
+            <div class="section" id="section-symmetric">
+                <div class="section-header">
+                    <h2>🔐 Symmetric Encryption</h2>
+                    <p class="section-subtitle">Both parties share the same secret key. The same key encrypts and
+                        decrypts the message.</p>
+                </div>
+
+                <div class="info-box">
+                    <strong>AES (Advanced Encryption Standard)</strong> is the most widely used symmetric encryption
+                    algorithm. Think of it as a lockbox where both sender and receiver have the same key.
+                </div>
+
+                <div class="card">
+                    <div class="card-title" style="color: var(--accent-cyan);">AES Encryption</div>
+
+                    <div class="form-group">
+                        <label class="form-label">Message</label>
+                        <input type="text" id="aesInput" class="form-input" placeholder="Enter a secret message...">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Shared Secret Key (Password)</label>
+                        <input type="text" id="aesKey" class="form-input" placeholder="Enter a shared key...">
+                    </div>
+
+                    <div class="btn-row" style="margin-bottom: var(--space-md);">
+                        <button onclick="aesEncrypt()" class="btn btn-primary" style="flex:1;">Encrypt 🔒</button>
+                        <button onclick="aesDecrypt()" class="btn btn-ghost" style="flex:1;">Decrypt 🔓</button>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Output</label>
+                        <textarea id="aesOutput" class="form-textarea" readonly placeholder="Result will appear here..."
+                            style="min-height: 60px;"></textarea>
+                    </div>
+                </div>
+
+                <div class="info-box info-orange">
+                    <strong>The problem:</strong> How do you securely share the key with the other party? This is the
+                    fundamental weakness of symmetric encryption, and why we need <strong>asymmetric
+                        encryption</strong>.
+                </div>
+            </div>
+
+            <!-- ============ SECTION 3: ASYMMETRIC ============ -->
+            <div class="section" id="section-asymmetric">
+                <div class="section-header">
+                    <h2>🗝️ Asymmetric Encryption</h2>
+                    <p class="section-subtitle">Two mathematically linked keys: a public key (share freely) and a
+                        private key (keep secret).</p>
+                </div>
+
+                <div class="info-box">
+                    <strong>Public key</strong> = a mailbox anyone can drop letters into. <strong>Private key</strong> =
+                    only you have the key to open it. Anyone can encrypt with your public key, but only you can decrypt
+                    with your private key.
+                </div>
+
+                <div class="card">
+                    <div class="card-title" style="color: var(--accent-purple);">1. Generate Key Pair (RSA-2048)</div>
+                    <button onclick="generateRSAKeys()" id="rsaGenBtn" class="btn btn-purple btn-full"
+                        style="margin-bottom: var(--space-md);">Generate Key Pair 🎲</button>
+
+                    <div class="form-group">
+                        <label class="form-label" style="color: var(--accent-green);">Public Key (Share This)</label>
+                        <textarea id="rsaPubKey" class="form-textarea" readonly
+                            style="min-height: 60px; font-size: 10px;"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" style="color: var(--accent-red);">Private Key (Keep Secret!) </label>
+                        <textarea id="rsaPrivKey" class="form-textarea blur-secret" readonly
+                            style="min-height: 60px; font-size: 10px;"></textarea>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title" style="color: var(--accent-green);">2. Encrypt with Public Key</div>
+
+                    <div class="form-group">
+                        <label class="form-label">Recipient's Public Key</label>
+                        <textarea id="rsaEncPubKey" class="form-textarea"
+                            placeholder="Paste the recipient's public key..."
+                            style="min-height: 50px; font-size: 10px;"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Plaintext Message</label>
+                        <input type="text" id="rsaMsgToEncrypt" class="form-input"
+                            placeholder="Write a secret message...">
+                    </div>
+
+                    <button onclick="rsaEncrypt()" class="btn btn-green btn-full"
+                        style="margin-bottom: var(--space-md);">Encrypt Message 🔒</button>
+
+                    <div class="form-group">
+                        <label class="form-label">Ciphertext</label>
+                        <textarea id="rsaCipherText" class="form-textarea" readonly style="font-size: 10px;"></textarea>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title" style="color: var(--accent-red);">3. Decrypt with Private Key</div>
+
+                    <div class="form-group">
+                        <label class="form-label">Encrypted Message</label>
+                        <textarea id="rsaDecCipher" class="form-textarea" placeholder="Paste encrypted text..."
+                            style="font-size: 10px;"></textarea>
+                    </div>
+
+                    <button onclick="rsaDecrypt()" class="btn btn-red btn-full"
+                        style="margin-bottom: var(--space-md);">Decrypt Message 🔓</button>
+
+                    <div class="form-group">
+                        <label class="form-label">Decrypted Message</label>
+                        <div id="rsaDecryptedMsg" class="hash-output" style="text-align: center; font-weight: 700;">—
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============ SECTION 4: SIGNING ============ -->
+            <div class="section" id="section-signing">
+                <div class="section-header">
+                    <h2>✍️ Digital Signatures</h2>
+                    <p class="section-subtitle">Prove you authored a message without revealing your private key. Anyone
+                        with your public key can verify it.</p>
+                </div>
+
+                <div class="info-box info-green">
+                    <strong>Signing ≠ Encryption.</strong> Signing doesn't hide the message. It proves <em>who sent
+                        it</em> and that it <em>wasn't tampered with</em>. This is how blockchain transactions work.
+                </div>
+
+                <div class="card">
+                    <div class="card-title" style="color: var(--accent-purple);">1. Generate Signing Keys (ECDSA)</div>
+                    <button onclick="generateSigningKeys()" id="sigGenBtn" class="btn btn-purple btn-full"
+                        style="margin-bottom: var(--space-md);">Generate Key Pair 🎲</button>
+
+                    <div class="form-group">
+                        <label class="form-label" style="color: var(--accent-green);">Public Key</label>
+                        <div id="sigPubKey" class="hash-output" style="font-size: 11px;">—</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" style="color: var(--accent-red);">Private Key</label>
+                        <div id="sigPrivKey" class="hash-output blur-secret" style="font-size: 11px;">—</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title" style="color: var(--accent-orange);">2. Sign a Message</div>
+                    <div class="form-group">
+                        <label class="form-label">Message to Sign</label>
+                        <input type="text" id="sigMessage" class="form-input" placeholder="I transfer 10 BTC to Alice">
+                    </div>
+
+                    <button onclick="signMessage()" class="btn btn-orange btn-full"
+                        style="margin-bottom: var(--space-md);">Sign Message ✍️</button>
+
+                    <div class="form-group">
+                        <label class="form-label">Digital Signature</label>
+                        <div id="sigSignature" class="hash-output" style="font-size: 10px;">—</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title" style="color: var(--accent-green);">3. Verify a Signature</div>
+
+                    <div class="form-group">
+                        <label class="form-label">Message</label>
+                        <input type="text" id="sigVerifyMessage" class="form-input"
+                            placeholder="The original message...">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Signature</label>
+                        <textarea id="sigVerifySignature" class="form-textarea" placeholder="The signature..."
+                            style="min-height: 50px; font-size: 10px;"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Signer's Public Key</label>
+                        <textarea id="sigVerifyPubKey" class="form-textarea" placeholder="The signer's public key..."
+                            style="min-height: 50px; font-size: 10px;"></textarea>
+                    </div>
+
+                    <button onclick="verifySignature()" class="btn btn-green btn-full">Verify ✔️</button>
+
+                    <div id="sigVerifyResult" class="signature-result" style="display: none;"></div>
+                </div>
+
+                <div class="info-box info-orange">
+                    <strong>Try it:</strong> Sign a message, then try verifying it with even one character changed. The
+                    verification will fail — proving the message is tamper-proof.
+                </div>
+            </div>
+
+            <!-- ============ SECTION 5: CONSENSUS ============ -->
+            <div class="section" id="section-consensus">
+                <div class="section-header">
+                    <h2>⚖️ Consensus Mechanisms</h2>
+                    <p class="section-subtitle">How does a decentralized network agree on the truth without a central authority? Explore the game theory and algorithms that keep blockchains secure.</p>
+                </div>
+
+                <div class="info-box info-blue">
+                    <strong>The Goal:</strong> Ensure all honest participants have the same data, even if some participants are malicious or disconnected.
+                </div>
+
+                <!-- 1. Proof of Work (The Gamified Byzantine Approach) -->
+                <div class="card">
+                    <div class="card-title" style="color: var(--accent-orange);">1. Proof of Work (PoW) — Seal the Order</div>
+                    <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: var(--space-md);">
+                        The King's Messenger has an order, but he could be an impostor! To prove the order is real, we must attach a <strong>Proof of Work</strong>. We will guess random numbers (Nonce) until the resulting hash starts with "0000". This takes time and energy, proving we are serious.
+                    </p>
+
+                    <div class="form-group">
+                        <label class="form-label">General's ID</label>
+                        <input type="text" id="powStudentId" class="form-input" placeholder="e.g. 1001" oninput="updatePowPreview()">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">The King's Order</label>
+                        <div class="btn-row">
+                            <button id="btn-pow-attack" onclick="setDecisionPoW('ATTACK')" class="btn btn-ghost" style="flex:1;">⚔️ ATTACK</button>
+                            <button id="btn-pow-retreat" onclick="setDecisionPoW('RETREAT')" class="btn btn-ghost" style="flex:1;">🛡️ RETREAT</button>
+                        </div>
+                    </div>
+
+                    <div id="powMiningBox" class="pow-mining-box">
+                        <div class="pow-stat-row">
+                            <span class="pow-stat-label">Nonce (Guessed Number):</span>
+                            <span id="powNonceDisplay" class="pow-stat-value">0</span>
+                        </div>
+                        <div class="pow-stat-row" style="margin-top: var(--space-sm);">
+                            <span class="pow-stat-label">Generated Hash:</span>
+                        </div>
+                        <div id="powHashDisplay" class="pow-hash-value">waiting...</div>
+                    </div>
+
+                    <button id="powMineBtn" onclick="toggleMining()" class="btn btn-ghost btn-full" disabled>ENTER ID & ORDER FIRST</button>
+                </div>
+
+                <!-- 2. Proof of Stake (The Gamified Troop Deployment) -->
+                <div class="card">
+                    <div class="card-title" style="color: var(--accent-purple);">2. Proof of Stake (PoS) — Troop Deployment</div>
+                    <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: var(--space-md);">
+                        Instead of wasting energy solving math puzzles, we use <strong>Proof of Stake</strong>. Generals lock up their own troops (stake) to vote on the plan. A leader is randomly chosen to make the final call, but <strong>the more troops you pledge, the higher your chance of being selected.</strong>
+                    </p>
+
+                    <div class="form-group">
+                        <label class="form-label">The Strategy</label>
+                        <div class="btn-row">
+                            <button id="btn-pos-attack" onclick="setDecisionPoS('ATTACK')" class="btn btn-ghost" style="flex:1;">⚔️ ATTACK</button>
+                            <button id="btn-pos-retreat" onclick="setDecisionPoS('RETREAT')" class="btn btn-ghost" style="flex:1;">🛡️ RETREAT</button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" style="display: flex; justify-content: space-between;">
+                            <span>Your Stake (Troops %)</span>
+                            <span id="posStakeValueDisplay" style="color: var(--accent-purple);">50%</span>
+                        </label>
+                        <input type="range" id="posStakeSlider" class="form-range" min="1" max="99" value="50" oninput="updatePosNetworkState()">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Network Validators</label>
+                        <div id="posNetworkList" class="pos-network-list">
+                            <!-- Rendered via JS -->
+                        </div>
+                    </div>
+
+                    <div id="posElectionArea" class="pos-election-area" style="display: none;">
+                        <div style="font-size: 11px; text-transform: uppercase; color: var(--text-muted); letter-spacing: 1px;">Selected Leader:</div>
+                        <div id="posWinnerName" class="pos-winner-name">Spinning...</div>
+                        <div id="posFinalConsensus" class="pos-final-consensus"></div>
+                    </div>
+
+                    <button id="posVoteBtn" onclick="startPosElection()" class="btn btn-purple btn-full" disabled>VOTE NOW 🎲</button>
+                </div>
+
+                <!-- 3. Proof of Authority -->
+                <div class="card">
+                    <div class="card-title" style="color: var(--accent-cyan);">3. Proof of Authority (PoA) — The Emperor's Decree</div>
+                    <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: var(--space-md);">
+                        In some private networks, neither puzzles nor troops are needed. A predefined set of trusted <strong>Authorities</strong> (The Emperor's Council) takes turns validating the plan. It is extremely fast, but highly centralized.
+                    </p>
+
+                    <div id="poaNodes" style="display: flex; gap: var(--space-lg); justify-content: center; margin-bottom: var(--space-lg);">
+                        <!-- Rendered by JS -->
+                    </div>
+
+                    <div id="poaResult" style="text-align: center; margin-bottom: var(--space-md); font-weight: bold; color: var(--accent-cyan);"></div>
+
+                    <button onclick="poaSimulateRound()" class="btn btn-ghost btn-full">Next Council Turn ⏭️</button>
+                </div>
+
+            </div>
+
+            <!-- ============ SECTION 6: BLOCK ============ -->
+            <div class="section" id="section-block">
+                <div class="section-header">
+                    <h2>📦 Block</h2>
+                    <p class="section-subtitle">A block holds data and a nonce. Mining finds a nonce that makes the hash
+                        start with leading zeros.</p>
+                </div>
+
+                <div class="info-box">
+                    <strong>Proof of Work:</strong> The miner must find a number (nonce) such that the hash of [Block# +
+                    Nonce + Data] starts with <strong>"0000"</strong>. This takes computational effort — that's the
+                    "work" in Proof of Work.
+                </div>
+
+                <div class="block-card invalid" id="singleBlock">
+                    <div class="block-header">
+                        <span class="block-number">Block #1</span>
+                        <span class="block-status" id="singleBlockStatus">⚠ Invalid</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Block #</label>
+                        <input type="number" id="singleBlockNumber" class="form-input form-input-sm" value="1"
+                            oninput="updateSingleBlock()">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Nonce</label>
+                        <input type="text" id="singleBlockNonce" class="form-input form-input-sm" value="0"
+                            oninput="updateSingleBlock()">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Data</label>
+                        <textarea id="singleBlockData" class="form-textarea" placeholder="Enter any data..."
+                            oninput="updateSingleBlock()"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Hash</label>
+                        <div id="singleBlockHash" class="hash-output"></div>
+                    </div>
+
+                    <button onclick="mineSingleBlock()" id="singleMineBtn" class="btn btn-orange btn-full">Mine
+                        ⛏️</button>
+                </div>
+            </div>
+
+            <!-- ============ SECTION 6: BLOCKCHAIN ============ -->
+            <div class="section" id="section-blockchain">
+                <div class="section-header">
+                    <h2>⛓️ Blockchain</h2>
+                    <p class="section-subtitle">Blocks are chained together: each block's hash includes the previous
+                        block's hash. Tampering with any block breaks the entire chain.</p>
+                </div>
+
+                <div class="info-box info-red">
+                    <strong>Immutability:</strong> Try changing data in Block 2. Notice how Block 2 and all blocks after
+                    it turn red? You'd have to re-mine every subsequent block — that's why blockchains are
+                    tamper-resistant.
+                </div>
+
+                <div class="blockchain-container" id="blockchainContainer">
+                    <!-- Blocks are generated by JavaScript -->
+                </div>
+            </div>
+
+            <!-- ============ SECTION 7: DISTRIBUTED ============ -->
+            <div class="section" id="section-distributed">
+                <div class="section-header">
+                    <h2>🌐 Distributed Blockchain</h2>
+                    <p>See how multiple nodes maintain their own copy of the blockchain, and how forks are resolved
+                        using the longest-chain rule.</p>
+                </div>
+
+                <div class="info-box info-blue">
+                    <strong>Longest Chain Wins:</strong> In a distributed network, each node independently mines blocks.
+                    When two nodes mine at the same time, a <strong>fork</strong> occurs. The network resolves forks by
+                    adopting the <strong>longest valid chain</strong> — shorter branches are discarded.
+                </div>
+
+                <div class="card">
+                    <div class="card-title" style="color: var(--accent-cyan);">Network Controls</div>
+                    <div class="btn-row">
+                        <button onclick="distForkScenario()" class="btn btn-blue">🔀 Simulate Fork</button>
+                        <button onclick="distResolve()" class="btn btn-green">✅ Resolve Fork</button>
+                        <button onclick="distAttackScenario()" class="btn btn-red">🚨 51% Attack Simulation</button>
+                        <button onclick="distLog=[]; resetDistributed()" class="btn btn-ghost">🔄 Reset</button>
+                    </div>
+                    <div id="distStatus" style="margin-top: var(--space-sm);"><span class="badge badge-valid">✔ All
+                            nodes in consensus</span></div>
+                </div>
+
+                <div id="distContainer" class="dist-container">
+                    <!-- Peer rows rendered by JS -->
+                </div>
+
+                <div class="card">
+                    <div class="card-title" style="color: var(--text-secondary);">Network Log</div>
+                    <div class="te-event-log" id="distLog">
+                        <p style="color: var(--text-muted); font-size: 13px;">No events yet.</p>
+                    </div>
+                </div>
+
+                <div class="info-box info-orange">
+                    <strong>Try it:</strong> Click "Simulate Fork" to see two nodes mine conflicting blocks. Then click
+                    "Resolve Fork" to see the longest chain overwrite the others. You can also manually mine and
+                    propagate between nodes.
+                </div>
+            </div>
+
+            <!-- ============ SECTION 8: WALLET ============ -->
+            <div class="section" id="section-wallet">
+                <div class="section-header">
+                    <h2>👛 Wallet</h2>
+                    <p class="section-subtitle">A wallet is not a bank account — it's a key pair. Your mnemonic phrase
+                        is the master backup for everything.</p>
+                </div>
+
+                <div class="info-box info-purple">
+                    <strong>BIP39 Standard:</strong> A mnemonic is 12 (or 24) words selected from a 2048-word
+                    dictionary. These words encode your entropy and can regenerate your entire wallet.
+                </div>
+
+                <button onclick="generateWallet()" id="walletGenBtn" class="btn btn-purple btn-full"
+                    style="margin-bottom: var(--space-lg);">Generate New Wallet 🎲</button>
+
+                <div class="step-flow" id="walletSteps">
+                    <div class="step-item">
+                        <div class="step-label" style="color: var(--accent-cyan);">Step 1 — Random Entropy (128 bits)
+                        </div>
+                        <div class="step-value" id="walletEntropy">Click "Generate New Wallet" to begin...</div>
+                    </div>
+
+                    <div class="step-item">
+                        <div class="step-label" style="color: var(--accent-purple);">Step 2 — Mnemonic Words (BIP39)
+                        </div>
+                        <div id="walletMnemonic" class="mnemonic-grid" style="min-height: 40px;"></div>
+                    </div>
+
+                    <div class="step-item">
+                        <div class="step-label" style="color: var(--accent-orange);">Step 3 — Seed (SHA-256 of mnemonic)
+                        </div>
+                        <div class="step-value" id="walletSeed">—</div>
+                    </div>
+
+                    <div class="step-item">
+                        <div class="step-label" style="color: var(--accent-red);">Step 4 — Private Key</div>
+                        <div class="step-value blur-secret" id="walletPrivKey">—</div>
+                    </div>
+
+                    <div class="step-item">
+                        <div class="step-label" style="color: var(--accent-green);">Step 5 — Public Key</div>
+                        <div class="step-value" id="walletPubKey">—</div>
+                    </div>
+
+                    <div class="step-item">
+                        <div class="step-label" style="color: var(--accent-blue);">Step 6 — Address</div>
+                        <div class="step-value" id="walletAddress"
+                            style="font-size: 14px; font-weight: 700; color: var(--accent-blue);">—</div>
+                    </div>
+                </div>
+
+                <div class="info-box info-red" style="margin-top: var(--space-lg);">
+                    <strong>⚠️ Remember:</strong> Lose your mnemonic = lose your funds forever. There's no "forgot
+                    password" in blockchain. Your keys, your coins. Not your keys, not your coins.
+                </div>
+            </div>
+
+            <!-- ============ SECTION 8: TRANSACTION ============ -->
+            <div class="section" id="section-transaction">
+                <div class="section-header">
+                    <h2>💸 Transaction</h2>
+                    <p class="section-subtitle">A transaction is a signed message that transfers value. The signature
+                        proves ownership without revealing the private key.</p>
+                </div>
+
+                <div class="info-box">
+                    <strong>Flow:</strong> Create a transaction → Sign it with your private key → Broadcast to the
+                    network → Miners/validators include it in a block.
+                </div>
+
+                <div class="card">
+                    <div class="card-title" style="color: var(--accent-blue);">Create Transaction</div>
+
+                    <button onclick="loadWalletForTx()" class="btn btn-ghost btn-sm"
+                        style="margin-bottom: var(--space-md);">Load Wallet from Step 7 ↩</button>
+
+                    <div class="form-group">
+                        <label class="form-label">From Address</label>
+                        <input type="text" id="txFrom" class="form-input form-input-sm"
+                            placeholder="Your address (0x...)" readonly>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">To Address</label>
+                        <input type="text" id="txTo" class="form-input form-input-sm"
+                            placeholder="Recipient address (0x...)">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Amount</label>
+                        <input type="number" id="txAmount" class="form-input form-input-sm" placeholder="0.00"
+                            step="0.01">
+                    </div>
+
+                    <button onclick="signTransaction()" id="txSignBtn" class="btn btn-primary btn-full"
+                        style="margin-bottom: var(--space-lg);">Sign & Create Transaction ✍️</button>
+
+                    <div id="txResult" style="display: none;">
+                        <div class="card-title" style="color: var(--accent-green);">Signed Transaction</div>
+
+                        <div class="tx-card" id="txDetails">
+                        </div>
+
+                        <div id="txVerifyResult" class="signature-result verified" style="margin-top: var(--space-md);">
+                            ✔ Signature Valid — Transaction Authentic
+                        </div>
+
+                        <button onclick="mineTransaction()" id="txMineBtn" class="btn btn-orange btn-full"
+                            style="margin-top: var(--space-md);">Mine into Block ⛏️</button>
+
+                        <div id="txMinedResult" style="display: none; margin-top: var(--space-md);">
+                            <div class="block-card valid">
+                                <div class="block-header">
+                                    <span class="block-number" id="txMinedBlockNum">Block #—</span>
+                                    <span class="block-status">✔ Mined</span>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Block Hash</label>
+                                    <div id="txMinedHash" class="hash-output" style="font-size: 11px;"></div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Nonce Found</label>
+                                    <div id="txMinedNonce" class="hash-output"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============ SECTION 9: SMART CONTRACTS ============ -->
+            <div class="section" id="section-contracts">
+                <div class="section-header">
+                    <h2>📜 Smart Contracts</h2>
+                    <p class="section-subtitle">Self-executing programs on the blockchain. Deploy, interact, and verify
+                        contracts directly from your browser using MetaMask.</p>
+                </div>
+
+                <div class="info-box">
+                    <strong>What is a Smart Contract?</strong> It's code stored on the blockchain that runs
+                    automatically when conditions are met. Once deployed, nobody can change it — the code is law.
+                </div>
+
+                <!-- Wallet Connection -->
+                <div class="card">
+                    <div class="card-title" style="color: var(--accent-orange);">🔗 Wallet Connection</div>
+
+                    <!-- Mode Toggle -->
+                    <div class="wallet-mode-toggle">
+                        <button class="wallet-mode-btn active" id="modeMetaMask" onclick="setWalletMode('metamask')">🦊
+                            MetaMask</button>
+                        <button class="wallet-mode-btn" id="modeBrowser" onclick="setWalletMode('browser')">🌐 Browser
+                            Wallet</button>
+                    </div>
+
+                    <!-- MetaMask Mode -->
+                    <div id="walletModeMetaMask">
+                        <div class="form-group">
+                            <label class="form-label">Select Network (Optional)</label>
+                            <select id="metaMaskNetworkSelect" class="form-input form-input-sm" onchange="switchMetaMaskNetwork(this.value)">
+                                <option value="">Auto-detect / Current Network</option>
+                                <option value="1337">Akadal Chain (PoA)</option>
+                                <option value="11155111">Sepolia Testnet</option>
+                                <option value="1">Ethereum Mainnet</option>
+                                <option value="137">Polygon</option>
+                                <option value="56">BSC</option>
+                                <option value="42161">Arbitrum One</option>
+                                <option value="8453">Base</option>
+                            </select>
+                        </div>
+                        <button onclick="connectWallet()" id="walletConnectBtn" class="btn btn-orange btn-full">Connect
+                            MetaMask 🦊</button>
+                    </div>
+
+                    <!-- Browser Wallet Mode -->
+                    <div id="walletModeBrowser" style="display: none;">
+                        <div class="form-group">
+                            <label class="form-label">Network</label>
+                            <select id="browserNetwork" class="form-input form-input-sm" onchange="updateRpcUrl()">
+                                <option value="simulated" data-chain="31337">🧪 Simulated (In-Browser, No Gas)</option>
+                                <option value="https://rpc.sepolia.org" data-chain="11155111">Sepolia Testnet</option>
+                                <option value="https://ethereum-rpc.publicnode.com" data-chain="1">Ethereum Mainnet
+                                </option>
+                                <option value="https://polygon-rpc.com" data-chain="137">Polygon</option>
+                                <option value="https://bsc-dataseed.binance.org" data-chain="56">BSC</option>
+                                <option value="https://arb1.arbitrum.io/rpc" data-chain="42161">Arbitrum One</option>
+                                <option value="https://sepolia-rollup.arbitrum.io/rpc" data-chain="421614">Arbitrum
+                                    Sepolia</option>
+                                <option value="https://mainnet.base.org" data-chain="8453">Base</option>
+                                <option value="https://sepolia.base.org" data-chain="84532">Base Sepolia</option>
+                                <option value="custom">Custom RPC...</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group" id="customRpcGroup" style="display: none;">
+                            <label class="form-label">Custom RPC URL</label>
+                            <input type="text" id="customRpcUrl" class="form-input form-input-sm"
+                                placeholder="https://...">
+                        </div>
+
+                        <div class="form-group" id="privKeyGroup">
+                            <label class="form-label">Private Key</label>
+                            <input type="password" id="browserPrivKey" class="form-input form-input-sm"
+                                placeholder="0x... (never share this!)">
+                        </div>
+
+                        <div id="simulatedInfo" style="display: none;" class="info-box info-green"
+                            style="margin-bottom: var(--space-md);">
+                            <strong>Simulated Mode:</strong> No real network. Everything runs in-browser with unlimited
+                            gas. Perfect for learning!
+                        </div>
+
+                        <button onclick="connectBrowserWallet()" id="browserConnectBtn"
+                            class="btn btn-purple btn-full">Connect 🌐</button>
+                    </div>
+
+                    <!-- Disconnect (shared) -->
+                    <button onclick="disconnectWallet()" id="walletDisconnectBtn" class="btn btn-ghost btn-full"
+                        style="display: none;">Disconnect</button>
+
+                    <!-- Wallet Info (shared) -->
+                    <div id="walletInfo" style="display: none; margin-top: var(--space-md);">
+                        <div class="wallet-badge">
+                            <div class="wallet-badge-row">
+                                <span class="wallet-badge-label">Mode</span>
+                                <span class="wallet-badge-value" id="walletMode">—</span>
+                            </div>
+                            <div class="wallet-badge-row">
+                                <span class="wallet-badge-label">Address</span>
+                                <span class="wallet-badge-value" id="walletAddr">—</span>
+                            </div>
+                            <div class="wallet-badge-row">
+                                <span class="wallet-badge-label">Network</span>
+                                <span class="wallet-badge-value" id="walletNetwork" style="display: flex; align-items: center; gap: 4px;">
+                                    <span id="walletNetworkName">—</span>
+                                    <select id="walletNetworkSelect" class="form-input form-input-sm" style="display: none; width: auto; padding: 2px 16px 2px 4px; font-size: 11px; height: 20px;" onchange="switchMetaMaskNetwork(this.value)">
+                                        <option value="1337">Akadal Chain</option>
+                                        <option value="11155111">Sepolia</option>
+                                        <option value="1">Ethereum</option>
+                                        <option value="137">Polygon</option>
+                                        <option value="56">BSC</option>
+                                        <option value="42161">Arbitrum</option>
+                                        <option value="8453">Base</option>
+                                    </select>
+                                </span>
+                            </div>
+                            <div class="wallet-badge-row">
+                                <span class="wallet-badge-label">Balance</span>
+                                <span class="wallet-badge-value" id="walletBalance"
+                                    style="color: var(--accent-green);">—</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contract Selection -->
+                <div class="card">
+                    <div class="card-title" style="color: var(--accent-cyan);">Select Contract Example</div>
+                    <div class="contract-select-row">
+                        <button class="contract-select-btn active" data-template="storage"
+                            onclick="selectContract('storage')">📦 Storage</button>
+                        <button class="contract-select-btn" data-template="counter"
+                            onclick="selectContract('counter')">🔢 Counter</button>
+                        <button class="contract-select-btn" data-template="greeting"
+                            onclick="selectContract('greeting')">💬 Greeting</button>
+                        <button class="contract-select-btn" data-template="todolist"
+                            onclick="selectContract('todolist')">📝 TodoList</button>
+                        <button class="contract-select-btn" data-template="owner" onclick="selectContract('owner')">👤
+                            Owner</button>
+                        <button class="contract-select-btn" data-template="voting"
+                            onclick="selectContract('voting')">🗳️ Voting</button>
+                        <button class="contract-select-btn" data-template="lottery"
+                            onclick="selectContract('lottery')">🎰 Lottery</button>
+                        <button class="contract-select-btn" data-template="token" onclick="selectContract('token')">🪙
+                            Token</button>
+                        <button class="contract-select-btn" data-template="nft" onclick="selectContract('nft')">🖼️
+                            NFT</button>
+                        <button class="contract-select-btn" data-template="piggybank" onclick="selectContract('piggybank')">🐷
+                            PiggyBank</button>
+                        <button class="contract-select-btn" data-template="escrow" onclick="selectContract('escrow')">🤝
+                            Escrow</button>
+                        <button class="contract-select-btn" data-template="crowdfund" onclick="selectContract('crowdfund')">🎯
+                            Crowdfund</button>
+                    </div>
+                    <p id="contractDescription" class="contract-desc">Store & retrieve a single uint256 value. The
+                        simplest smart contract.</p>
+                </div>
+
+                <!-- Mode Toggle for Deploy vs Load -->
+                <div class="wallet-mode-toggle" style="margin-bottom: var(--space-md);">
+                    <button class="wallet-mode-btn active" id="modeDeploy" onclick="setContractActionMode('deploy')">🚀 Deploy New Contract</button>
+                    <button class="wallet-mode-btn" id="modeLoad" onclick="setContractActionMode('load')">🔗 Load Existing</button>
+                </div>
+
+                <div id="contractActionDeploy">
+                    <!-- Source Code Viewer -->
+                    <div class="card">
+                        <div class="card-title" style="color: var(--accent-green);">Solidity Source Code</div>
+                        <pre class="code-viewer"><code id="contractSource"></code></pre>
+                    </div>
+
+                    <!-- Deploy -->
+                    <div class="card">
+                        <div class="card-title" style="color: var(--accent-purple);">Deploy to Blockchain</div>
+
+                        <!-- Constructor Arguments (dynamic, shown for token/nft) -->
+                        <div id="constructorArgsSection" style="display: none; margin-bottom: var(--space-md);">
+                            <div class="card-title"
+                                style="font-size: 12px; color: var(--text-secondary); margin-bottom: var(--space-sm);">
+                                Constructor Arguments</div>
+                            <div id="constructorArgsInputs"></div>
+                        </div>
+
+                        <button onclick="deployContract()" id="deployBtn" class="btn btn-purple btn-full" disabled>Deploy
+                            Contract 🚀</button>
+
+                        <div id="deployResult" style="display: none; margin-top: var(--space-md);">
+                            <div class="wallet-badge">
+                                <div class="wallet-badge-row">
+                                    <span class="wallet-badge-label">Contract</span>
+                                    <span class="wallet-badge-value" id="deployedAddr" style="font-size: 11px; word-break: break-all;">—</span>
+                                </div>
+                                <div class="wallet-badge-row">
+                                    <span class="wallet-badge-label">Status</span>
+                                    <span id="deployStatus">—</span>
+                                </div>
+                                <div class="wallet-badge-row">
+                                    <span class="wallet-badge-label">Verify</span>
+                                    <span id="verifyStatus" style="font-size: 11px;">—</span>
+                                </div>
+                            </div>
+                            <a id="explorerLink" href="#" target="_blank" class="btn btn-ghost btn-sm"
+                                style="display: none; margin-top: var(--space-sm);">View on Explorer ↗</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="contractActionLoad" style="display: none;">
+                    <!-- Load Existing Contract -->
+                    <div class="card">
+                        <div class="card-title" style="color: var(--accent-blue);">Load Existing Contract</div>
+
+                        <div class="form-group">
+                            <label class="form-label">Contract Address</label>
+                            <input type="text" id="existingAddr" class="form-input form-input-sm" placeholder="0x...">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Contract Type</label>
+                            <select id="existingTemplate" class="form-input form-input-sm">
+                                <option value="storage">Storage</option>
+                                <option value="counter">Counter</option>
+                                <option value="greeting">Greeting</option>
+                                <option value="todolist">TodoList</option>
+                                <option value="owner">Owner</option>
+                                <option value="voting">Voting</option>
+                                <option value="lottery">Lottery</option>
+                                <option value="token">SimpleToken (ERC-20)</option>
+                                <option value="nft">SimpleNFT (ERC-721)</option>
+                                <option value="piggybank">PiggyBank</option>
+                                <option value="escrow">Escrow</option>
+                                <option value="crowdfund">Crowdfund</option>
+                            </select>
+                        </div>
+
+                        <button onclick="loadExistingContract()" class="btn btn-blue btn-full">Load & Interact 🔗</button>
+                    </div>
+                </div>
+
+                <!-- Interaction UI -->
+                <div id="interactionSection" style="display: none;">
+                    <div id="readSection" class="card">
+                        <div class="card-title" style="color: var(--accent-green);">📖 Read Functions (Free)</div>
+                        <div id="readFunctions"></div>
+                    </div>
+
+                    <div id="writeSection" class="card">
+                        <div class="card-title" style="color: var(--accent-orange);">✏️ Write Functions (Gas Required)
+                        </div>
+                        <div id="writeFunctions"></div>
+                    </div>
+                </div>
+
+                <div class="info-box info-orange">
+                    <strong>Try it:</strong> Start with Storage (simplest), then work up to Counter → Owner → Voting →
+                    Token → NFT.
+                    Use Simulated mode for practice, or MetaMask on a testnet for real deployment!
+                </div>
+            </div>
+
+            <!-- ============ SECTION 10: TOKENOMICS ============ -->
+            <div class="section" id="section-tokenomics">
+                <div class="section-header">
+                    <h2>🪙 Tokenomics</h2>
+                    <p>Simulate a token economy: create tokens, mint, burn, transfer, stake for rewards, and manage
+                        vesting schedules.</p>
+                </div>
+
+                <div class="info-box info-blue">
+                    <strong>What is Tokenomics?</strong> Token economics studies how a cryptocurrency's supply,
+                    distribution, and incentives work together. It covers <strong>minting</strong> (creating new
+                    tokens), <strong>burning</strong> (destroying tokens), <strong>staking</strong> (locking tokens for
+                    rewards), and <strong>vesting</strong> (time-locked releases).
+                </div>
+
+                <!-- Token Creation -->
+                <div class="card" id="teCreationCard">
+                    <div class="card-title" style="color: var(--accent-gold);">Create Your Token</div>
+                    <div class="form-group">
+                        <label class="form-label">Token Name</label>
+                        <input type="text" id="teTokenName" class="form-input" placeholder="DemoToken"
+                            value="DemoToken">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Symbol</label>
+                        <input type="text" id="teTokenSymbol" class="form-input" placeholder="DMT" value="DMT">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Initial Supply</label>
+                        <input type="number" id="teInitialSupply" class="form-input" placeholder="1000000"
+                            value="1000000">
+                    </div>
+                    <button onclick="createTokenEconomy()" class="btn btn-gold btn-full">Create Token Economy
+                        🪙</button>
+                </div>
+
+                <!-- Active UI (hidden until token is created) -->
+                <div id="teActiveUI" style="display: none;">
+
+                    <!-- Token Label + Reset -->
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-md);">
+                        <span id="teTokenLabel"
+                            style="font-size: 18px; font-weight: 700; color: var(--accent-gold);"></span>
+                        <button onclick="teReset()" class="btn btn-sm btn-ghost">Reset 🔄</button>
+                    </div>
+
+                    <div class="te-layout">
+
+                        <!-- Right Column (Sticky) -->
+                        <div class="te-layout-side">
+
+                            <!-- Token Value -->
+                            <div id="teStickyTrigger"></div>
+                            <div class="card" id="teTokenValueCard">
+                                <div class="card-title" style="color: var(--accent-gold);">Token Value</div>
+                                <div class="te-metrics">
+                                    <div class="te-metric">
+                                        <div class="te-metric-label">Price</div>
+                                        <div class="te-metric-value" id="teTokenPrice" style="color: var(--accent-gold);">$1.00
+                                        </div>
+                                    </div>
+                                    <div class="te-metric">
+                                        <div class="te-metric-label">Market Cap</div>
+                                        <div class="te-metric-value" id="teMarketCap" style="color: var(--accent-cyan);">$0
+                                        </div>
+                                    </div>
+                                    <div class="te-metric">
+                                        <div class="te-metric-label">Change</div>
+                                        <div class="te-metric-value" id="tePriceChange" style="color: var(--accent-green);">—
+                                        </div>
+                                    </div>
+                                </div>
+                                <canvas id="tePriceChart"
+                                    style="width: 100%; height: 180px; border-radius: var(--radius-md);"></canvas>
+                                <p style="font-size: 11px; color: var(--text-muted); margin-top: 4px;" class="te-chart-desc">Price reacts to: minting
+                                    (↓), burning (↑), staking (↑), community growth (↑), inflation (↓)</p>
+                            </div>
+
+                            <!-- Supply Dashboard -->
+                            <div class="card">
+                                <div class="card-title" style="color: var(--accent-cyan);">Supply Dashboard</div>
+                                <div class="te-metrics">
+                                    <div class="te-metric">
+                                        <div class="te-metric-label">Total Supply</div>
+                                        <div class="te-metric-value" id="teTotalSupply" style="font-size: 14px;">0</div>
+                                    </div>
+                                    <div class="te-metric">
+                                        <div class="te-metric-label">Circulating</div>
+                                        <div class="te-metric-value" id="teCirculating" style="color: var(--accent-green); font-size: 14px;">0
+                                        </div>
+                                    </div>
+                                    <div class="te-metric">
+                                        <div class="te-metric-label">Staked</div>
+                                        <div class="te-metric-value" id="teStakedSupply" style="color: var(--accent-purple); font-size: 14px;">0
+                                        </div>
+                                    </div>
+                                    <div class="te-metric">
+                                        <div class="te-metric-label">Burned</div>
+                                        <div class="te-metric-value" id="teBurnedSupply" style="color: var(--accent-red); font-size: 14px;">0
+                                        </div>
+                                    </div>
+                                    <div class="te-metric">
+                                        <div class="te-metric-label">Vesting Locked</div>
+                                        <div class="te-metric-value" id="teVestingLocked" style="color: var(--accent-orange); font-size: 14px;">0
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="supply-bar-container">
+                                    <div class="supply-bar-label">Supply Distribution</div>
+                                    <div class="supply-bar" id="teSupplyBar"></div>
+                                    <div class="supply-bar-burned" id="teSupplyBarBurned"></div>
+                                    <div class="supply-bar-legend">
+                                        <span><span class="dot dot-circ"></span> Circulating</span>
+                                        <span><span class="dot dot-staked"></span> Staked</span>
+                                        <span><span class="dot dot-vesting"></span> Vesting</span>
+                                        <span><span class="dot dot-burned"></span> Burned</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <!-- Left Column (Actions) -->
+                        <div class="te-layout-main">
+
+                            <!-- Market Factors -->
+                            <div class="card">
+                                <div class="card-title" style="color: var(--accent-pink);">Market Factors</div>
+                                <div class="info-box info-blue" style="margin-bottom: var(--space-md);">
+                                    <strong>Simulate market sentiment:</strong> Adjust community size, social media buzz, and
+                                    developer activity to see how they affect token price.
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">👥 Community Size: <span
+                                            id="teSocialVal_community">20</span></label>
+                                    <input type="range" id="teSocial_community" class="form-range" min="0" max="100" value="20"
+                                        oninput="teSocialChange('community')">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">📱 Social Buzz: <span id="teSocialVal_buzz">10</span></label>
+                                    <input type="range" id="teSocial_buzz" class="form-range" min="0" max="100" value="10"
+                                        oninput="teSocialChange('buzz')">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">💻 Developer Activity: <span
+                                            id="teSocialVal_devActivity">15</span></label>
+                                    <input type="range" id="teSocial_devActivity" class="form-range" min="0" max="100"
+                                        value="15" oninput="teSocialChange('devActivity')">
+                                </div>
+                                <hr style="border: 0; border-top: 1px solid var(--border-color); margin: var(--space-md) 0;">
+                                <div class="form-group">
+                                    <label class="form-label">📈 Market Trend (Bull vs Bear): <span
+                                            id="teSocialVal_marketTrend">50</span></label>
+                                    <input type="range" id="teSocial_marketTrend" class="form-range" min="0" max="100"
+                                        value="50" oninput="teSocialChange('marketTrend')">
+                                    <p style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">&gt; 50 is Bullish, &lt; 50 is Bearish</p>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">⚠️ FUD (Fear, Uncertainty, Doubt): <span
+                                            id="teSocialVal_fud">10</span></label>
+                                    <input type="range" id="teSocial_fud" class="form-range" min="0" max="100"
+                                        value="10" oninput="teSocialChange('fud')">
+                                </div>
+                            </div>
+
+                            <!-- Accounts -->
+                            <div class="card">
+                                <div class="card-title" style="color: var(--accent-blue);">Accounts</div>
+                                <div class="table-responsive">
+                                    <table class="te-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Name</th>
+                                                <th>Address</th>
+                                                <th style="text-align:right;">Balance</th>
+                                                <th style="text-align:right;">Staked</th>
+                                                <th style="text-align:right;">Total</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="teAccountsBody"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- Airdrop -->
+                            <div class="card">
+                                <div class="card-title" style="color: var(--accent-pink);">Airdrop</div>
+                                <div class="info-box info-pink" style="margin-bottom: var(--space-md);">
+                                    <strong>Airdrops</strong> distribute tokens to specific users for marketing. You can choose to mint new tokens (diluting supply) or send from your existing balance.
+                                </div>
+                                <div style="display:flex;gap:var(--space-sm);align-items:end;flex-wrap:wrap;margin-bottom:var(--space-md);">
+                                    <div class="form-group" style="flex:1;min-width:120px;">
+                                        <label class="form-label">Source</label>
+                                        <select id="teAirdropSource" class="form-input form-input-sm">
+                                            <option value="mint">➕ Mint New Tokens</option>
+                                            <option value="wallet">👛 From Your Wallet</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group" style="flex:1;min-width:150px;">
+                                        <label class="form-label">To Account</label>
+                                        <select id="teAirdropTo" class="form-input form-input-sm"></select>
+                                    </div>
+                                    <div class="form-group" style="flex:1;min-width:100px;">
+                                        <label class="form-label">Amount</label>
+                                        <input type="number" id="teAirdropAmount" class="form-input form-input-sm" placeholder="500">
+                                    </div>
+                                    <button onclick="teAirdrop()" class="btn btn-pink">Send Airdrop 🪂</button>
+                                </div>
+                            </div>
+
+                            <!-- Mint & Burn -->
+                            <div class="card">
+                                <div class="card-title" style="color: var(--accent-green);">Mint & Burn</div>
+                                <div class="te-split">
+                                    <div class="te-split-half">
+                                        <div class="te-split-title">➕ Mint New Tokens</div>
+                                        <div class="form-group">
+                                            <label class="form-label">To Account</label>
+                                            <select id="teMintTo" class="form-input form-input-sm"></select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="form-label">Amount</label>
+                                            <input type="number" id="teMintAmount" class="form-input form-input-sm"
+                                                placeholder="10000">
+                                        </div>
+                                        <button onclick="teMint()" class="btn btn-green btn-full">Mint ➕</button>
+                                    </div>
+                                    <div class="te-split-half">
+                                        <div class="te-split-title">🔥 Burn Tokens (from You)</div>
+                                        <div class="form-group">
+                                            <label class="form-label">Amount to Burn</label>
+                                            <input type="number" id="teBurnAmount" class="form-input form-input-sm"
+                                                placeholder="5000">
+                                        </div>
+                                        <button onclick="teBurn()" class="btn btn-red btn-full">Burn 🔥</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Transfer -->
+                            <div class="card">
+                                <div class="card-title" style="color: var(--accent-orange);">Transfer</div>
+                                <div class="form-group">
+                                    <label class="form-label">From</label>
+                                    <select id="teTransferFrom" class="form-input form-input-sm"></select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">To</label>
+                                    <select id="teTransferTo" class="form-input form-input-sm"></select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Amount</label>
+                                    <input type="number" id="teTransferAmount" class="form-input form-input-sm"
+                                        placeholder="1000">
+                                </div>
+                                <button onclick="teTransfer()" class="btn btn-orange btn-full">Transfer ↔️</button>
+                            </div>
+
+                            <!-- Staking -->
+                            <div class="card">
+                                <div class="card-title" style="color: var(--accent-purple);">Staking</div>
+                                <div class="info-box info-purple" style="margin-bottom: var(--space-md);">
+                                    <strong>How staking works:</strong> Lock your tokens to earn rewards over time. In this
+                                    demo, <strong>1 second = 1 day</strong> so you can see rewards accumulate quickly. APY
+                                    (Annual Percentage Yield) determines your return rate.
+                                </div>
+                                <div class="te-staking-info">
+                                    <div class="te-metric">
+                                        <div class="te-metric-label">Your Staked</div>
+                                        <div class="te-metric-value" id="teStakedAmount" style="color: var(--accent-purple);">0
+                                        </div>
+                                    </div>
+                                    <div class="te-metric">
+                                        <div class="te-metric-label">APY</div>
+                                        <div class="te-metric-value" id="teStakingAPY" style="color: var(--accent-gold);">12%
+                                        </div>
+                                    </div>
+                                    <div class="te-metric">
+                                        <div class="te-metric-label">Pending Reward</div>
+                                        <div class="te-metric-value" id="teCurrentReward" style="color: var(--accent-green);">0
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="te-split" style="margin-top: var(--space-md);">
+                                    <div class="te-split-half">
+                                        <div class="form-group">
+                                            <label class="form-label">Stake Amount</label>
+                                            <input type="number" id="teStakeAmount" class="form-input form-input-sm"
+                                                placeholder="10000">
+                                        </div>
+                                        <button onclick="teStake()" class="btn btn-purple btn-full">Stake 🔒</button>
+                                    </div>
+                                    <div class="te-split-half">
+                                        <button onclick="teUnstake()" class="btn btn-ghost btn-full"
+                                            style="margin-top: 28px;">Unstake + Claim Rewards 🔓</button>
+                                    </div>
+                                </div>
+                                <div class="te-split" style="margin-top: var(--space-sm);">
+                                    <div class="te-split-half">
+                                        <div class="form-group">
+                                            <label class="form-label">Change APY (%)</label>
+                                            <input type="number" id="teAPYInput" class="form-input form-input-sm" value="12"
+                                                min="0" max="1000">
+                                        </div>
+                                        <button onclick="teChangeAPY()" class="btn btn-sm btn-ghost">Update APY ⚙️</button>
+                                    </div>
+                                    <div class="te-split-half"></div>
+                                </div>
+                            </div>
+
+                            <!-- Vesting -->
+                            <div class="card">
+                                <div class="card-title" style="color: var(--accent-orange);">Vesting Schedules</div>
+                                <div class="info-box info-orange" style="margin-bottom: var(--space-md);">
+                                    <strong>Vesting:</strong> Lock tokens that gradually unlock over time. Used for team
+                                    allocations, investor tokens, and community rewards. In this demo, <strong>1 second = 1
+                                        day</strong>.
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Beneficiary</label>
+                                    <select id="teVestingTo" class="form-input form-input-sm"></select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Amount to Vest</label>
+                                    <input type="number" id="teVestingAmount" class="form-input form-input-sm"
+                                        placeholder="50000">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Vesting Duration (days)</label>
+                                    <input type="number" id="teVestingDuration" class="form-input form-input-sm"
+                                        placeholder="30" value="30">
+                                </div>
+                                <button onclick="teCreateVesting()" class="btn btn-orange btn-full">Create Vesting 📅</button>
+                                <div id="teVestingList" style="margin-top: var(--space-md);"></div>
+                            </div>
+
+                            <!-- Event Log -->
+                            <div class="card">
+                                <div class="card-title" style="color: var(--text-secondary);">Event Log</div>
+                                <div class="te-event-log" id="teEventLog">
+                                    <p style="color: var(--text-muted); font-size: 13px;">No events yet.</p>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============ SECTION 13: NFT & RWA ============ -->
+            <div class="section" id="section-nft">
+                <div class="section-header">
+                    <h2>🖼️ NFT & Real World Assets</h2>
+                    <p>Create unique digital assets, tokenize real-world property, trade on a marketplace, and explore
+                        fractional ownership.</p>
+                </div>
+
+                <div class="info-box info-blue">
+                    <strong>NFT (Non-Fungible Token):</strong> A unique, indivisible digital certificate of ownership
+                    stored on the blockchain. Each NFT has distinct metadata and cannot be exchanged 1:1 with another.
+                    <strong>RWA</strong> extends this to represent real-world assets like property, art, or documents.
+                </div>
+
+                <!-- Mode Toggle -->
+                <div class="wallet-mode-toggle" style="margin-bottom: var(--space-lg);">
+                    <button class="wallet-mode-btn active" id="nftModeSimulated" onclick="setNftMode('simulated')">🧪 Simulated (Eğitim Modu)</button>
+                    <button class="wallet-mode-btn" id="nftModeWeb3" onclick="setNftMode('web3')">🌐 Web3 (MetaMask/Gerçek)</button>
+                </div>
+
+                <!-- SIMULATED MODE CONTAINER -->
+                <div id="nftSimulatedContainer">
+
+                <!-- Mint NFT -->
+                <div class="card">
+                    <div class="card-title" style="color:var(--accent-blue);">Mint NFT</div>
+                    <div class="form-group">
+                        <label class="form-label">Name</label>
+                        <input type="text" id="nftName" class="form-input form-input-sm" placeholder="My Cool Art">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Description</label>
+                        <input type="text" id="nftDesc" class="form-input form-input-sm"
+                            placeholder="A unique digital artwork">
+                    </div>
+                    <div style="display:flex;gap:var(--space-sm);">
+                        <div class="form-group" style="flex:1;">
+                            <label class="form-label">Category</label>
+                            <select id="nftCategory" class="form-input form-input-sm">
+                                <option value="Art">Art</option>
+                                <option value="Photography">Photography</option>
+                                <option value="Music">Music</option>
+                                <option value="Video">Video</option>
+                                <option value="Collectible">Collectible</option>
+                                <option value="Gaming">Gaming</option>
+                                <option value="Domain">Domain</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="flex:1;">
+                            <label class="form-label">Rarity</label>
+                            <select id="nftRarity" class="form-input form-input-sm">
+                                <option value="Common">Common</option>
+                                <option value="Uncommon">Uncommon</option>
+                                <option value="Rare">Rare</option>
+                                <option value="Epic">Epic</option>
+                                <option value="Legendary">Legendary</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button onclick="nftMint()" class="btn btn-blue btn-full">Mint NFT 🎨</button>
+                </div>
+
+                <!-- RWA Tokenization -->
+                <div class="card">
+                    <div class="card-title" style="color:var(--accent-gold);">Tokenize Real World Asset</div>
+                    <div class="info-box info-orange" style="margin-bottom:var(--space-md);">
+                        <strong>RWA Tokenization:</strong> Convert physical assets (property, art, patents) into NFTs
+                        with legal metadata.
+                    </div>
+                    <div style="display:flex;gap:var(--space-sm);">
+                        <div class="form-group" style="flex:1;">
+                            <label class="form-label">Asset Type</label>
+                            <select id="rwaType" class="form-input form-input-sm">
+                                <option value="Real Estate">Real Estate</option>
+                                <option value="Fine Art">Fine Art</option>
+                                <option value="Vehicle">Vehicle</option>
+                                <option value="Patent">Patent</option>
+                                <option value="Certificate">Certificate</option>
+                                <option value="Document">Document</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="flex:1;">
+                            <label class="form-label">Asset Name</label>
+                            <input type="text" id="rwaName" class="form-input form-input-sm"
+                                placeholder="Downtown Apartment">
+                        </div>
+                    </div>
+                    <div style="display:flex;gap:var(--space-sm);">
+                        <div class="form-group" style="flex:1;">
+                            <label class="form-label">Appraised Value ($)</label>
+                            <input type="number" id="rwaValue" class="form-input form-input-sm" placeholder="250000">
+                        </div>
+                        <div class="form-group" style="flex:1;">
+                            <label class="form-label">Document Reference</label>
+                            <input type="text" id="rwaDoc" class="form-input form-input-sm"
+                                placeholder="Title Deed #12345">
+                        </div>
+                    </div>
+                    <button onclick="nftMintRWA()" class="btn btn-orange btn-full">Tokenize Asset 🏠</button>
+                </div>
+
+                <!-- Collection Stats -->
+                <div class="card">
+                    <div class="card-title" style="color:var(--accent-cyan);">Collection Stats</div>
+                    <div class="te-metrics">
+                        <div class="te-metric">
+                            <div class="te-metric-label">Total NFTs</div>
+                            <div class="te-metric-value" id="nftStatsTotal">0</div>
+                        </div>
+                        <div class="te-metric">
+                            <div class="te-metric-label">For Sale</div>
+                            <div class="te-metric-value" id="nftStatsForSale" style="color:var(--accent-gold);">0</div>
+                        </div>
+                        <div class="te-metric">
+                            <div class="te-metric-label">Unique Owners</div>
+                            <div class="te-metric-value" id="nftStatsOwners" style="color:var(--accent-blue);">0</div>
+                        </div>
+                        <div class="te-metric">
+                            <div class="te-metric-label">Volume</div>
+                            <div class="te-metric-value" id="nftStatsVolume" style="color:var(--accent-green);">0 ETH
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- NFT Gallery -->
+                <div class="card">
+                    <div class="card-title" style="color:var(--accent-purple);">Gallery</div>
+                    <div class="nft-gallery-grid" id="nftGalleryGrid">
+                        <p style="color:var(--text-muted);grid-column:1/-1;text-align:center;">No NFTs minted yet.
+                            Create your first NFT above!</p>
+                    </div>
+                </div>
+
+                <!-- Transfer -->
+                <div class="card">
+                    <div class="card-title" style="color:var(--accent-green);">Transfer NFT</div>
+                    <div style="display:flex;gap:var(--space-sm);align-items:end;flex-wrap:wrap;">
+                        <div class="form-group" style="flex:2;min-width:150px;"><label
+                                class="form-label">NFT</label><select id="nftTransferId"
+                                class="form-input form-input-sm"></select></div>
+                        <div class="form-group" style="flex:1;min-width:120px;"><label
+                                class="form-label">To</label><select id="nftTransferTo"
+                                class="form-input form-input-sm"></select></div>
+                        <button onclick="nftTransfer()" class="btn btn-green">Transfer ↔️</button>
+                    </div>
+                </div>
+
+                <!-- Marketplace -->
+                <div class="card">
+                    <div class="card-title" style="color:var(--accent-gold);">Marketplace</div>
+                    <div
+                        style="display:flex;gap:var(--space-sm);align-items:end;flex-wrap:wrap;margin-bottom:var(--space-md);">
+                        <div class="form-group" style="flex:2;min-width:150px;"><label class="form-label">List for
+                                Sale</label><select id="nftSellId" class="form-input form-input-sm"></select></div>
+                        <div class="form-group" style="flex:1;min-width:80px;"><label class="form-label">Price
+                                (ETH)</label><input type="number" id="nftSellPrice" class="form-input form-input-sm"
+                                placeholder="1.5"></div>
+                        <button onclick="nftListForSale()" class="btn btn-orange">List 🏷️</button>
+                    </div>
+                    <div id="nftMarketList">
+                        <p style="color:var(--text-muted);font-size:13px;">No NFTs listed for sale.</p>
+                    </div>
+                </div>
+
+                <!-- Fractional Ownership -->
+                <div class="card">
+                    <div class="card-title" style="color:var(--accent-pink);">Fractional Ownership</div>
+                    <div class="info-box info-purple" style="margin-bottom:var(--space-md);">
+                        <strong>Fractionalization:</strong> Split an NFT into fungible shares. Multiple people can
+                        co-own a single high-value asset.
+                    </div>
+                    <div
+                        style="display:flex;gap:var(--space-sm);align-items:end;flex-wrap:wrap;margin-bottom:var(--space-md);">
+                        <div class="form-group" style="flex:2;min-width:150px;"><label
+                                class="form-label">NFT</label><select id="nftFracId"
+                                class="form-input form-input-sm"></select></div>
+                        <div class="form-group" style="flex:1;min-width:80px;"><label
+                                class="form-label">Shares</label><input type="number" id="nftFracShares"
+                                class="form-input form-input-sm" placeholder="100"></div>
+                        <button onclick="nftFractionalize()" class="btn btn-purple">Split 🧩</button>
+                    </div>
+                    <div style="display:flex;gap:var(--space-sm);align-items:end;flex-wrap:wrap;">
+                        <div class="form-group" style="flex:2;min-width:150px;"><label class="form-label">Fractionalized
+                                NFT</label><select id="nftShareNftId" class="form-input form-input-sm"></select></div>
+                        <div class="form-group" style="flex:1;min-width:80px;"><label
+                                class="form-label">To</label><select id="nftShareTo"
+                                class="form-input form-input-sm"></select></div>
+                        <div class="form-group" style="flex:1;min-width:60px;"><label
+                                class="form-label">Amount</label><input type="number" id="nftShareAmount"
+                                class="form-input form-input-sm" placeholder="10"></div>
+                        <button onclick="nftTransferShares()" class="btn btn-ghost">Transfer Shares</button>
+                    </div>
+                </div>
+
+                <!-- Event Log -->
+                <div class="card">
+                    <div class="card-title" style="color:var(--text-secondary);">Event Log</div>
+                    <div class="te-event-log" id="nftEventLog">
+                        <p style="color:var(--text-muted);font-size:13px;">No events yet.</p>
+                    </div>
+                </div>
+
+                </div> <!-- END SIMULATED MODE CONTAINER -->
+
+                <!-- WEB3 MODE CONTAINER -->
+                <div id="nftWeb3Container" style="display: none;">
+
+                    <!-- Wallet & Contract Info -->
+                    <div class="card">
+                        <div class="card-title" style="color: var(--accent-orange);">🔗 Web3 Wallet & Contract</div>
+
+                        <div id="web3NftWalletSection">
+                            <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: var(--space-md);">Please connect your MetaMask wallet. Ensure you are on the <strong>Akadal Chain</strong>.</p>
+                            <button onclick="web3NftConnectWallet()" id="web3NftConnectBtn" class="btn btn-orange btn-full">Connect MetaMask 🦊</button>
+                        </div>
+
+                        <div id="web3NftContractSection" style="display: none; margin-top: var(--space-md);">
+                            <div class="wallet-badge" style="margin-bottom: var(--space-md);">
+                                <div class="wallet-badge-row">
+                                    <span class="wallet-badge-label">Wallet</span>
+                                    <span class="wallet-badge-value" id="web3NftWalletAddr">—</span>
+                                </div>
+                                <div class="wallet-badge-row">
+                                    <span class="wallet-badge-label">Network</span>
+                                    <span class="wallet-badge-value" id="web3NftNetwork">—</span>
+                                </div>
+                            </div>
+
+                            <div class="te-split" style="gap: var(--space-md);">
+                                <div class="te-split-half" style="border-right: 1px solid var(--border-color); padding-right: var(--space-md);">
+                                    <div class="card-title" style="font-size: 14px; color: var(--accent-blue);">Load Existing</div>
+                                    <div class="form-group">
+                                        <label class="form-label">Contract Address</label>
+                                        <input type="text" id="web3NftContractAddr" class="form-input form-input-sm" placeholder="0x...">
+                                    </div>
+                                    <button onclick="web3NftLoadContract()" id="web3NftLoadBtn" class="btn btn-blue btn-sm btn-full">Load Contract ⬇️</button>
+                                </div>
+
+                                <div class="te-split-half" style="padding-left: var(--space-md);">
+                                    <div class="card-title" style="font-size: 14px; color: var(--accent-purple);">Deploy New NFT</div>
+                                    <div style="display:flex;gap:var(--space-sm);">
+                                        <div class="form-group" style="flex:1;">
+                                            <label class="form-label">Collection Name</label>
+                                            <input type="text" id="web3DeployName" class="form-input form-input-sm" placeholder="My Web3 NFT">
+                                        </div>
+                                        <div class="form-group" style="flex:1;">
+                                            <label class="form-label">Symbol</label>
+                                            <input type="text" id="web3DeploySymbol" class="form-input form-input-sm" placeholder="W3NFT">
+                                        </div>
+                                    </div>
+                                    <button onclick="web3NftDeployContract('advancednft')" id="web3NftDeployBtn" class="btn btn-purple btn-sm btn-full">Deploy New NFT 🚀</button>
+                                </div>
+                            </div>
+
+                            <div id="web3NftContractInfo" style="display: none; margin-top: var(--space-md);">
+                                <div class="wallet-badge">
+                                    <div class="wallet-badge-row">
+                                        <span class="wallet-badge-label">Name</span>
+                                        <span class="wallet-badge-value" id="web3NftName">—</span>
+                                    </div>
+                                    <div class="wallet-badge-row">
+                                        <span class="wallet-badge-label">Symbol</span>
+                                        <span class="wallet-badge-value" id="web3NftSymbol">—</span>
+                                    </div>
+                                    <div class="wallet-badge-row">
+                                        <span class="wallet-badge-label">Total Supply</span>
+                                        <span class="wallet-badge-value" id="web3NftTotalSupply">—</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Web3 Interaction Container (hidden until contract loaded) -->
+                    <div id="web3NftInteractionContainer" style="display: none;">
+
+                        <!-- Mint Web3 NFT -->
+                        <div class="card">
+                            <div class="card-title" style="color:var(--accent-green);">Mint On-Chain NFT</div>
+                            <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: var(--space-md);">Mints an NFT with 100% on-chain metadata (Base64 encoded).</p>
+                            <div class="form-group">
+                                <label class="form-label">Name</label>
+                                <input type="text" id="web3MintName" class="form-input form-input-sm" placeholder="Crypto Art">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Description</label>
+                                <input type="text" id="web3MintDesc" class="form-input form-input-sm" placeholder="A unique digital asset">
+                            </div>
+                            <div style="display:flex;gap:var(--space-sm);">
+                                <div class="form-group" style="flex:1;">
+                                    <label class="form-label">Category</label>
+                                    <select id="web3MintCategory" class="form-input form-input-sm">
+                                        <option value="Art">Art</option>
+                                        <option value="Photography">Photography</option>
+                                        <option value="Music">Music</option>
+                                        <option value="Video">Video</option>
+                                        <option value="Collectible">Collectible</option>
+                                        <option value="Gaming">Gaming</option>
+                                        <option value="Domain">Domain</option>
+                                    </select>
+                                </div>
+                                <div class="form-group" style="flex:1;">
+                                    <label class="form-label">Rarity</label>
+                                    <select id="web3MintRarity" class="form-input form-input-sm">
+                                        <option value="Common">Common</option>
+                                        <option value="Uncommon">Uncommon</option>
+                                        <option value="Rare">Rare</option>
+                                        <option value="Epic">Epic</option>
+                                        <option value="Legendary">Legendary</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Image Upload (Optional)</label>
+                                <input type="file" id="web3MintFile" accept="image/*" class="form-input form-input-sm" style="padding: 4px;">
+                                <p style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">If no image is selected, an auto-generated one will be used.</p>
+                            </div>
+                            <button onclick="web3NftMint()" id="web3NftMintBtn" class="btn btn-green btn-full">Mint to My Address 🎨</button>
+                        </div>
+
+                        <!-- RWA Tokenization -->
+                        <div class="card">
+                            <div class="card-title" style="color:var(--accent-gold);">Tokenize Real World Asset (On-Chain)</div>
+                            <div class="info-box info-orange" style="margin-bottom:var(--space-md);">
+                                <strong>RWA Tokenization:</strong> Convert physical assets (property, art, patents) into NFTs with legal metadata.
+                            </div>
+                            <div style="display:flex;gap:var(--space-sm);">
+                                <div class="form-group" style="flex:1;">
+                                    <label class="form-label">Asset Type</label>
+                                    <select id="web3RwaType" class="form-input form-input-sm">
+                                        <option value="Real Estate">Real Estate</option>
+                                        <option value="Fine Art">Fine Art</option>
+                                        <option value="Vehicle">Vehicle</option>
+                                        <option value="Patent">Patent</option>
+                                        <option value="Certificate">Certificate</option>
+                                        <option value="Document">Document</option>
+                                    </select>
+                                </div>
+                                <div class="form-group" style="flex:1;">
+                                    <label class="form-label">Asset Name</label>
+                                    <input type="text" id="web3RwaName" class="form-input form-input-sm" placeholder="Downtown Apartment">
+                                </div>
+                            </div>
+                            <div style="display:flex;gap:var(--space-sm);">
+                                <div class="form-group" style="flex:1;">
+                                    <label class="form-label">Appraised Value ($)</label>
+                                    <input type="number" id="web3RwaValue" class="form-input form-input-sm" placeholder="250000">
+                                </div>
+                                <div class="form-group" style="flex:1;">
+                                    <label class="form-label">Document Reference</label>
+                                    <input type="text" id="web3RwaDoc" class="form-input form-input-sm" placeholder="Title Deed #12345">
+                                </div>
+                            </div>
+                            <button onclick="web3NftMintRWA()" id="web3NftMintRWABtn" class="btn btn-orange btn-full">Tokenize Asset 🏠</button>
+                        </div>
+
+                        <!-- Web3 Collection Stats -->
+                        <div class="card">
+                            <div class="card-title" style="color:var(--accent-cyan);">Collection Stats</div>
+                            <div class="te-metrics">
+                                <div class="te-metric">
+                                    <div class="te-metric-label">Total NFTs</div>
+                                    <div class="te-metric-value" id="web3NftStatsTotal">0</div>
+                                </div>
+                                <div class="te-metric">
+                                    <div class="te-metric-label">For Sale</div>
+                                    <div class="te-metric-value" id="web3NftStatsForSale" style="color:var(--accent-gold);">0</div>
+                                </div>
+                                <div class="te-metric">
+                                    <div class="te-metric-label">Unique Owners</div>
+                                    <div class="te-metric-value" id="web3NftStatsOwners" style="color:var(--accent-blue);">0</div>
+                                </div>
+                                <div class="te-metric">
+                                    <div class="te-metric-label">Volume</div>
+                                    <div class="te-metric-value" id="web3NftStatsVolume" style="color:var(--accent-green);">0 ETH</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Web3 Gallery (Tabs) -->
+                        <div class="card">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-md); border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">
+                                <div class="wallet-mode-toggle" style="background: transparent; border: none; margin: 0; padding: 0;">
+                                    <button class="wallet-mode-btn active" id="web3GalleryTabMarket" onclick="setWeb3GalleryTab('market')" style="padding: 4px 12px; font-size: 14px;">Marketplace</button>
+                                    <button class="wallet-mode-btn" id="web3GalleryTabMy" onclick="setWeb3GalleryTab('my')" style="padding: 4px 12px; font-size: 14px;">My Collection</button>
+                                </div>
+                                <button onclick="updateWeb3NftGallery()" class="btn btn-sm btn-ghost">Refresh 🔄</button>
+                            </div>
+
+                            <div class="nft-gallery-grid" id="web3NftGalleryGrid">
+                                <p style="color:var(--text-muted);grid-column:1/-1;text-align:center;">Load a contract or mint an NFT to view.</p>
+                            </div>
+                        </div>
+
+                        <!-- Transfer -->
+                        <div class="card">
+                            <div class="card-title" style="color:var(--accent-green);">Transfer NFT</div>
+                            <div style="display:flex;gap:var(--space-sm);align-items:end;flex-wrap:wrap;">
+                                <div class="form-group" style="flex:2;min-width:150px;">
+                                    <label class="form-label">NFT</label>
+                                    <select id="web3TransferId" class="form-input form-input-sm"></select>
+                                </div>
+                                <div class="form-group" style="flex:1;min-width:120px;">
+                                    <label class="form-label">To</label>
+                                    <input type="text" id="web3TransferTo" class="form-input form-input-sm" placeholder="0x...">
+                                </div>
+                                <button onclick="web3NftTransfer()" class="btn btn-green">Transfer ↔️</button>
+                            </div>
+                        </div>
+
+                        <!-- Marketplace -->
+                        <div class="card">
+                            <div class="card-title" style="color:var(--accent-gold);">Marketplace</div>
+                            <div style="display:flex;gap:var(--space-sm);align-items:end;flex-wrap:wrap;margin-bottom:var(--space-md);">
+                                <div class="form-group" style="flex:2;min-width:150px;">
+                                    <label class="form-label">List for Sale</label>
+                                    <select id="web3SellId" class="form-input form-input-sm"></select>
+                                </div>
+                                <div class="form-group" style="flex:1;min-width:80px;">
+                                    <label class="form-label">Price (ETH)</label>
+                                    <input type="number" id="web3SellPrice" class="form-input form-input-sm" placeholder="1.5">
+                                </div>
+                                <button onclick="web3NftList()" class="btn btn-orange">List 🏷️</button>
+                            </div>
+                        </div>
+
+                        <!-- Fractional Ownership -->
+                        <div class="card">
+                            <div class="card-title" style="color:var(--accent-pink);">Fractional Ownership</div>
+                            <div class="info-box info-purple" style="margin-bottom:var(--space-md);">
+                                <strong>Fractionalization:</strong> Split an NFT into fungible shares. Multiple people can co-own a single high-value asset.
+                            </div>
+                            <div style="display:flex;gap:var(--space-sm);align-items:end;flex-wrap:wrap;margin-bottom:var(--space-md);">
+                                <div class="form-group" style="flex:2;min-width:150px;">
+                                    <label class="form-label">NFT</label>
+                                    <select id="web3FracId" class="form-input form-input-sm"></select>
+                                </div>
+                                <div class="form-group" style="flex:1;min-width:80px;">
+                                    <label class="form-label">Shares</label>
+                                    <input type="number" id="web3FracShares" class="form-input form-input-sm" placeholder="100">
+                                </div>
+                                <button onclick="web3NftFractionalize()" class="btn btn-purple">Split 🧩</button>
+                            </div>
+                            <div style="display:flex;gap:var(--space-sm);align-items:end;flex-wrap:wrap;">
+                                <div class="form-group" style="flex:2;min-width:150px;">
+                                    <label class="form-label">Fractionalized NFT</label>
+                                    <select id="web3ShareNftId" class="form-input form-input-sm"></select>
+                                </div>
+                                <div class="form-group" style="flex:1;min-width:80px;">
+                                    <label class="form-label">To</label>
+                                    <input type="text" id="web3ShareTo" class="form-input form-input-sm" placeholder="0x...">
+                                </div>
+                                <div class="form-group" style="flex:1;min-width:60px;">
+                                    <label class="form-label">Amount</label>
+                                    <input type="number" id="web3ShareAmount" class="form-input form-input-sm" placeholder="10">
+                                </div>
+                                <button onclick="web3NftTransferShares()" class="btn btn-ghost">Transfer Shares</button>
+                            </div>
+                        </div>
+
+                        <!-- Web3 Event Log -->
+                        <div class="card">
+                            <div class="card-title" style="color:var(--text-secondary);">On-Chain Event Log</div>
+                            <div class="te-event-log" id="web3NftEventLog">
+                                <p style="color:var(--text-muted);font-size:13px;">No events yet.</p>
+                            </div>
+                        </div>
+
+                    </div>
+                </div> <!-- END WEB3 MODE CONTAINER -->
+
+            </div>
+
+            <!-- NFT Detail Modal -->
+            <div class="nft-modal-overlay" id="nftDetailModal" style="display:none;"
+                onclick="if(event.target===this)closeNFTModal()">
+                <div class="nft-modal-content">
+                    <button onclick="closeNFTModal()"
+                        style="position:absolute;top:12px;right:16px;background:none;border:none;color:var(--text-primary);font-size:20px;cursor:pointer;">✕</button>
+                    <div id="nftDetailContent"></div>
+                </div>
+            </div>
+
+            <!-- ============ SECTION 14: DeFi ============ -->
+            <div class="section" id="section-defi">
+                <div class="section-header">
+                    <h2>🏦 Decentralized Finance (DeFi)</h2>
+                    <p>Experience core DeFi primitives: swap tokens through an AMM, provide liquidity, lend & borrow,
+                        and farm yield.</p>
+                </div>
+
+                <div class="info-box info-green">
+                    <strong>Automated Market Maker (AMM):</strong> Instead of an order book, prices are determined by a
+                    mathematical formula: <strong>x × y = k</strong> (constant product). Swapping one token
+                    automatically adjusts the price of the other.
+                </div>
+
+                <!-- Mode Toggle -->
+                <div class="wallet-mode-toggle" style="margin-bottom: var(--space-lg);">
+                    <button class="wallet-mode-btn active" id="defiModeSimulated" onclick="setDefiMode('simulated')">🧪 Simulated (Eğitim Modu)</button>
+                    <button class="wallet-mode-btn" id="defiModeWeb3" onclick="setDefiMode('web3')">🌐 Web3 (MetaMask/Gerçek)</button>
+                </div>
+
+                <!-- SIMULATED MODE CONTAINER -->
+                <div id="defiSimulatedContainer">
+
+                <!-- Pool Stats -->
+                <div class="card">
+                    <div class="card-title" style="color:var(--accent-green);">Pool Overview</div>
+                    <div class="te-metrics">
+                        <div class="te-metric">
+                            <div class="te-metric-label">Price</div>
+                            <div class="te-metric-value" id="defiPrice"
+                                style="color:var(--accent-green);font-size:14px;">—</div>
+                        </div>
+                        <div class="te-metric">
+                            <div class="te-metric-label">TVL</div>
+                            <div class="te-metric-value" id="defiTVL" style="color:var(--accent-cyan);">—</div>
+                        </div>
+                        <div class="te-metric">
+                            <div class="te-metric-label">Volume</div>
+                            <div class="te-metric-value" id="defiVolume">—</div>
+                        </div>
+                        <div class="te-metric">
+                            <div class="te-metric-label">Fees</div>
+                            <div class="te-metric-value" id="defiFees" style="color:var(--accent-gold);font-size:12px;">
+                                —</div>
+                        </div>
+                    </div>
+                    <div
+                        style="display:flex;gap:var(--space-md);flex-wrap:wrap;margin-top:var(--space-sm);font-size:13px;">
+                        <span>Pool: <strong id="defiPoolA">—</strong> / <strong id="defiPoolB">—</strong></span>
+                        <span>Total LP: <strong id="defiTotalLP">—</strong></span>
+                    </div>
+                    <canvas id="defiPriceChart"
+                        style="width:100%;height:160px;border-radius:var(--radius-md);margin-top:var(--space-sm);"></canvas>
+                </div>
+
+                <!-- Your Balances -->
+                <div class="card">
+                    <div class="card-title" style="color:var(--accent-blue);">Your Balances</div>
+                    <div class="te-metrics">
+                        <div class="te-metric">
+                            <div class="te-metric-label">ETH</div>
+                            <div class="te-metric-value" id="defiBalA" style="color:var(--accent-blue);">—</div>
+                        </div>
+                        <div class="te-metric">
+                            <div class="te-metric-label">DAI</div>
+                            <div class="te-metric-value" id="defiBalB" style="color:var(--accent-green);">—</div>
+                        </div>
+                        <div class="te-metric">
+                            <div class="te-metric-label">LP Tokens</div>
+                            <div class="te-metric-value" id="defiUserLP" style="color:var(--accent-purple);">—</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Swap -->
+                <div class="card">
+                    <div class="card-title" style="color:var(--accent-orange);">Token Swap</div>
+                    <div style="display:flex;gap:var(--space-sm);align-items:end;flex-wrap:wrap;">
+                        <div class="form-group" style="flex:1;min-width:120px;">
+                            <label class="form-label">Direction</label>
+                            <select id="defiSwapDir" class="form-input form-input-sm" onchange="defiCalcPreview()">
+                                <option value="AtoB">ETH → DAI</option>
+                                <option value="BtoA">DAI → ETH</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="flex:1;min-width:100px;">
+                            <label class="form-label">Amount</label>
+                            <input type="number" id="defiSwapAmount" class="form-input form-input-sm" placeholder="1"
+                                oninput="defiCalcPreview()">
+                        </div>
+                        <button onclick="defiSwap()" class="btn btn-orange">Swap 🔄</button>
+                    </div>
+                    <div id="defiSwapPreview"
+                        style="margin-top:var(--space-xs);font-size:13px;color:var(--text-secondary);">—</div>
+                </div>
+
+                <!-- Liquidity -->
+                <div class="card">
+                    <div class="card-title" style="color:var(--accent-purple);">Liquidity Pool</div>
+                    <div class="info-box info-purple" style="margin-bottom:var(--space-md);">
+                        <strong>Liquidity Providers</strong> deposit token pairs and earn fees from every swap. You
+                        receive LP tokens representing your share of the pool.
+                    </div>
+                    <div
+                        style="display:flex;gap:var(--space-sm);align-items:end;flex-wrap:wrap;margin-bottom:var(--space-sm);">
+                        <div class="form-group" style="flex:1;min-width:100px;"><label class="form-label">ETH
+                                Amount</label><input type="number" id="defiLiqA" class="form-input form-input-sm"
+                                placeholder="5"></div>
+                        <button onclick="defiAddLiquidity()" class="btn btn-purple">Add Liquidity 💧</button>
+                    </div>
+                    <div style="display:flex;gap:var(--space-sm);align-items:end;flex-wrap:wrap;">
+                        <div class="form-group" style="flex:1;min-width:100px;"><label class="form-label">LP
+                                Tokens</label><input type="number" id="defiRemoveLP" class="form-input form-input-sm"
+                                placeholder="10"></div>
+                        <button onclick="defiRemoveLiquidity()" class="btn btn-ghost">Remove Liquidity</button>
+                    </div>
+                </div>
+
+                <!-- Lending -->
+                <div class="card">
+                    <div class="card-title" style="color:var(--accent-cyan);">Lending & Borrowing</div>
+                    <div class="info-box info-blue" style="margin-bottom:var(--space-md);">
+                        <strong>Collateralized Lending:</strong> Deposit DAI as collateral, then borrow against it. If
+                        your health ratio drops below 100%, you risk liquidation. Collateral ratio:
+                        <strong>150%</strong>.
+                    </div>
+                    <div class="te-metrics" style="margin-bottom:var(--space-sm);">
+                        <div class="te-metric">
+                            <div class="te-metric-label">Deposited</div>
+                            <div class="te-metric-value" id="defiDeposited" style="color:var(--accent-green);">—</div>
+                        </div>
+                        <div class="te-metric">
+                            <div class="te-metric-label">Borrowed</div>
+                            <div class="te-metric-value" id="defiBorrowed" style="color:var(--accent-red);">—</div>
+                        </div>
+                        <div class="te-metric">
+                            <div class="te-metric-label">Health</div>
+                            <div class="te-metric-value" id="defiHealth" style="color:var(--accent-green);">∞%</div>
+                        </div>
+                        <div class="te-metric">
+                            <div class="te-metric-label">Max Borrow</div>
+                            <div class="te-metric-value" id="defiMaxBorrow" style="font-size:12px;">—</div>
+                        </div>
+                    </div>
+                    <div style="display:flex;gap:var(--space-sm);flex-wrap:wrap;margin-bottom:var(--space-sm);">
+                        <div class="form-group" style="flex:1;min-width:100px;"><label class="form-label">Deposit
+                                DAI</label><input type="number" id="defiDepositAmt" class="form-input form-input-sm"
+                                placeholder="5000"></div>
+                        <button onclick="defiDeposit()" class="btn btn-green">Deposit</button>
+                        <button onclick="defiWithdrawCollateral()" class="btn btn-ghost">Withdraw</button>
+                    </div>
+                    <div style="display:flex;gap:var(--space-sm);flex-wrap:wrap;">
+                        <div class="form-group" style="flex:1;min-width:100px;"><label class="form-label">Borrow
+                                DAI</label><input type="number" id="defiBorrowAmt" class="form-input form-input-sm"
+                                placeholder="1000"></div>
+                        <button onclick="defiBorrow()" class="btn btn-orange">Borrow 💳</button>
+                        <div class="form-group" style="flex:1;min-width:100px;"><label class="form-label">Repay
+                                DAI</label><input type="number" id="defiRepayAmt" class="form-input form-input-sm"
+                                placeholder="500"></div>
+                        <button onclick="defiRepay()" class="btn btn-ghost">Repay ✅</button>
+                    </div>
+                </div>
+
+                <!-- Yield Farming -->
+                <div class="card">
+                    <div class="card-title" style="color:var(--accent-gold);">Yield Farming</div>
+                    <div class="info-box info-orange" style="margin-bottom:var(--space-md);">
+                        <strong>Yield Farming:</strong> Stake your LP tokens to earn additional reward tokens (FARM). 1
+                        second = 1 day for reward calculation.
+                    </div>
+                    <div class="te-metrics" style="margin-bottom:var(--space-sm);">
+                        <div class="te-metric">
+                            <div class="te-metric-label">Staked LP</div>
+                            <div class="te-metric-value" id="defiFarmStaked" style="color:var(--accent-purple);">0 LP
+                            </div>
+                        </div>
+                        <div class="te-metric">
+                            <div class="te-metric-label">Pending Reward</div>
+                            <div class="te-metric-value" id="defiFarmPending" style="color:var(--accent-gold);">0 FARM
+                            </div>
+                        </div>
+                        <div class="te-metric">
+                            <div class="te-metric-label">Farm APY</div>
+                            <div class="te-metric-value" id="defiFarmAPY" style="color:var(--accent-green);">50%</div>
+                        </div>
+                    </div>
+                    <div style="display:flex;gap:var(--space-sm);align-items:end;flex-wrap:wrap;">
+                        <div class="form-group" style="flex:1;min-width:100px;"><label class="form-label">LP
+                                Amount</label><input type="number" id="defiFarmAmt" class="form-input form-input-sm"
+                                placeholder="10"></div>
+                        <button onclick="defiFarmStake()" class="btn btn-green">Stake 🌾</button>
+                        <button onclick="defiFarmUnstake()" class="btn btn-ghost">Unstake</button>
+                        <button onclick="defiFarmHarvest()" class="btn btn-orange">Harvest 🌻</button>
+                    </div>
+                </div>
+
+                <!-- Event Log -->
+                <div class="card">
+                    <div class="card-title" style="color:var(--text-secondary);">Event Log</div>
+                    <div class="te-event-log" id="defiEventLog">
+                        <p style="color:var(--text-muted);font-size:13px;">No events yet.</p>
+                    </div>
+                </div>
+                </div> <!-- END SIMULATED MODE CONTAINER -->
+
+                <!-- WEB3 MODE CONTAINER -->
+                <div id="defiWeb3Container" style="display: none;">
+
+                    <!-- Wallet & AMM Setup -->
+                    <div class="card">
+                        <div class="card-title" style="color: var(--accent-orange);">🔗 Web3 Wallet & AMM Contract</div>
+
+                        <div id="web3DefiWalletSection">
+                            <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: var(--space-md);">Please connect your MetaMask wallet. Ensure you are on the <strong>Akadal Chain</strong>.</p>
+                            <button onclick="web3DefiConnectWallet()" id="web3DefiConnectBtn" class="btn btn-orange btn-full">Connect MetaMask 🦊</button>
+                        </div>
+
+                        <div id="web3DefiAmmSection" style="display: none; margin-top: var(--space-md);">
+                            <div class="wallet-badge" style="margin-bottom: var(--space-md);">
+                                <div class="wallet-badge-row">
+                                    <span class="wallet-badge-label">Wallet</span>
+                                    <span class="wallet-badge-value" id="web3DefiWalletAddr">—</span>
+                                </div>
+                                <div class="wallet-badge-row">
+                                    <span class="wallet-badge-label">Network</span>
+                                    <span class="wallet-badge-value" id="web3DefiNetwork">—</span>
+                                </div>
+                            </div>
+
+                            <div class="te-split" style="gap: var(--space-md);">
+                                <div class="te-split-half" style="border-right: 1px solid var(--border-color); padding-right: var(--space-md);">
+                                    <div class="card-title" style="font-size: 14px; color: var(--accent-blue);">Load Existing AMM</div>
+                                    <div class="form-group">
+                                        <label class="form-label">AMM Address</label>
+                                        <input type="text" id="web3DefiAmmAddr" class="form-input form-input-sm" placeholder="0x...">
+                                    </div>
+                                    <button onclick="web3DefiLoadAmm()" id="web3DefiLoadBtn" class="btn btn-blue btn-sm btn-full">Load AMM ⬇️</button>
+                                </div>
+
+                                <div class="te-split-half" style="padding-left: var(--space-md);">
+                                    <div class="card-title" style="font-size: 14px; color: var(--accent-purple);">Deploy New AMM & Tokens</div>
+                                    <p style="font-size: 11px; color: var(--text-secondary); margin-bottom: var(--space-sm);">This deploys 2 Test Tokens (TKA & TKB) and a SimpleAMM contract linking them.</p>
+                                    <button onclick="web3DefiDeployAmm()" id="web3DefiDeployBtn" class="btn btn-purple btn-sm btn-full">Deploy AMM Bundle 🚀</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Web3 AMM Interaction (Hidden until loaded) -->
+                    <div id="web3DefiInteractionContainer" style="display: none;">
+
+                        <!-- Web3 Pool Overview -->
+                        <div class="card">
+                            <div class="card-title" style="color:var(--accent-green);">Web3 Pool Overview</div>
+                            <div class="te-metrics" style="margin-bottom: var(--space-sm);">
+                                <div class="te-metric">
+                                    <div class="te-metric-label">Reserve A (<span id="web3DefiSymbolA">TKA</span>)</div>
+                                    <div class="te-metric-value" id="web3DefiReserveA" style="color:var(--accent-blue);">0</div>
+                                </div>
+                                <div class="te-metric">
+                                    <div class="te-metric-label">Reserve B (<span id="web3DefiSymbolB">TKB</span>)</div>
+                                    <div class="te-metric-value" id="web3DefiReserveB" style="color:var(--accent-green);">0</div>
+                                </div>
+                                <div class="te-metric">
+                                    <div class="te-metric-label">Total LP Shares</div>
+                                    <div class="te-metric-value" id="web3DefiTotalShares" style="color:var(--accent-purple);">0</div>
+                                </div>
+                            </div>
+                            <button onclick="web3DefiRefreshPool()" class="btn btn-ghost btn-sm btn-full">Refresh Pool Data 🔄</button>
+                        </div>
+
+                        <!-- Web3 User Balances & Faucet -->
+                        <div class="card">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-sm);">
+                                <div class="card-title" style="color:var(--accent-blue); margin: 0;">Your Wallet Balances</div>
+                                <button onclick="web3DefiMintTokens()" class="btn btn-sm btn-pink">Mint Test Tokens 🚰</button>
+                            </div>
+
+                            <div class="te-metrics">
+                                <div class="te-metric">
+                                    <div class="te-metric-label">Token A</div>
+                                    <div class="te-metric-value" id="web3DefiUserBalA">0</div>
+                                </div>
+                                <div class="te-metric">
+                                    <div class="te-metric-label">Token B</div>
+                                    <div class="te-metric-value" id="web3DefiUserBalB">0</div>
+                                </div>
+                                <div class="te-metric">
+                                    <div class="te-metric-label">Your LP Shares</div>
+                                    <div class="te-metric-value" id="web3DefiUserShares">0</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Web3 Swap -->
+                        <div class="card">
+                            <div class="card-title" style="color:var(--accent-orange);">Token Swap</div>
+                            <div style="display:flex;gap:var(--space-sm);align-items:end;flex-wrap:wrap;">
+                                <div class="form-group" style="flex:1;min-width:120px;">
+                                    <label class="form-label">Direction</label>
+                                    <select id="web3DefiSwapDir" class="form-input form-input-sm" onchange="web3DefiCalcPreview()">
+                                        <option value="AtoB">Token A → Token B</option>
+                                        <option value="BtoA">Token B → Token A</option>
+                                    </select>
+                                </div>
+                                <div class="form-group" style="flex:1;min-width:100px;">
+                                    <label class="form-label">Amount In</label>
+                                    <input type="number" id="web3DefiSwapAmount" class="form-input form-input-sm" placeholder="10" oninput="web3DefiCalcPreview()">
+                                </div>
+                                <button onclick="web3DefiSwap()" class="btn btn-orange">Swap 🔄</button>
+                            </div>
+                            <div id="web3DefiSwapPreview" style="margin-top:var(--space-xs);font-size:13px;color:var(--text-secondary);">≈ 0 Out</div>
+                        </div>
+
+                        <!-- Web3 Liquidity -->
+                        <div class="card">
+                            <div class="card-title" style="color:var(--accent-purple);">Manage Liquidity</div>
+                            <div class="te-split" style="gap: var(--space-md);">
+                                <div class="te-split-half">
+                                    <div class="form-group">
+                                        <label class="form-label">Add: Token A Amount</label>
+                                        <input type="number" id="web3DefiAddLiqA" class="form-input form-input-sm" placeholder="50">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Add: Token B Amount</label>
+                                        <input type="number" id="web3DefiAddLiqB" class="form-input form-input-sm" placeholder="50">
+                                    </div>
+                                    <button onclick="web3DefiAddLiquidity()" class="btn btn-purple btn-sm btn-full">Add Liquidity 💧</button>
+                                </div>
+                                <div class="te-split-half">
+                                    <div class="form-group">
+                                        <label class="form-label">Remove: LP Shares</label>
+                                        <input type="number" id="web3DefiRemoveShares" class="form-input form-input-sm" placeholder="10">
+                                    </div>
+                                    <button onclick="web3DefiRemoveLiquidity()" class="btn btn-ghost btn-sm btn-full" style="margin-top: 60px;">Remove Liquidity 📤</button>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div> <!-- END WEB3 MODE CONTAINER -->
+
+            </div>
+
+            <!-- ============ SECTION 15: DAO ============ -->
+            <div class="section" id="section-dao">
+                <div class="section-header">
+                    <h2>🏛️ DAO (Decentralized Autonomous Organization)</h2>
+                    <p>Create a governance system, craft proposals, vote with token-weighted power, and manage a shared
+                        treasury — all decentralized.</p>
+                </div>
+
+                <div class="info-box info-purple">
+                    <strong>DAO:</strong> An organization governed by smart contracts and token holders. Decisions are
+                    made through proposals and voting. Token holders have voting power proportional to their holdings.
+                    Proposals pass when they reach quorum and have majority support.
+                </div>
+
+                <!-- Mode Toggle -->
+                <div class="wallet-mode-toggle" style="margin-bottom: var(--space-lg);">
+                    <button class="wallet-mode-btn active" id="daoModeSimulated" onclick="setDaoMode('simulated')">🧪 Simulated (Eğitim Modu)</button>
+                    <button class="wallet-mode-btn" id="daoModeWeb3" onclick="setDaoMode('web3')">🌐 Web3 (MetaMask/Gerçek)</button>
+                </div>
+
+                <!-- SIMULATED MODE CONTAINER -->
+                <div id="daoSimulatedContainer">
+
+                <!-- Create DAO -->
+                <div class="card" id="daoCreateCard">
+                    <div class="card-title" style="color:var(--accent-purple);">Create DAO</div>
+                    <div style="display:flex;gap:var(--space-sm);flex-wrap:wrap;">
+                        <div class="form-group" style="flex:2;min-width:150px;"><label class="form-label">DAO
+                                Name</label><input type="text" id="daoName" class="form-input form-input-sm"
+                                placeholder="My DAO" value="BlockchainClass DAO"></div>
+                        <div class="form-group" style="flex:1;min-width:80px;"><label class="form-label">Token
+                                Symbol</label><input type="text" id="daoToken" class="form-input form-input-sm"
+                                placeholder="GOV" value="GOV"></div>
+                    </div>
+                    <div style="display:flex;gap:var(--space-sm);flex-wrap:wrap;">
+                        <div class="form-group" style="flex:1;"><label class="form-label">Total Supply</label><input
+                                type="number" id="daoSupply" class="form-input form-input-sm" value="10000"></div>
+                        <div class="form-group" style="flex:1;"><label class="form-label">Quorum (%)</label><input
+                                type="number" id="daoQuorum" class="form-input form-input-sm" value="50"></div>
+                        <div class="form-group" style="flex:1;"><label class="form-label">Voting Period
+                                (s=days)</label><input type="number" id="daoVotingPeriod"
+                                class="form-input form-input-sm" value="30"></div>
+                        <div class="form-group" style="flex:1;"><label class="form-label">Treasury</label><input
+                                type="number" id="daoTreasury" class="form-input form-input-sm" value="1000"></div>
+                    </div>
+                    <button onclick="daoCreate()" class="btn btn-purple btn-full">Create DAO 🏛️</button>
+                </div>
+
+                <!-- Active DAO UI -->
+                <div id="daoActiveUI" style="display:none;">
+                    <div
+                        style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-md);flex-wrap:wrap;gap:var(--space-sm);">
+                        <span id="daoLabel" style="font-size:18px;font-weight:700;color:var(--accent-purple);"></span>
+                        <button onclick="daoReset()" class="btn btn-sm btn-ghost">Reset 🔄</button>
+                    </div>
+
+                    <!-- Hostile Takeover Button -->
+                    <div style="margin-bottom: var(--space-md);">
+                        <button onclick="daoHostileTakeoverScenario()" class="btn btn-red btn-full">🚨 Simulate Hostile Takeover Attempt 🚨</button>
+                    </div>
+
+                    <!-- Dashboard -->
+                    <div class="card">
+                        <div class="card-title" style="color:var(--accent-cyan);">Governance Dashboard</div>
+                        <div class="te-metrics">
+                            <div class="te-metric">
+                                <div class="te-metric-label">Total Supply</div>
+                                <div class="te-metric-value" id="daoTotalSupply">—</div>
+                            </div>
+                            <div class="te-metric">
+                                <div class="te-metric-label">Treasury</div>
+                                <div class="te-metric-value" id="daoTreasuryBal" style="color:var(--accent-gold);">—
+                                </div>
+                            </div>
+                            <div class="te-metric">
+                                <div class="te-metric-label">Quorum</div>
+                                <div class="te-metric-value" id="daoQuorumVal" style="color:var(--accent-blue);">—</div>
+                            </div>
+                            <div class="te-metric">
+                                <div class="te-metric-label">Proposals</div>
+                                <div class="te-metric-value" id="daoTotalProposals">0</div>
+                            </div>
+                        </div>
+                        <div style="display:flex;gap:var(--space-md);margin-top:var(--space-sm);font-size:13px;">
+                            <span style="color:var(--accent-blue);">🗳️ Active: <strong
+                                    id="daoActiveCount">0</strong></span>
+                            <span style="color:var(--accent-green);">✔ Passed: <strong
+                                    id="daoPassedCount">0</strong></span>
+                            <span style="color:var(--accent-red);">✘ Rejected: <strong
+                                    id="daoRejectedCount">0</strong></span>
+                        </div>
+                    </div>
+
+                    <!-- Members -->
+                    <div class="card">
+                        <div class="card-title" style="color:var(--accent-blue);">Members & Voting Power</div>
+                        <div class="table-wrap">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Member</th>
+                                        <th>Address</th>
+                                        <th style="text-align:right;">Tokens</th>
+                                        <th style="text-align:right;">Power</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="daoMembersBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Create Proposal -->
+                    <div class="card">
+                        <div class="card-title" style="color:var(--accent-orange);">Create Proposal</div>
+                        <div class="form-group"><label class="form-label">Title</label><input type="text"
+                                id="daoPropTitle" class="form-input form-input-sm" placeholder="Fund development grant">
+                        </div>
+                        <div class="form-group"><label class="form-label">Description</label><input type="text"
+                                id="daoPropDesc" class="form-input form-input-sm"
+                                placeholder="Allocate 200 GOV from treasury for dev work"></div>
+                        <div style="display:flex;gap:var(--space-sm);flex-wrap:wrap;">
+                            <div class="form-group" style="flex:1;min-width:120px;">
+                                <label class="form-label">Type</label>
+                                <select id="daoPropType" class="form-input form-input-sm" onchange="showPropFields()">
+                                    <option value="transfer">💰 Treasury Transfer</option>
+                                    <option value="mint">➕ Mint Tokens</option>
+                                    <option value="burn">🔥 Burn Tokens</option>
+                                    <option value="quorum">⚖️ Change Quorum</option>
+                                    <option value="general">📋 General</option>
+                                </select>
+                            </div>
+                            <div class="form-group" id="daoPropAmountGroup" style="flex:1;min-width:80px;"><label
+                                    class="form-label">Amount</label><input type="number" id="daoPropAmount"
+                                    class="form-input form-input-sm" placeholder="200"></div>
+                            <div class="form-group" id="daoPropTargetGroup" style="flex:1;min-width:120px;"><label
+                                    class="form-label">Target</label><select id="daoPropTarget"
+                                    class="form-input form-input-sm"></select></div>
+                        </div>
+                        <button onclick="daoCreateProposal()" class="btn btn-orange btn-full">Submit Proposal
+                            📝</button>
+                    </div>
+
+                    <!-- Proposals -->
+                    <div class="card">
+                        <div class="card-title" style="color:var(--accent-green);">Proposals</div>
+                        <div id="daoProposalsList">
+                            <p style="color:var(--text-muted);font-size:13px;">No proposals yet. Create one above!</p>
+                        </div>
+                    </div>
+
+                    <!-- Event Log -->
+                    <div class="card">
+                        <div class="card-title" style="color:var(--text-secondary);">Governance Log</div>
+                        <div class="te-event-log" id="daoEventLog">
+                            <p style="color:var(--text-muted);font-size:13px;">No events yet.</p>
+                        </div>
+                    </div>
+                </div>
+                </div> <!-- END SIMULATED MODE CONTAINER -->
+
+                <!-- WEB3 MODE CONTAINER -->
+                <div id="daoWeb3Container" style="display: none;">
+
+                    <!-- Wallet & DAO Setup -->
+                    <div class="card">
+                        <div class="card-title" style="color: var(--accent-orange);">🔗 Web3 Wallet & DAO Contracts</div>
+
+                        <div id="web3DaoWalletSection">
+                            <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: var(--space-md);">Please connect your MetaMask wallet. Ensure you are on the <strong>Akadal Chain</strong>.</p>
+                            <button onclick="web3DaoConnectWallet()" id="web3DaoConnectBtn" class="btn btn-orange btn-full">Connect MetaMask 🦊</button>
+                        </div>
+
+                        <div id="web3DaoSetupSection" style="display: none; margin-top: var(--space-md);">
+                            <div class="wallet-badge" style="margin-bottom: var(--space-md);">
+                                <div class="wallet-badge-row">
+                                    <span class="wallet-badge-label">Wallet</span>
+                                    <span class="wallet-badge-value" id="web3DaoWalletAddr">—</span>
+                                </div>
+                                <div class="wallet-badge-row">
+                                    <span class="wallet-badge-label">Network</span>
+                                    <span class="wallet-badge-value" id="web3DaoNetwork">—</span>
+                                </div>
+                            </div>
+
+                            <div class="te-split" style="gap: var(--space-md);">
+                                <div class="te-split-half" style="border-right: 1px solid var(--border-color); padding-right: var(--space-md);">
+                                    <div class="card-title" style="font-size: 14px; color: var(--accent-blue);">Load Existing DAO</div>
+                                    <div class="form-group">
+                                        <label class="form-label">DAO Contract Address</label>
+                                        <input type="text" id="web3DaoContractAddr" class="form-input form-input-sm" placeholder="0x...">
+                                    </div>
+                                    <button onclick="web3DaoLoadContract()" id="web3DaoLoadBtn" class="btn btn-blue btn-sm btn-full">Load DAO ⬇️</button>
+                                </div>
+
+                                <div class="te-split-half" style="padding-left: var(--space-md);">
+                                    <div class="card-title" style="font-size: 14px; color: var(--accent-purple);">Deploy New DAO</div>
+                                    <p style="font-size: 11px; color: var(--text-secondary); margin-bottom: var(--space-sm);">Deploys a Governance Token (GOV) first, then the SimpleDAO contract linked to it.</p>
+                                    <button onclick="web3DaoDeployBundle()" id="web3DaoDeployBtn" class="btn btn-purple btn-sm btn-full">Deploy DAO Bundle 🚀</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Web3 DAO Interaction (Hidden until loaded) -->
+                    <div id="web3DaoInteractionContainer" style="display: none;">
+
+                        <!-- Web3 Member Info -->
+                        <div class="card">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-sm);">
+                                <div class="card-title" style="color:var(--accent-blue); margin: 0;">Your Membership</div>
+                                <button onclick="web3DaoMintGovTokens()" class="btn btn-sm btn-pink">Mint 100 GOV 🚰</button>
+                            </div>
+
+                            <div class="te-metrics">
+                                <div class="te-metric">
+                                    <div class="te-metric-label">Token Balance</div>
+                                    <div class="te-metric-value" id="web3DaoUserBal" style="color:var(--accent-green);">0 GOV</div>
+                                </div>
+                                <div class="te-metric">
+                                    <div class="te-metric-label">Voting Power</div>
+                                    <div class="te-metric-value" id="web3DaoUserVotes" style="color:var(--accent-purple);">0</div>
+                                </div>
+                            </div>
+                            <p style="font-size: 11px; color: var(--text-muted); margin-top: var(--space-sm);">Tokens must be minted or transferred to increase your voting power. Voting power determines your influence on proposals.</p>
+                        </div>
+
+                        <!-- Web3 Create Proposal -->
+                        <div class="card">
+                            <div class="card-title" style="color:var(--accent-orange);">Create On-Chain Proposal</div>
+                            <div class="form-group">
+                                <label class="form-label">Description</label>
+                                <input type="text" id="web3DaoPropDesc" class="form-input form-input-sm" placeholder="e.g. Upgrade the protocol">
+                            </div>
+                            <button onclick="web3DaoCreateProposal()" class="btn btn-orange btn-full">Submit Proposal 📝</button>
+                        </div>
+
+                        <!-- Web3 Proposals List -->
+                        <div class="card">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-md);">
+                                <div class="card-title" style="color:var(--accent-green); margin: 0;">Active Proposals</div>
+                                <button onclick="web3DaoRefreshProposals()" class="btn btn-sm btn-ghost">Refresh 🔄</button>
+                            </div>
+                            <div class="form-group" style="margin-bottom: var(--space-md);">
+                                <label class="form-label">Fetch specific proposal by ID</label>
+                                <div style="display: flex; gap: var(--space-sm);">
+                                    <input type="number" id="web3DaoFetchId" class="form-input form-input-sm" placeholder="ID (e.g. 1)" style="flex: 1;">
+                                    <button onclick="web3DaoFetchProposal()" class="btn btn-ghost btn-sm">Fetch</button>
+                                </div>
+                            </div>
+
+                            <div id="web3DaoProposalsList">
+                                <p style="color:var(--text-muted);font-size:13px;text-align:center;">No proposals loaded. Fetch one by ID to view.</p>
+                            </div>
+                        </div>
+
+                    </div>
+                </div> <!-- END WEB3 MODE CONTAINER -->
+
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast">Action successful</div>
+
+    <!-- External Dependencies -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsencrypt/3.3.2/jsencrypt.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.4/ethers.umd.min.js"></script>
+
+    <!-- App Scripts -->
+    <script src="js/wordlist.js"></script>
+    <script src="js/app.js"></script>
+    <script src="js/hash.js"></script>
+    <script src="js/symmetric.js"></script>
+    <script src="js/asymmetric.js"></script>
+    <script src="js/signing.js"></script>
+    <script src="js/consensus.js"></script>
+    <script src="js/block.js"></script>
+    <script src="js/blockchain.js"></script>
+    <script src="js/distributed.js"></script>
+    <script src="js/wallet.js"></script>
+    <script src="js/transaction.js"></script>
+    <script src="js/contracts-data.js"></script>
+    <script src="js/contracts.js"></script>
+    <script src="js/tokenomics.js"></script>
+    <script src="js/nft.js"></script>
+    <script src="js/defi.js"></script>
+    <script src="js/dao.js"></script>
+</body>
+
+</html>
