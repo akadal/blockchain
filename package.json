@@ -1,8 +1,10 @@
 {
   "dependencies": {
+    "@playwright/test": "^1.58.2",
     "axios": "^1.13.2",
     "ethers": "^6.16.0",
     "express": "^5.2.1",
+    "playwright": "^1.58.2",
     "solc": "^0.8.24"
   }
 }

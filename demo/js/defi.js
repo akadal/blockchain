@@ -517,14 +517,14 @@ window.web3DefiDeployAmm = async function() {
         var TokenFactory = new ethers.ContractFactory(tData.abi, tData.bytecode, defi.web3.signer);
 
         // Deploy Token A
-        var tokenA = await TokenFactory.deploy("Token A", "TKA");
+        var tokenA = await TokenFactory.deploy("Token A", "TKA", { gasLimit: 3000000 });
         await tokenA.waitForDeployment();
         var addrA = await tokenA.getAddress();
 
         btn.textContent = "Deploying Token B...";
 
         // Deploy Token B
-        var tokenB = await TokenFactory.deploy("Token B", "TKB");
+        var tokenB = await TokenFactory.deploy("Token B", "TKB", { gasLimit: 3000000 });
         await tokenB.waitForDeployment();
         var addrB = await tokenB.getAddress();
 
@@ -532,7 +532,7 @@ window.web3DefiDeployAmm = async function() {
 
         // Deploy AMM
         var AmmFactory = new ethers.ContractFactory(aData.abi, aData.bytecode, defi.web3.signer);
-        var amm = await AmmFactory.deploy(addrA, addrB);
+        var amm = await AmmFactory.deploy(addrA, addrB, { gasLimit: 3000000 });
         await amm.waitForDeployment();
         var addrAmm = await amm.getAddress();
 

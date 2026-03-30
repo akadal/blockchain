@@ -510,7 +510,7 @@ window.web3DaoDeployBundle = async function() {
 
         // Deploy Gov Token (Initial supply: 0)
         var TokenFactory = new ethers.ContractFactory(gData.abi, gData.bytecode, dao.web3.signer);
-        var govToken = await TokenFactory.deploy(0n);
+        var govToken = await TokenFactory.deploy(0n, { gasLimit: 3000000 });
         await govToken.waitForDeployment();
         var tokenAddr = await govToken.getAddress();
 
@@ -518,7 +518,7 @@ window.web3DaoDeployBundle = async function() {
 
         // Deploy DAO
         var DaoFactory = new ethers.ContractFactory(dData.abi, dData.bytecode, dao.web3.signer);
-        var daoContract = await DaoFactory.deploy(tokenAddr);
+        var daoContract = await DaoFactory.deploy(tokenAddr, { gasLimit: 3000000 });
         await daoContract.waitForDeployment();
         var daoAddr = await daoContract.getAddress();
 
