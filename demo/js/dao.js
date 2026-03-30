@@ -623,15 +623,36 @@ window.web3DaoCreateProposal = async function() {
     var desc = document.getElementById('web3DaoPropDesc').value.trim();
     if (!desc) { showToast("Enter description"); return; }
 
+    // Check for voting power first
+    if (dao.web3.userVotes === 0n) {
+        showToast("Error: No voting power! Mint GOV tokens first.");
+        return;
+    }
+
     try {
+        var btn = event.target;
+        var oldText = btn.textContent;
+        btn.disabled = true;
+        btn.textContent = "Creating...";
+
         showToast("Creating proposal on-chain...");
         var tx = await dao.web3.daoContract.createProposal(desc);
         await tx.wait();
         showToast("Proposal created!");
         document.getElementById('web3DaoPropDesc').value = '';
+        
+        btn.disabled = false;
+        btn.textContent = oldText;
+        
+        await web3DaoRefreshMemberInfo();
     } catch(e) {
         console.error(e);
-        showToast("Failed: " + e.message);
+        var btn = document.querySelector('button[onclick="web3DaoCreateProposal()"]');
+        if (btn) {
+            btn.disabled = false;
+            btn.textContent = "Submit Proposal 📝";
+        }
+        showToast("Failed: " + (e.reason || e.message));
     }
 };
 

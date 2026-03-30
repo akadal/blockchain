@@ -27,6 +27,9 @@ var defi = {
         ammContract: null,
         tokenAContract: null,
         tokenBContract: null,
+        lendingContract: null,
+        farmContract: null,
+        rewardTokenContract: null,
         resA: 0n,
         resB: 0n,
         totalShares: 0n,
@@ -34,7 +37,12 @@ var defi = {
         userBalB: 0n,
         userShares: 0n,
         symbolA: 'TKA',
-        symbolB: 'TKB'
+        symbolB: 'TKB',
+        collateral: 0n,
+        borrowed: 0n,
+        health: "∞",
+        stakedLP: 0n,
+        pendingFarm: 0n
     }
 };
 
@@ -513,6 +521,8 @@ window.web3DefiDeployAmm = async function() {
 
         var tData = CONTRACT_TEMPLATES['testtoken'];
         var aData = CONTRACT_TEMPLATES['simpleamm'];
+        var lData = CONTRACT_TEMPLATES['simplelending'];
+        var fData = CONTRACT_TEMPLATES['simpleyieldfarm'];
 
         var TokenFactory = new ethers.ContractFactory(tData.abi, tData.bytecode, defi.web3.signer);
 
@@ -536,10 +546,35 @@ window.web3DefiDeployAmm = async function() {
         await amm.waitForDeployment();
         var addrAmm = await amm.getAddress();
 
-        showToast("Successfully deployed!");
+        btn.textContent = "Deploying Lending...";
+        var LendingFactory = new ethers.ContractFactory(lData.abi, lData.bytecode, defi.web3.signer);
+        var lending = await LendingFactory.deploy(addrA, { gasLimit: 3000000 });
+        await lending.waitForDeployment();
+        var addrLending = await lending.getAddress();
+
+        btn.textContent = "Deploying Reward Token...";
+        var rewardToken = await TokenFactory.deploy("Farm Reward", "FARM", { gasLimit: 3000000 });
+        await rewardToken.waitForDeployment();
+        var addrReward = await rewardToken.getAddress();
+
+        btn.textContent = "Deploying Yield Farm...";
+        var FarmFactory = new ethers.ContractFactory(fData.abi, fData.bytecode, defi.web3.signer);
+        // SimpleYieldFarm(address _lpToken, address _rewardToken)
+        var farm = await FarmFactory.deploy(addrAmm, addrReward, { gasLimit: 3000000 });
+        await farm.waitForDeployment();
+        var addrFarm = await farm.getAddress();
+
+        // Transfer reward tokens to farm
+        btn.textContent = "Funding Farm...";
+        var txFund = await rewardToken.mint(ethers.parseUnits("1000000", 18));
+        await txFund.wait();
+        var txTrans = await rewardToken.transfer(addrFarm, ethers.parseUnits("1000000", 18));
+        await txTrans.wait();
+
+        showToast("Successfully deployed entire DeFi bundle!");
         document.getElementById('web3DefiAmmAddr').value = addrAmm;
 
-        await web3DefiLoadAmmContract(addrAmm, addrA, addrB);
+        await web3DefiLoadAmmContract(addrAmm, addrA, addrB, addrLending, addrFarm, addrReward);
 
     } catch (e) {
         console.error(e);
@@ -578,13 +613,23 @@ window.web3DefiLoadAmm = async function() {
     }
 };
 
-async function web3DefiLoadAmmContract(ammAddr, tokenAAddr, tokenBAddr) {
+async function web3DefiLoadAmmContract(ammAddr, tokenAAddr, tokenBAddr, lendingAddr, farmAddr, rewardAddr) {
     var aData = CONTRACT_TEMPLATES['simpleamm'];
     var tData = CONTRACT_TEMPLATES['testtoken'];
+    var lData = CONTRACT_TEMPLATES['simplelending'];
+    var fData = CONTRACT_TEMPLATES['simpleyieldfarm'];
 
     defi.web3.ammContract = new ethers.Contract(ammAddr, aData.abi, defi.web3.signer);
     defi.web3.tokenAContract = new ethers.Contract(tokenAAddr, tData.abi, defi.web3.signer);
     defi.web3.tokenBContract = new ethers.Contract(tokenBAddr, tData.abi, defi.web3.signer);
+
+    if (lendingAddr) {
+        defi.web3.lendingContract = new ethers.Contract(lendingAddr, lData.abi, defi.web3.signer);
+    }
+    if (farmAddr) {
+        defi.web3.farmContract = new ethers.Contract(farmAddr, fData.abi, defi.web3.signer);
+        defi.web3.rewardTokenContract = new ethers.Contract(rewardAddr, tData.abi, defi.web3.signer);
+    }
 
     // Get symbols
     defi.web3.symbolA = await defi.web3.tokenAContract.symbol();
@@ -615,12 +660,36 @@ window.web3DefiRefreshPool = async function() {
         // Pool stats
         defi.web3.resA = await defi.web3.ammContract.reserveA();
         defi.web3.resB = await defi.web3.ammContract.reserveB();
-        defi.web3.totalShares = await defi.web3.ammContract.totalShares();
+        defi.web3.totalShares = await defi.web3.ammContract.totalSupply();
 
         // User stats
         defi.web3.userBalA = await defi.web3.tokenAContract.balanceOf(defi.web3.address);
         defi.web3.userBalB = await defi.web3.tokenBContract.balanceOf(defi.web3.address);
-        defi.web3.userShares = await defi.web3.ammContract.shares(defi.web3.address);
+        defi.web3.userShares = await defi.web3.ammContract.balanceOf(defi.web3.address);
+
+        // Lending stats
+        if (defi.web3.lendingContract) {
+            defi.web3.collateral = await defi.web3.lendingContract.collateral(defi.web3.address);
+            defi.web3.borrowed = await defi.web3.lendingContract.borrowed(defi.web3.address);
+            
+            var colVal = parseFloat(ethers.formatUnits(defi.web3.collateral, 18));
+            var borVal = parseFloat(ethers.formatUnits(defi.web3.borrowed, 18));
+            
+            if (borVal > 0) {
+                // Simplified health factor: (collateral / borrowed) * (100 / collateralRatio)
+                // Contract uses 150 (ratio)
+                var health = (colVal / (borVal * 1.5)) * 100;
+                defi.web3.health = health.toFixed(0) + "%";
+            } else {
+                defi.web3.health = "∞";
+            }
+        }
+
+        // Farm stats
+        if (defi.web3.farmContract) {
+            defi.web3.stakedLP = await defi.web3.farmContract.stakedBalance(defi.web3.address);
+            defi.web3.pendingFarm = await defi.web3.farmContract.pendingRewards(defi.web3.address);
+        }
 
         updateWeb3DefiUI();
     } catch(e) {
@@ -639,6 +708,13 @@ function updateWeb3DefiUI() {
     setT('web3DefiUserBalA', ethers.formatUnits(defi.web3.userBalA, 18) + ' ' + defi.web3.symbolA);
     setT('web3DefiUserBalB', ethers.formatUnits(defi.web3.userBalB, 18) + ' ' + defi.web3.symbolB);
     setT('web3DefiUserShares', ethers.formatUnits(defi.web3.userShares, 18));
+
+    setT('web3DefiCollateral', ethers.formatUnits(defi.web3.collateral, 18));
+    setT('web3DefiBorrowed', ethers.formatUnits(defi.web3.borrowed, 18));
+    setT('web3DefiHealth', defi.web3.health);
+
+    setT('web3DefiStakedLP', ethers.formatUnits(defi.web3.stakedLP, 18));
+    setT('web3DefiPendingFarm', ethers.formatUnits(defi.web3.pendingFarm, 18));
 }
 
 window.web3DefiCalcPreview = async function() {
@@ -775,6 +851,115 @@ window.web3DefiRemoveLiquidity = async function() {
         console.error(e);
         showToast("Failed to remove liquidity: " + e.message);
     }
+};
+
+// ==========================================
+// WEB3: LENDING ACTIONS
+// ==========================================
+
+window.web3DefiLendingDeposit = async function() {
+    var amtStr = document.getElementById('web3DefiDepositAmt').value;
+    if (!amtStr || !defi.web3.lendingContract) return;
+    try {
+        var amt = ethers.parseUnits(amtStr, 18);
+        var lendingAddr = await defi.web3.lendingContract.getAddress();
+        showToast("Approving Token A...");
+        var txApp = await defi.web3.tokenAContract.approve(lendingAddr, amt);
+        await txApp.wait();
+        showToast("Depositing collateral...");
+        var tx = await defi.web3.lendingContract.deposit(amt);
+        await tx.wait();
+        showToast("Collateral deposited!");
+        await web3DefiRefreshPool();
+    } catch(e) { showToast("Deposit failed: " + e.message); }
+};
+
+window.web3DefiLendingWithdraw = async function() {
+    var amtStr = document.getElementById('web3DefiDepositAmt').value;
+    if (!amtStr || !defi.web3.lendingContract) return;
+    try {
+        var amt = ethers.parseUnits(amtStr, 18);
+        showToast("Withdrawing collateral...");
+        var tx = await defi.web3.lendingContract.withdraw(amt);
+        await tx.wait();
+        showToast("Collateral withdrawn!");
+        await web3DefiRefreshPool();
+    } catch(e) { showToast("Withdraw failed: " + e.message); }
+};
+
+window.web3DefiLendingBorrow = async function() {
+    var amtStr = document.getElementById('web3DefiBorrowAmt').value;
+    if (!amtStr || !defi.web3.lendingContract) return;
+    try {
+        var amt = ethers.parseUnits(amtStr, 18);
+        showToast("Borrowing...");
+        var tx = await defi.web3.lendingContract.borrow(amt);
+        await tx.wait();
+        showToast("Borrow successful!");
+        await web3DefiRefreshPool();
+    } catch(e) { showToast("Borrow failed: " + e.message); }
+};
+
+window.web3DefiLendingRepay = async function() {
+    var amtStr = document.getElementById('web3DefiBorrowAmt').value;
+    if (!amtStr || !defi.web3.lendingContract) return;
+    try {
+        var amt = ethers.parseUnits(amtStr, 18);
+        var lendingAddr = await defi.web3.lendingContract.getAddress();
+        showToast("Approving repayment...");
+        var txApp = await defi.web3.tokenAContract.approve(lendingAddr, amt);
+        await txApp.wait();
+        showToast("Repaying...");
+        var tx = await defi.web3.lendingContract.repay(amt);
+        await tx.wait();
+        showToast("Repay successful!");
+        await web3DefiRefreshPool();
+    } catch(e) { showToast("Repay failed: " + e.message); }
+};
+
+// ==========================================
+// WEB3: FARMING ACTIONS
+// ==========================================
+
+window.web3DefiFarmStake = async function() {
+    var amtStr = document.getElementById('web3DefiFarmAmt').value;
+    if (!amtStr || !defi.web3.farmContract) return;
+    try {
+        var amt = ethers.parseUnits(amtStr, 18);
+        var farmAddr = await defi.web3.farmContract.getAddress();
+        showToast("Approving LP tokens...");
+        var txApp = await defi.web3.ammContract.approve(farmAddr, amt);
+        await txApp.wait();
+        showToast("Staking in farm...");
+        var tx = await defi.web3.farmContract.stake(amt);
+        await tx.wait();
+        showToast("Staked!");
+        await web3DefiRefreshPool();
+    } catch(e) { showToast("Stake failed: " + e.message); }
+};
+
+window.web3DefiFarmUnstake = async function() {
+    var amtStr = document.getElementById('web3DefiFarmAmt').value;
+    if (!amtStr || !defi.web3.farmContract) return;
+    try {
+        var amt = ethers.parseUnits(amtStr, 18);
+        showToast("Unstaking...");
+        var tx = await defi.web3.farmContract.unstake(amt);
+        await tx.wait();
+        showToast("Unstaked!");
+        await web3DefiRefreshPool();
+    } catch(e) { showToast("Unstake failed: " + e.message); }
+};
+
+window.web3DefiFarmHarvest = async function() {
+    if (!defi.web3.farmContract) return;
+    try {
+        showToast("Harvesting rewards...");
+        var tx = await defi.web3.farmContract.harvest();
+        await tx.wait();
+        showToast("Harvested!");
+        await web3DefiRefreshPool();
+    } catch(e) { showToast("Harvest failed: " + e.message); }
 };
 
 // ==========================================

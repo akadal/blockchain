@@ -2127,6 +2127,71 @@
                             </div>
                         </div>
 
+                        <!-- Web3 Lending -->
+                        <div class="card">
+                            <div class="card-title" style="color:var(--accent-cyan);">Web3 Lending & Borrowing</div>
+                            <div class="info-box info-blue" style="margin-bottom:var(--space-md); font-size: 12px;">
+                                <strong>On-Chain Lending:</strong> Deposit Token A as collateral to borrow Token A (simulated loop/test). Collateral ratio: <strong>150%</strong>.
+                            </div>
+                            <div class="te-metrics" style="margin-bottom:var(--space-sm);">
+                                <div class="te-metric">
+                                    <div class="te-metric-label">Collateral</div>
+                                    <div class="te-metric-value" id="web3DefiCollateral" style="color:var(--accent-green);">0</div>
+                                </div>
+                                <div class="te-metric">
+                                    <div class="te-metric-label">Borrowed</div>
+                                    <div class="te-metric-value" id="web3DefiBorrowed" style="color:var(--accent-red);">0</div>
+                                </div>
+                                <div class="te-metric">
+                                    <div class="te-metric-label">Health Factor</div>
+                                    <div class="te-metric-value" id="web3DefiHealth" style="color:var(--accent-green);">∞</div>
+                                </div>
+                            </div>
+                            <div style="display:flex;gap:var(--space-sm);flex-wrap:wrap;margin-bottom:var(--space-sm);">
+                                <div class="form-group" style="flex:1;min-width:100px;">
+                                    <label class="form-label">Deposit Collateral</label>
+                                    <input type="number" id="web3DefiDepositAmt" class="form-input form-input-sm" placeholder="100">
+                                </div>
+                                <button onclick="web3DefiLendingDeposit()" class="btn btn-green btn-sm">Deposit</button>
+                                <button onclick="web3DefiLendingWithdraw()" class="btn btn-ghost btn-sm">Withdraw</button>
+                            </div>
+                            <div style="display:flex;gap:var(--space-sm);flex-wrap:wrap;">
+                                <div class="form-group" style="flex:1;min-width:100px;">
+                                    <label class="form-label">Borrow Amount</label>
+                                    <input type="number" id="web3DefiBorrowAmt" class="form-input form-input-sm" placeholder="50">
+                                </div>
+                                <button onclick="web3DefiLendingBorrow()" class="btn btn-orange btn-sm">Borrow 💳</button>
+                                <button onclick="web3DefiLendingRepay()" class="btn btn-ghost btn-sm">Repay ✅</button>
+                            </div>
+                        </div>
+
+                        <!-- Web3 Yield Farming -->
+                        <div class="card">
+                            <div class="card-title" style="color:var(--accent-gold);">Web3 Yield Farming</div>
+                            <div class="info-box info-orange" style="margin-bottom:var(--space-md); font-size: 12px;">
+                                Stake your <strong>LP Tokens</strong> to earn <strong>FARM</strong> rewards.
+                            </div>
+                            <div class="te-metrics" style="margin-bottom:var(--space-sm);">
+                                <div class="te-metric">
+                                    <div class="te-metric-label">Staked LP</div>
+                                    <div class="te-metric-value" id="web3DefiStakedLP" style="color:var(--accent-purple);">0</div>
+                                </div>
+                                <div class="te-metric">
+                                    <div class="te-metric-label">Pending FARM</div>
+                                    <div class="te-metric-value" id="web3DefiPendingFarm" style="color:var(--accent-gold);">0</div>
+                                </div>
+                            </div>
+                            <div style="display:flex;gap:var(--space-sm);align-items:end;flex-wrap:wrap;">
+                                <div class="form-group" style="flex:1;min-width:100px;">
+                                    <label class="form-label">LP Amount</label>
+                                    <input type="number" id="web3DefiFarmAmt" class="form-input form-input-sm" placeholder="10">
+                                </div>
+                                <button onclick="web3DefiFarmStake()" class="btn btn-green btn-sm">Stake 🌾</button>
+                                <button onclick="web3DefiFarmUnstake()" class="btn btn-ghost btn-sm">Unstake</button>
+                                <button onclick="web3DefiFarmHarvest()" class="btn btn-orange btn-sm">Harvest 🌻</button>
+                            </div>
+                        </div>
+
                     </div>
                 </div> <!-- END WEB3 MODE CONTAINER -->
 

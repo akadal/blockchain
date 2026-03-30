@@ -11,21 +11,79 @@ interface IERC20 {
     function transferFrom(address sender, address recipient, uint256 amount) external returns (bool);
 }
 
+// Simple ERC20 Token for testing AMM
+contract TestToken {
+    string public name;
+    string public symbol;
+    uint8 public decimals = 18;
+    uint256 public totalSupply;
+    mapping(address => uint256) public balanceOf;
+    mapping(address => mapping(address => uint256)) public allowance;
+
+    event Transfer(address indexed from, address indexed to, uint256 value);
+    event Approval(address indexed owner, address indexed spender, uint256 value);
+
+    constructor(string memory _name, string memory _symbol) {
+        name = _name;
+        symbol = _symbol;
+    }
+
+    // Anyone can mint for testing
+    function mint(uint256 amount) external {
+        _mint(msg.sender, amount);
+    }
+
+    function _mint(address to, uint256 amount) internal {
+        balanceOf[to] += amount;
+        totalSupply += amount;
+        emit Transfer(address(0), to, amount);
+    }
+
+    function _burn(address from, uint256 amount) internal {
+        require(balanceOf[from] >= amount, "Insufficient balance");
+        balanceOf[from] -= amount;
+        totalSupply -= amount;
+        emit Transfer(from, address(0), amount);
+    }
+
+    function transfer(address to, uint256 amount) external returns (bool) {
+        require(balanceOf[msg.sender] >= amount, "Insufficient balance");
+        balanceOf[msg.sender] -= amount;
+        balanceOf[to] += amount;
+        emit Transfer(msg.sender, to, amount);
+        return true;
+    }
+
+    function approve(address spender, uint256 amount) external returns (bool) {
+        allowance[msg.sender][spender] = amount;
+        emit Approval(msg.sender, spender, amount);
+        return true;
+    }
+
+    function transferFrom(address from, address to, uint256 amount) external returns (bool) {
+        require(balanceOf[from] >= amount, "Insufficient balance");
+        require(allowance[from][msg.sender] >= amount, "Insufficient allowance");
+        allowance[from][msg.sender] -= amount;
+        balanceOf[from] -= amount;
+        balanceOf[to] += amount;
+        emit Transfer(from, to, amount);
+        return true;
+    }
+}
+
 // Very simple automated market maker (AMM) for educational purposes
-contract SimpleAMM {
+contract SimpleAMM is TestToken {
     IERC20 public tokenA;
     IERC20 public tokenB;
 
     uint256 public reserveA;
     uint256 public reserveB;
-    uint256 public totalShares;
-    mapping(address => uint256) public shares;
 
     event Swap(address indexed user, address tokenIn, uint256 amountIn, uint256 amountOut);
     event AddLiquidity(address indexed user, uint256 amountA, uint256 amountB, uint256 shares);
     event RemoveLiquidity(address indexed user, uint256 amountA, uint256 amountB, uint256 shares);
 
-    constructor(address _tokenA, address _tokenB) {
+    constructor(address _tokenA, address _tokenB) TestToken("AMM LP Token", "LP") {
         tokenA = IERC20(_tokenA);
         tokenB = IERC20(_tokenB);
     }
@@ -36,17 +94,16 @@ contract SimpleAMM {
         require(tokenB.transferFrom(msg.sender, address(this), _amountB), "Transfer B failed");
 
         uint256 sharesToMint;
-        if (totalShares == 0) {
+        if (totalSupply == 0) {
             sharesToMint = _amountA; // simplified initial shares
         } else {
-            uint256 shareA = (_amountA * totalShares) / reserveA;
-            uint256 shareB = (_amountB * totalShares) / reserveB;
+            uint256 shareA = (_amountA * totalSupply) / reserveA;
+            uint256 shareB = (_amountB * totalSupply) / reserveB;
             sharesToMint = shareA < shareB ? shareA : shareB; // min
         }
 
         require(sharesToMint > 0, "Shares = 0");
-        shares[msg.sender] += sharesToMint;
-        totalShares += sharesToMint;
+        _mint(msg.sender, sharesToMint);
 
         reserveA += _amountA;
         reserveB += _amountB;
@@ -56,13 +113,12 @@ contract SimpleAMM {
 
     // Simplistic liquidity removal
     function removeLiquidity(uint256 _shares) external {
-        require(shares[msg.sender] >= _shares, "Not enough shares");
+        require(balanceOf[msg.sender] >= _shares, "Not enough shares");
 
-        uint256 amountA = (_shares * reserveA) / totalShares;
-        uint256 amountB = (_shares * reserveB) / totalShares;
+        uint256 amountA = (_shares * reserveA) / totalSupply;
+        uint256 amountB = (_shares * reserveB) / totalSupply;
 
-        shares[msg.sender] -= _shares;
-        totalShares -= _shares;
+        _burn(msg.sender, _shares);
         reserveA -= amountA;
         reserveB -= amountB;
 
@@ -109,54 +165,5 @@ contract SimpleAMM {
         require(amountIn > 0 && reserveIn > 0 && reserveOut > 0, "Invalid reserves");
         // Simple formula without fees
         amountOut = (reserveOut * amountIn) / (reserveIn + amountIn);
-    }
-}
-
-// Simple ERC20 Token for testing AMM
-contract TestToken {
-    string public name;
-    string public symbol;
-    uint8 public decimals = 18;
-    uint256 public totalSupply;
-    mapping(address => uint256) public balanceOf;
-    mapping(address => mapping(address => uint256)) public allowance;
-
-    event Transfer(address indexed from, address indexed to, uint256 value);
-    event Approval(address indexed owner, address indexed spender, uint256 value);
-
-    constructor(string memory _name, string memory _symbol) {
-        name = _name;
-        symbol = _symbol;
-    }
-
-    // Anyone can mint for testing
-    function mint(uint256 amount) external {
-        balanceOf[msg.sender] += amount;
-        totalSupply += amount;
-        emit Transfer(address(0), msg.sender, amount);
-    }
-
-    function transfer(address to, uint256 amount) external returns (bool) {
-        require(balanceOf[msg.sender] >= amount, "Insufficient balance");
-        balanceOf[msg.sender] -= amount;
-        balanceOf[to] += amount;
-        emit Transfer(msg.sender, to, amount);
-        return true;
-    }
-
-    function approve(address spender, uint256 amount) external returns (bool) {
-        allowance[msg.sender][spender] = amount;
-        emit Approval(msg.sender, spender, amount);
-        return true;
-    }
-
-    function transferFrom(address from, address to, uint256 amount) external returns (bool) {
-        require(balanceOf[from] >= amount, "Insufficient balance");
-        require(allowance[from][msg.sender] >= amount, "Insufficient allowance");
-        allowance[from][msg.sender] -= amount;
-        balanceOf[from] -= amount;
-        balanceOf[to] += amount;
-        emit Transfer(from, to, amount);
-        return true;
     }
 }
