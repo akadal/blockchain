@@ -753,11 +753,11 @@ window.web3DefiMintTokens = async function() {
     if (!defi.web3.tokenAContract) return;
     try {
         showToast("Minting 100 TKA...");
-        var txA = await defi.web3.tokenAContract.mint(ethers.parseUnits("100", 18));
+        var txA = await defi.web3.tokenAContract.mint(defi.web3.address, ethers.parseUnits("100", 18));
         await txA.wait();
 
         showToast("Minting 1000 TKB...");
-        var txB = await defi.web3.tokenBContract.mint(ethers.parseUnits("1000", 18));
+        var txB = await defi.web3.tokenBContract.mint(defi.web3.address, ethers.parseUnits("1000", 18));
         await txB.wait();
 
         showToast("Tokens minted!");
