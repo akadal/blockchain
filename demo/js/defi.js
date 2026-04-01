@@ -519,7 +519,7 @@ window.web3DefiDeployAmm = async function() {
         btn.disabled = true;
         btn.textContent = "Deploying Token A...";
 
-        var tData = CONTRACT_TEMPLATES['testtoken'];
+        var tData = CONTRACT_TEMPLATES['token'];
         var aData = CONTRACT_TEMPLATES['simpleamm'];
         var lData = CONTRACT_TEMPLATES['simplelending'];
         var fData = CONTRACT_TEMPLATES['simpleyieldfarm'];
@@ -527,14 +527,14 @@ window.web3DefiDeployAmm = async function() {
         var TokenFactory = new ethers.ContractFactory(tData.abi, tData.bytecode, defi.web3.signer);
 
         // Deploy Token A
-        var tokenA = await TokenFactory.deploy("Token A", "TKA", { gasLimit: 3000000 });
+        var tokenA = await TokenFactory.deploy("Token A", "TKA", 1000000, { gasLimit: 3000000 });
         await tokenA.waitForDeployment();
         var addrA = await tokenA.getAddress();
 
         btn.textContent = "Deploying Token B...";
 
         // Deploy Token B
-        var tokenB = await TokenFactory.deploy("Token B", "TKB", { gasLimit: 3000000 });
+        var tokenB = await TokenFactory.deploy("Token B", "TKB", 1000000, { gasLimit: 3000000 });
         await tokenB.waitForDeployment();
         var addrB = await tokenB.getAddress();
 
@@ -553,7 +553,7 @@ window.web3DefiDeployAmm = async function() {
         var addrLending = await lending.getAddress();
 
         btn.textContent = "Deploying Reward Token...";
-        var rewardToken = await TokenFactory.deploy("Farm Reward", "FARM", { gasLimit: 3000000 });
+        var rewardToken = await TokenFactory.deploy("Farm Reward", "FARM", 1000000, { gasLimit: 3000000 });
         await rewardToken.waitForDeployment();
         var addrReward = await rewardToken.getAddress();
 
@@ -615,7 +615,7 @@ window.web3DefiLoadAmm = async function() {
 
 async function web3DefiLoadAmmContract(ammAddr, tokenAAddr, tokenBAddr, lendingAddr, farmAddr, rewardAddr) {
     var aData = CONTRACT_TEMPLATES['simpleamm'];
-    var tData = CONTRACT_TEMPLATES['testtoken'];
+    var tData = CONTRACT_TEMPLATES['token'];
     var lData = CONTRACT_TEMPLATES['simplelending'];
     var fData = CONTRACT_TEMPLATES['simpleyieldfarm'];
 
