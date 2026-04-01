@@ -566,7 +566,7 @@ window.web3DefiDeployAmm = async function() {
 
         // Transfer reward tokens to farm
         btn.textContent = "Funding Farm...";
-        var txFund = await rewardToken.mint(ethers.parseUnits("1000000", 18));
+        var txFund = await rewardToken.mint(defi.web3.address, ethers.parseUnits("1000000", 18));
         await txFund.wait();
         var txTrans = await rewardToken.transfer(addrFarm, ethers.parseUnits("1000000", 18));
         await txTrans.wait();
