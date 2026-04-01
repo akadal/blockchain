@@ -52,7 +52,7 @@ async function runTests() {
             console.log(`✅ [Faucet] Funds requested. Tx: ${fundRes.data.txHash}`);
             // Wait for mining
             console.log("⏳ Waiting for transaction receipt...");
-            const receipt = await provider.waitForTransaction(fundRes.data.txHash, 1, 10000); // Wait up to 10s
+            const receipt = await provider.waitForTransaction(fundRes.data.txHash, 1, 30000); // Wait up to 30s
             if (receipt && receipt.status === 1) {
                 console.log(`✅ [Chain] Transaction mined! Block: ${receipt.blockNumber}`);
             } else {
