@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Akadal Chain</title>
+    <title>Akadal Chain - Educational PoA EVM</title>
     <style>
         :root {
             --primary: #6366f1;
@@ -19,12 +19,15 @@
             --success-text: #059669;
             --error-bg: rgba(239, 68, 68, 0.2);
             --error-text: #dc2626;
+            --warning-bg: #fffbeb;
+            --warning-text: #b45309;
+            --warning-border: #fef3c7;
         }
 
         [data-theme="dark"] {
-            --primary: #6366f1;
-            --primary-hover: #818cf8;
-            --bg: #0f172a;
+            --primary: #818cf8;
+            --primary-hover: #6366f1;
+            --bg: #0b1120;
             --card: #1e293b;
             --text: #f8fafc;
             --text-muted: #94a3b8;
@@ -34,6 +37,9 @@
             --success-text: #34d399;
             --error-bg: rgba(239, 68, 68, 0.2);
             --error-text: #f87171;
+            --warning-bg: rgba(245, 158, 11, 0.1);
+            --warning-text: #fbbf24;
+            --warning-border: rgba(245, 158, 11, 0.2);
         }
 
         * {
@@ -43,65 +49,138 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background-color: var(--bg);
             color: var(--text);
             transition: background-color 0.3s, color 0.3s;
             line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
 
         .container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 0 1rem;
+            padding: 0 1.5rem;
+            width: 100%;
         }
 
+        /* Banner */
+        .warning-banner {
+            background-color: var(--warning-bg);
+            color: var(--warning-text);
+            text-align: center;
+            padding: 0.75rem;
+            font-size: 0.9rem;
+            font-weight: 500;
+            border-bottom: 1px solid var(--warning-border);
+        }
+
+        /* Header */
         header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding: 1.5rem 0;
             border-bottom: 1px solid var(--border);
-            margin-bottom: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
         }
 
         .logo {
             font-size: 1.5rem;
-            font-weight: bold;
+            font-weight: 800;
+            letter-spacing: -0.025em;
             color: var(--primary);
             text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
 
         .theme-toggle {
-            background: none;
-            border: none;
+            background: var(--input-bg);
+            border: 1px solid var(--border);
             color: var(--text);
             cursor: pointer;
-            font-size: 1.2rem;
-            padding: 0.5rem;
-            border-radius: 0.5rem;
-            transition: background-color 0.2s;
+            font-size: 0.9rem;
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 500;
         }
 
         .theme-toggle:hover {
-            background-color: var(--border);
+            border-color: var(--primary);
         }
 
+        .github-btn {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text);
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+        }
+
+        .github-btn:hover {
+            border-color: var(--text);
+            background: var(--text);
+            color: var(--bg);
+        }
+
+        /* Hero */
         .hero {
             text-align: center;
-            margin-bottom: 3rem;
+            margin-bottom: 4rem;
+            padding: 2rem 0;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            background: var(--primary);
+            color: white;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
         }
 
         .hero h1 {
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
+            font-size: 3.5rem;
+            font-weight: 800;
+            line-height: 1.2;
+            letter-spacing: -0.025em;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, var(--text), var(--text-muted));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
         .hero p {
             color: var(--text-muted);
-            font-size: 1.1rem;
+            font-size: 1.25rem;
             max-width: 600px;
-            margin: 0 auto 2rem;
+            margin: 0 auto 2.5rem;
+            line-height: 1.6;
         }
 
         .search-bar {
@@ -109,31 +188,35 @@
             max-width: 600px;
             margin: 0 auto;
             gap: 0.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border-radius: 0.75rem;
         }
 
         .search-bar input {
             flex: 1;
-            padding: 1rem;
-            border-radius: 0.5rem;
+            padding: 1.25rem;
+            border-radius: 0.75rem;
             border: 1px solid var(--border);
-            background: var(--input-bg);
+            background: var(--card);
             color: var(--text);
             font-size: 1rem;
+            transition: all 0.2s;
         }
 
         .search-bar input:focus {
-            outline: 2px solid var(--primary);
-            border-color: transparent;
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
         }
 
         .search-bar button {
             background: var(--primary);
             color: white;
             border: none;
-            padding: 0 1.5rem;
-            border-radius: 0.5rem;
+            padding: 0 2rem;
+            border-radius: 0.75rem;
             font-size: 1rem;
-            font-weight: bold;
+            font-weight: 600;
             cursor: pointer;
             transition: background-color 0.2s;
         }
@@ -142,11 +225,39 @@
             background: var(--primary-hover);
         }
 
+        /* Demo CTA */
+        .demo-cta {
+            margin-top: 3rem;
+            display: flex;
+            justify-content: center;
+        }
+
+        .demo-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            background: linear-gradient(135deg, var(--primary), #8b5cf6);
+            color: white;
+            text-decoration: none;
+            padding: 1rem 2rem;
+            border-radius: 1rem;
+            font-weight: 600;
+            font-size: 1.1rem;
+            box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.3);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .demo-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 20px 25px -5px rgba(99, 102, 241, 0.4);
+        }
+
+        /* Grid */
         .grid {
             display: grid;
             grid-template-columns: 1fr;
             gap: 2rem;
-            margin-bottom: 3rem;
+            margin-bottom: 4rem;
         }
 
         @media (min-width: 768px) {
@@ -157,71 +268,89 @@
 
         .card {
             background-color: var(--card);
-            padding: 2rem;
-            border-radius: 1rem;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            padding: 2.5rem;
+            border-radius: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
             border: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
         }
 
         .card h2 {
-            margin-bottom: 1.5rem;
+            margin-bottom: 0.5rem;
             color: var(--text);
             font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .card > p {
+            color: var(--text-muted);
+            margin-bottom: 2rem;
+            font-size: 0.95rem;
         }
 
         /* Faucet Styles */
         .faucet-input {
             width: 100%;
-            padding: 0.75rem;
-            border-radius: 0.5rem;
+            padding: 1rem;
+            border-radius: 0.75rem;
             border: 1px solid var(--border);
             background: var(--input-bg);
             color: var(--text);
-            margin-bottom: 1rem;
+            margin-bottom: 1.5rem;
             font-size: 1rem;
             text-align: center;
+            font-family: monospace;
+            transition: all 0.2s;
         }
 
         .faucet-input:focus {
-            outline: 2px solid var(--primary);
-            border-color: transparent;
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
         }
 
         .buttons {
             display: flex;
-            gap: 0.5rem;
+            gap: 0.75rem;
             justify-content: center;
-            margin-bottom: 1.5rem;
+            margin-bottom: 2rem;
         }
 
         .amount-btn {
-            background: var(--border);
-            border: none;
+            background: var(--input-bg);
+            border: 1px solid var(--border);
             color: var(--text);
-            padding: 0.5rem 1rem;
-            border-radius: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.75rem;
             cursor: pointer;
             transition: all 0.2s;
             flex: 1;
+            font-weight: 600;
         }
 
-        .amount-btn:hover,
+        .amount-btn:hover {
+            border-color: var(--primary);
+        }
+
         .amount-btn.active {
             background: var(--primary);
             color: white;
+            border-color: var(--primary);
         }
 
         .submit-btn {
-            background: var(--primary);
-            color: white;
+            background: var(--text);
+            color: var(--bg);
             border: none;
-            padding: 1rem 2rem;
-            border-radius: 0.5rem;
+            padding: 1.25rem 2rem;
+            border-radius: 0.75rem;
             font-size: 1.1rem;
-            font-weight: bold;
+            font-weight: 700;
             cursor: pointer;
             width: 100%;
             transition: transform 0.1s, opacity 0.2s;
+            margin-top: auto;
         }
 
         .submit-btn:active {
@@ -236,32 +365,38 @@
         #status {
             margin-top: 1.5rem;
             padding: 1rem;
-            border-radius: 0.5rem;
+            border-radius: 0.75rem;
             display: none;
             word-break: break-all;
             text-align: center;
+            font-weight: 500;
         }
 
         .success {
             background-color: var(--success-bg);
             color: var(--success-text);
+            border: 1px solid rgba(16, 185, 129, 0.3);
         }
 
         .error {
             background-color: var(--error-bg);
             color: var(--error-text);
+            border: 1px solid rgba(239, 68, 68, 0.3);
         }
 
         /* Network Info Styles */
         .network-details {
             list-style: none;
-            margin-bottom: 1.5rem;
+            margin-bottom: 2rem;
+            background: var(--input-bg);
+            border-radius: 1rem;
+            padding: 0.5rem 1.5rem;
         }
 
         .network-details li {
             display: flex;
             justify-content: space-between;
-            padding: 0.75rem 0;
+            padding: 1rem 0;
             border-bottom: 1px solid var(--border);
             align-items: center;
         }
@@ -277,26 +412,30 @@
 
         .network-details span.value {
             font-family: monospace;
-            background: var(--input-bg);
-            padding: 0.2rem 0.5rem;
-            border-radius: 0.25rem;
+            background: var(--card);
+            padding: 0.3rem 0.75rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            color: var(--text);
+            font-weight: 600;
         }
 
         .add-metamask {
             width: 100%;
             background: transparent;
-            border: 1px solid var(--primary);
+            border: 2px solid var(--primary);
             color: var(--primary);
-            padding: 0.75rem;
-            border-radius: 0.5rem;
+            padding: 1rem;
+            border-radius: 0.75rem;
             cursor: pointer;
             font-size: 1rem;
-            font-weight: bold;
+            font-weight: 700;
             transition: all 0.2s;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 0.5rem;
+            margin-top: auto;
         }
 
         .add-metamask:hover {
@@ -304,112 +443,290 @@
             color: white;
         }
 
+        /* How to & Pricing Section */
+        .info-section {
+            margin-bottom: 4rem;
+        }
+
+        .section-title {
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+
+        @media (min-width: 768px) {
+            .pricing-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .pricing-card {
+            background-color: var(--card);
+            padding: 2.5rem;
+            border-radius: 1.5rem;
+            border: 1px solid var(--border);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .pricing-card.highlight {
+            border: 2px solid var(--primary);
+        }
+
+        .pricing-card.highlight::before {
+            content: 'Recommended';
+            position: absolute;
+            top: 1rem;
+            right: -2.5rem;
+            background: var(--primary);
+            color: white;
+            font-size: 0.75rem;
+            font-weight: bold;
+            padding: 0.25rem 3rem;
+            transform: rotate(45deg);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .pricing-header {
+            margin-bottom: 2rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 1.5rem;
+        }
+
+        .pricing-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+
+        .pricing-price {
+            font-size: 3rem;
+            font-weight: 800;
+            color: var(--text);
+            display: flex;
+            align-items: baseline;
+        }
+
+        .pricing-price span {
+            font-size: 1rem;
+            color: var(--text-muted);
+            font-weight: 500;
+            margin-left: 0.5rem;
+        }
+
+        .pricing-features {
+            list-style: none;
+            margin-bottom: 2rem;
+        }
+
+        .pricing-features li {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+            color: var(--text);
+        }
+
+        .pricing-features li svg {
+            color: var(--success-text);
+            flex-shrink: 0;
+        }
+
         /* Blocks Section */
         .blocks-section {
-            margin-bottom: 3rem;
+            margin-bottom: 4rem;
         }
 
         .blocks-section h2 {
-            margin-bottom: 1rem;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
         }
 
         .block-list {
             display: flex;
             flex-direction: column;
-            gap: 0.5rem;
+            gap: 0.75rem;
         }
 
         .block-item {
             background: var(--card);
             border: 1px solid var(--border);
-            padding: 1rem;
-            border-radius: 0.5rem;
+            padding: 1.25rem 1.5rem;
+            border-radius: 1rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .block-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
         }
 
         .block-info {
             display: flex;
             align-items: center;
-            gap: 1rem;
+            gap: 1.5rem;
         }
 
         .block-number {
-            font-weight: bold;
+            font-weight: 700;
             color: var(--primary);
             font-family: monospace;
-            font-size: 1.1rem;
+            font-size: 1.2rem;
+            background: var(--input-bg);
+            padding: 0.25rem 0.75rem;
+            border-radius: 0.5rem;
         }
 
         .block-txs {
             color: var(--text-muted);
-            font-size: 0.9rem;
+            font-weight: 500;
         }
 
         .block-hash {
             font-family: monospace;
             color: var(--text-muted);
+            background: var(--input-bg);
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
             font-size: 0.9rem;
         }
 
-        @media (max-width: 600px) {
-            .block-item {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 0.5rem;
-            }
+        /* Footer */
+        footer {
+            margin-top: auto;
+            border-top: 1px solid var(--border);
+            padding: 3rem 0;
+            background: var(--card);
         }
 
-        #rpc-status {
+        .footer-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
             text-align: center;
-            margin-top: 1rem;
+            gap: 1.5rem;
+        }
+
+        .footer-text {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            max-width: 600px;
+        }
+
+        .donation-box {
+            background: var(--input-bg);
+            border: 1px solid var(--border);
+            padding: 1.5rem;
+            border-radius: 1rem;
+            display: inline-block;
+        }
+
+        .donation-title {
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .donation-address {
+            font-family: monospace;
+            color: var(--primary);
             font-size: 0.9rem;
+            word-break: break-all;
+            user-select: all;
+            background: var(--card);
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            border: 1px dashed var(--primary);
         }
     </style>
 </head>
 
 <body>
+    <div class="warning-banner">
+        ⚠️ <strong>Test Network:</strong> Akadal Chain is an educational Proof of Authority (PoA) test network. Funds have absolutely no real-world value. Do not use for real transactions.
+    </div>
+
     <div class="container">
         <header>
-            <a href="/" class="logo">Akadal Chain</a>
-            <button class="theme-toggle" onclick="toggleTheme()" id="themeToggleBtn">
-                ☀️ Light
-            </button>
+            <a href="/" class="logo">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 1-9 9m9-9a9 9 0 0 0-9-9m9 9H3m9 9a9 9 0 0 1-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 0 1 9-9"/></svg>
+                Akadal
+            </a>
+
+            <div class="header-controls">
+                <a href="https://github.com/akadal/blockchain" target="_blank" class="github-btn">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
+                    Fork me
+                </a>
+                <button class="theme-toggle" onclick="toggleTheme()" id="themeToggleBtn">
+                    🌙 Dark
+                </button>
+            </div>
         </header>
 
         <main>
+            <!-- Hero Section -->
             <section class="hero">
-                <h1>Akadal Chain</h1>
-                <p>A fast, reliable, and free Proof-of-Authority blockchain for testing, learning, and developing decentralized applications.</p>
-
-                <div style="margin-bottom: 2rem;">
-                    <a href="https://demo.blockchain.akadal.tr" target="_blank" class="submit-btn" style="display: inline-block; width: auto; text-decoration: none; padding: 0.75rem 1.5rem; background-color: var(--success-text);">🎓 Interactive Learning Lab</a>
-                </div>
+                <div class="badge">Educational PoA EVM</div>
+                <h1>Welcome to Akadal Chain</h1>
+                <p>A fast, persistent, and free Ethereum test network designed specifically for educational purposes, smart contract testing, and learning Web3 development.</p>
 
                 <div class="search-bar">
-                    <input type="text" id="searchInput" placeholder="Search by Address / Txn Hash / Block" onkeypress="handleSearch(event)" />
+                    <input type="text" id="searchInput" placeholder="Search by Address, Tx Hash, or Block Number..." onkeypress="handleSearch(event)">
                     <button onclick="performSearch()">Search</button>
+                </div>
+
+                <div class="demo-cta">
+                    <a href="https://demo.blockchain.akadal.tr" target="_blank" class="demo-btn">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
+                        Open Interactive Learning Lab
+                    </a>
                 </div>
             </section>
 
+            <!-- Main Interactive Grid -->
             <div class="grid">
-                <!-- Faucet Section -->
+                <!-- Faucet Card -->
                 <div class="card">
-                    <h2>Akadal Faucet</h2>
-                    <p style="color: var(--text-muted); margin-bottom: 1.5rem; font-size: 0.95rem;">Enter your address to receive 10 test ETH.</p>
+                    <h2>Testnet Faucet</h2>
+                    <p>Request free test ETH to deploy contracts and interact with the network. Funds are dispensed instantly.</p>
 
-                    <input type="text" id="address" class="faucet-input" placeholder="0x..." />
+                    <input type="text" id="address" class="faucet-input" placeholder="0x..." autocomplete="off">
 
-                    <button class="submit-btn" onclick="requestFunds()" id="submitBtn">Send Me 10 ETH</button>
+                    <div class="buttons">
+                        <button class="amount-btn active" onclick="setAmount(10, event)">10 ETH</button>
+                        <button class="amount-btn" onclick="setAmount(25, event)">25 ETH</button>
+                        <button class="amount-btn" onclick="setAmount(50, event)">50 ETH</button>
+                    </div>
 
+                    <button class="submit-btn" id="submitBtn" onclick="requestFunds()">Send Me ETH</button>
                     <div id="status"></div>
-                    <div id="rpc-status"></div>
                 </div>
 
-                <!-- Network Info Section -->
+                <!-- Network Info Card -->
                 <div class="card">
                     <h2>Network Details</h2>
+                    <p>Connect your Web3 wallet (like MetaMask) using these RPC details to start building on Akadal Chain.</p>
+
+                    <div id="rpc-status" style="margin-bottom: 1rem; font-weight: 500; font-size: 0.9rem;">Checking RPC connectivity...</div>
+
                     <ul class="network-details">
                         <li>
                             <span class="label">Network Name</span>
@@ -417,7 +734,7 @@
                         </li>
                         <li>
                             <span class="label">RPC URL</span>
-                            <span class="value">https://rpc.blockchain.akadal.tr</span>
+                            <span class="value" style="font-size: 0.8rem;">https://rpc.blockchain.akadal.tr</span>
                         </li>
                         <li>
                             <span class="label">Chain ID</span>
@@ -427,20 +744,48 @@
                             <span class="label">Currency Symbol</span>
                             <span class="value">ETH</span>
                         </li>
-                        <li>
-                            <span class="label">Block Explorer</span>
-                            <span class="value"><a href="https://explorer.blockchain.akadal.tr" target="_blank" style="color: var(--primary); text-decoration: none;">explorer.blockchain.akadal.tr</a></span>
-                        </li>
                     </ul>
 
                     <button class="add-metamask" onclick="addNetwork()">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M21.1469 5.8697L15.3533 1.95657C15.1119 1.79468 14.8115 1.74558 14.5303 1.8217L9.75231 3.09068L5.05471 1.77262C4.77351 1.6965 4.4731 1.74558 4.2317 1.90747L-0.0191549 4.79379V5.5786C-0.0191549 5.92211 0.161746 6.22639 0.463246 6.36384L5.61749 8.71887V9.61191L3.00445 10.9961L2.84365 11.0845C2.55219 11.2317 2.3713 11.536 2.3713 11.8601V13.8037C2.3713 14.157 2.56224 14.4711 2.87381 14.6184L6.96422 16.5913C7.26572 16.7386 7.62751 16.7092 7.9089 16.5129L10.3511 14.7753V15.7766L7.9089 17.5142C7.62751 17.7105 7.26572 17.7399 6.96422 17.5927L2.87381 15.6197C2.56224 15.4725 2.3713 15.1583 2.3713 14.8051V12.8614L4.98436 11.4772V10.5842L-0.169956 8.22915C-0.471457 8.0917 -0.652358 7.78742 -0.652358 7.44391V6.65911L4.2317 3.77279C4.4731 3.6109 4.77351 3.56182 5.05471 3.63794L9.75231 4.956L14.5303 3.68702C14.8115 3.6109 15.1119 3.66001 15.3533 3.82189L21.1469 7.73502C21.4685 7.951 21.6594 8.31422 21.6594 8.70689V14.1669C21.6594 14.7363 21.1972 15.1985 20.6278 15.1985C20.0583 15.1985 19.5962 14.7363 19.5962 14.1669V9.56281L16.2093 7.25585L16.149 7.21658C15.8676 7.03006 15.5159 7.00061 15.2043 7.14785L10.6014 9.32731L6.68187 7.4719C6.38037 7.32466 6.01858 7.35411 5.73719 7.55045L3.29495 9.288V10.2893L5.73719 8.55171C6.01858 8.35538 6.38037 8.32593 6.68187 8.47317L10.6014 10.3286L15.2043 8.14912C15.5159 8.00188 15.8676 8.03133 16.149 8.21785L19.5359 10.5248V14.1669C19.5359 15.2861 20.4436 16.1938 21.5628 16.1938C22.682 16.1938 23.5897 15.2861 23.5897 14.1669V8.70689C23.5897 8.31422 23.3988 7.951 23.0772 7.73502L21.1469 5.8697Z" fill="currentColor"/>
-                        </svg>
-                        Add Network to MetaMask
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg>
+                        Add to MetaMask
                     </button>
                 </div>
             </div>
+
+            <!-- Pricing / Usage Section -->
+            <section class="info-section">
+                <h2 class="section-title">Transparent & Free</h2>
+                <div class="pricing-grid">
+                    <div class="pricing-card highlight">
+                        <div class="pricing-header">
+                            <h3 class="pricing-title">Use Akadal Chain</h3>
+                            <div class="pricing-price">Free<span>/ forever</span></div>
+                        </div>
+                        <ul class="pricing-features">
+                            <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Zero setup required</li>
+                            <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Instant RPC access</li>
+                            <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Free test ETH from Faucet</li>
+                            <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Full Block Explorer access</li>
+                            <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Interactive Learning Lab</li>
+                        </ul>
+                    </div>
+
+                    <div class="pricing-card">
+                        <div class="pricing-header">
+                            <h3 class="pricing-title">Self-Host</h3>
+                            <div class="pricing-price">Free<span>/ open source</span></div>
+                        </div>
+                        <ul class="pricing-features">
+                            <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Full control of the network</li>
+                            <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Run your own Geth nodes</li>
+                            <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Customize Chain ID & Genesis</li>
+                            <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Docker & Coolify ready</li>
+                            <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Learn infrastructure management</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
 
             <!-- Latest Blocks Section -->
             <section class="blocks-section">
@@ -454,6 +799,26 @@
         </main>
     </div>
 
+    <footer>
+        <div class="container footer-content">
+            <p class="footer-text">
+                Akadal Chain is built for educational purposes to help developers learn Web3 technologies in a safe, cost-free environment. Open source and community-driven.
+            </p>
+
+            <div class="donation-box">
+                <div class="donation-title">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+                    Donate if you want (Mainnet ETH)
+                </div>
+                <div class="donation-address">0x5F1a82f311394b986e1086C205E6CAfBA0a74797</div>
+            </div>
+
+            <p style="color: var(--text-muted); font-size: 0.8rem; margin-top: 1rem;">
+                © 2024 Akadal Chain. MIT Licensed.
+            </p>
+        </div>
+    </footer>
+
     <script>
         let selectedAmount = 10;
         const RPC_URL = "https://rpc.blockchain.akadal.tr";
@@ -461,20 +826,18 @@
 
         // Theme Management
         function initTheme() {
-            // First checking local storage for a previously saved preference
             const savedTheme = localStorage.getItem('theme');
-            // Check the system default if no preference is saved
             const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
 
             if (savedTheme === 'light') {
                 document.documentElement.setAttribute('data-theme', 'light');
-                document.getElementById('themeToggleBtn').innerText = '🌙 Dark';
+                document.getElementById('themeToggleBtn').innerHTML = '🌙 Dark';
             } else if (savedTheme === 'dark' || prefersDark) {
                 document.documentElement.setAttribute('data-theme', 'dark');
-                document.getElementById('themeToggleBtn').innerText = '☀️ Light';
+                document.getElementById('themeToggleBtn').innerHTML = '☀️ Light';
             } else {
                 document.documentElement.setAttribute('data-theme', 'light');
-                document.getElementById('themeToggleBtn').innerText = '🌙 Dark';
+                document.getElementById('themeToggleBtn').innerHTML = '🌙 Dark';
             }
         }
 
@@ -485,11 +848,11 @@
             if (currentTheme === 'dark') {
                 document.documentElement.setAttribute('data-theme', 'light');
                 localStorage.setItem('theme', 'light');
-                btn.innerText = '🌙 Dark';
+                btn.innerHTML = '🌙 Dark';
             } else {
                 document.documentElement.setAttribute('data-theme', 'dark');
                 localStorage.setItem('theme', 'dark');
-                btn.innerText = '☀️ Light';
+                btn.innerHTML = '☀️ Light';
             }
         }
 
@@ -602,7 +965,7 @@
                                 </div>
                                 <div class="block-txs">${txCount} txn${txCount !== 1 ? 's' : ''}</div>
                             </div>
-                            <div class="block-hash">
+                            <div class="block-hash" title="${block.hash}">
                                 ${block.hash.substring(0, 16)}...${block.hash.substring(block.hash.length - 12)}
                             </div>
                         `;
@@ -614,10 +977,10 @@
             }
         }
 
-        function setAmount(val) {
+        function setAmount(val, event) {
             selectedAmount = val;
             document.querySelectorAll('.amount-btn').forEach(btn => btn.classList.remove('active'));
-            event.target.classList.add('active');
+            if (event && event.currentTarget) event.currentTarget.classList.add('active');
         }
 
         async function requestFunds() {
@@ -628,7 +991,20 @@
             if (!address) return;
 
             btn.disabled = true;
-            btn.innerText = "Sending...";
+            btn.innerHTML = `
+                <span style="display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                    <svg class="animate-spin" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="animation: spin 1s linear infinite;"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+                    Sending...
+                </span>
+            `;
+            // Add keyframes dynamically if not present
+            if (!document.getElementById('spin-keyframes')) {
+                const style = document.createElement('style');
+                style.id = 'spin-keyframes';
+                style.innerHTML = `@keyframes spin { to { transform: rotate(360deg); } }`;
+                document.head.appendChild(style);
+            }
+
             status.style.display = 'none';
 
             try {
@@ -658,7 +1034,7 @@
             } finally {
                 status.style.display = 'block';
                 btn.disabled = false;
-                btn.innerText = "Send Me ETH";
+                btn.innerHTML = "Send Me ETH";
             }
         }
 
