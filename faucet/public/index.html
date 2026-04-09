@@ -659,15 +659,11 @@
 </head>
 
 <body>
-    <div class="warning-banner">
-        ⚠️ <strong>Test Network:</strong> Akadal Chain is an educational Proof of Authority (PoA) test network. Funds have absolutely no real-world value. Do not use for real transactions.
-    </div>
-
     <div class="container">
         <header>
             <a href="/" class="logo">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 1-9 9m9-9a9 9 0 0 0-9-9m9 9H3m9 9a9 9 0 0 1-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 0 1 9-9"/></svg>
-                Akadal
+                Akadal Chain
             </a>
 
             <div class="header-controls">
@@ -693,28 +689,16 @@
                     <button onclick="performSearch()">Search</button>
                 </div>
 
-                <div class="demo-cta">
-                    <a href="https://demo.blockchain.akadal.tr" target="_blank" class="demo-btn">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
-                        Open Interactive Learning Lab
-                    </a>
-                </div>
-            </section>
+                </section>
 
             <!-- Main Interactive Grid -->
             <div class="grid">
                 <!-- Faucet Card -->
                 <div class="card">
                     <h2>Testnet Faucet</h2>
-                    <p>Request free test ETH to deploy contracts and interact with the network. Funds are dispensed instantly.</p>
+                    <p>Request 1 free test ETH to deploy contracts and interact with the network. Funds are dispensed instantly.</p>
 
                     <input type="text" id="address" class="faucet-input" placeholder="0x..." autocomplete="off">
-
-                    <div class="buttons">
-                        <button class="amount-btn active" onclick="setAmount(10, event)">10 ETH</button>
-                        <button class="amount-btn" onclick="setAmount(25, event)">25 ETH</button>
-                        <button class="amount-btn" onclick="setAmount(50, event)">50 ETH</button>
-                    </div>
 
                     <button class="submit-btn" id="submitBtn" onclick="requestFunds()">Send Me ETH</button>
                     <div id="status"></div>
@@ -757,7 +741,7 @@
             <section class="info-section">
                 <h2 class="section-title">Transparent & Free</h2>
                 <div class="pricing-grid">
-                    <div class="pricing-card highlight">
+                    <div class="pricing-card" style="display: flex; flex-direction: column;">
                         <div class="pricing-header">
                             <h3 class="pricing-title">Use Akadal Chain</h3>
                             <div class="pricing-price">Free<span>/ forever</span></div>
@@ -769,9 +753,13 @@
                             <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Full Block Explorer access</li>
                             <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Interactive Learning Lab</li>
                         </ul>
+                        <button class="add-metamask" style="margin-top: auto; border-color: var(--border); color: var(--text);" onclick="addNetwork()">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg>
+                            Add to MetaMask
+                        </button>
                     </div>
 
-                    <div class="pricing-card">
+                    <div class="pricing-card" style="display: flex; flex-direction: column;">
                         <div class="pricing-header">
                             <h3 class="pricing-title">Self-Host</h3>
                             <div class="pricing-price">Free<span>/ open source</span></div>
@@ -783,7 +771,27 @@
                             <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Docker & Coolify ready</li>
                             <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Learn infrastructure management</li>
                         </ul>
+                        <a href="https://github.com/akadal/blockchain" target="_blank" class="add-metamask" style="text-decoration: none; margin-top: auto; border-color: var(--border); color: var(--text);">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
+                            View on GitHub
+                        </a>
                     </div>
+                </div>
+            </section>
+
+
+            <!-- Interactive Learning Lab Promo Section -->
+            <section class="info-section" style="background: var(--card); border: 1px solid var(--border); border-radius: 1.5rem; padding: 3rem; text-align: center; box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.1); margin-bottom: 4rem;">
+                <div class="badge" style="background: rgba(99, 102, 241, 0.1); color: var(--primary);">Featured Tool</div>
+                <h2 style="font-size: 2.5rem; font-weight: 800; margin-bottom: 1rem;">Interactive Learning Lab</h2>
+                <p style="color: var(--text-muted); font-size: 1.1rem; max-width: 800px; margin: 0 auto 2rem;">
+                    The ultimate playground for Web3 developers. Write Solidity code directly in your browser, compile it instantly without any setup, deploy your smart contracts to the Akadal Chain with a single click, and test your functions right from the UI.
+                </p>
+                <div class="demo-cta" style="margin-top: 0; display: flex; justify-content: center;">
+                    <a href="https://demo.blockchain.akadal.tr" target="_blank" class="demo-btn" style="padding: 1.25rem 2.5rem; font-size: 1.2rem; display: inline-flex; align-items: center; gap: 0.75rem; background: linear-gradient(135deg, var(--primary), #8b5cf6); color: white; text-decoration: none; border-radius: 1rem; font-weight: 600; box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.3); transition: transform 0.2s, box-shadow 0.2s;">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
+                        Try the Learning Lab
+                    </a>
                 </div>
             </section>
 
@@ -810,7 +818,7 @@
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
                     Donate if you want (Mainnet ETH)
                 </div>
-                <div class="donation-address">0x5F1a82f311394b986e1086C205E6CAfBA0a74797</div>
+                <div class="donation-address">0x955a58c4A182C185D269F8E41396f548c1fc483c</div>
             </div>
 
             <p style="color: var(--text-muted); font-size: 0.8rem; margin-top: 1rem;">
@@ -820,7 +828,7 @@
     </footer>
 
     <script>
-        let selectedAmount = 10;
+        let selectedAmount = 1;
         const RPC_URL = "https://rpc.blockchain.akadal.tr";
         const EXPLORER_URL = "https://explorer.blockchain.akadal.tr";
 
@@ -977,11 +985,7 @@
             }
         }
 
-        function setAmount(val, event) {
-            selectedAmount = val;
-            document.querySelectorAll('.amount-btn').forEach(btn => btn.classList.remove('active'));
-            if (event && event.currentTarget) event.currentTarget.classList.add('active');
-        }
+
 
         async function requestFunds() {
             const address = document.getElementById('address').value;
