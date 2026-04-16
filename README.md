@@ -1,105 +1,122 @@
-# Educational Ethereum Private Network (Coolify Ready)
+# 🚀 Akadal Chain
 
-This project provides a **production-ready, lightweight Ethereum Blockchain Environment** designed for educational purposes. It is optimized for easy deployment on **Coolify** or any Docker-based environment.
+**Akadal Chain** is an educational, production-ready, and lightweight **Ethereum Private Network**. It is optimized so that students, developers, and educators can experiment with blockchain, smart contracts, and Web3 technologies safely, quickly, and entirely for free.
 
-It includes everything you need to start teaching or learning Ethereum development:
-1.  **Geth Node**: A stable Proof-of-Authority (Clique) blockchain.
-2.  **Explorer**: A lightweight block explorer (Alethio) to view transactions.
-3.  **Faucet**: A web interface to get free test ETH (`10 ETH` per request).
-4.  **RPC Proxy**: A pre-configured Nginx proxy to handle CORS and SSL correctly for MetaMask connectivity.
+You can instantly interact with our live, ready-to-use network directly at [blockchain.akadal.tr](https://blockchain.akadal.tr) or fork this repository to deploy your very own test network on your servers using **Coolify** or **Docker** in just minutes!
 
 ---
 
-## 🚀 Architecture
-
-The system is composed of 4 Docker services:
-
-| Service | Port (Internal) | Description |
-| :--- | :--- | :--- |
-| **geth** | `8545`, `8546` | The Ethereum Node (v1.13.15). Runs via `geth-boot.sh`. |
-| **rpc-proxy** | `80` | **Crucial Component**. Nginx proxy that forwards requests to Geth and handles **CORS headers** to ensure MetaMask works. |
-| **explorer** | `80` | Alethio Lite Explorer. Visualizes blocks/txs. |
-| **faucet** | `3000` | Node.js App. Sends ETH to users using the Genesis Master Key. |
-
-### Why Geth v1.13?
-We explicitly use **Geth v1.13.15** because newer versions (v1.14+) require complex Proof-of-Stake (Merge) configurations (Beacon Chain, Prysm, etc.) which are overkill for a simple educational chain. v1.13 is the "Gold Standard" for stable, simple PoA chains supporting Paris EVM features.
+## 📖 Table of Contents
+- [🌟 Key Features](#-key-features)
+- [🌐 Connecting to the Live Network (MetaMask Setup)](#-connecting-to-the-live-network-metamask-setup)
+- [💰 Faucet (Get Free Test ETH)](#-faucet-get-free-test-eth)
+- [🏗️ Architecture & Technical Details](#️-architecture--technical-details)
+- [🔑 Master Account Information](#-master-account-information)
+- [🛠️ Deployment (Run Your Own Network)](#️-deployment-run-your-own-network)
+- [📂 Project Structure](#-project-structure)
 
 ---
 
-## 🛠 Prerequisites
+## 🌟 Key Features
 
-- **Coolify** (Recommended) or Docker & Docker Compose installed locally.
-- A domain name (e.g., `blockchain.yourdomain.com`).
-
----
-
-## 📦 Deployment Guide within Coolify
-
-1.  **Create a New Service**: Choose "Docker Compose".
-2.  **Paste Configuration**: Copy the contents of `docker-compose.yml`.
-3.  **Configure Domains**:
-    Go to the **Configuration** tab in Coolify and set the domains as follows. **This is critical.**
-
-    *   **Domains for rpc-proxy**: `https://rpc.yourdomain.com:80`
-        *   *Note: Do NOT expose `geth` directly. MetaMask connects here.*
-    *   **Domains for explorer**: `https://explorer.yourdomain.com:80`
-    *   **Domains for faucet**: `https://faucet.yourdomain.com:3000`
-
-    *(Make sure to append the internal ports like `:80` or `:3000` so Coolify knows where to map).*
-
-4.  **Deploy**: Click "Deploy". The initial build might take 1-2 minutes.
+- **Education Focused:** Perfect for learning and testing smart contract development. The block gas limit is set exceptionally high (800,000,000) to minimize `Out-of-gas` errors during educational experiments.
+- **Fast and Stable:** Utilizes the Proof-of-Authority (PoA - Clique) consensus algorithm, providing a stable experience with 15-second block times.
+- **Lightweight and Resource-Friendly:** Optimized for Coolify/Docker so it can run smoothly even on servers with limited hardware resources (like a Hetzner VPS).
+- **Comprehensive Ecosystem:** Comes integrated with everything you need in a blockchain network (Geth Node, Nginx Proxy, Block Explorer, Faucet, and Interactive Educational Demos).
+- **Persistent Data:** The network does not reset unless you explicitly choose to do so. Your deployed contracts and transactions are persistent.
 
 ---
 
-## 🔌 Connection Details for Users
+## 🌐 Connecting to the Live Network (MetaMask Setup)
 
-To use this blockchain, users (Students/Developers) should configure their **MetaMask** as follows:
+To connect to the publicly accessible **Akadal Chain**, you can add the following network settings to your MetaMask or preferred Web3 wallet:
 
-- **Network Name**: `My Edu Chain` (or any name)
-- **RPC URL**: `https://rpc.yourdomain.com` (The domain you assigned to `rpc-proxy`)
-- **Chain ID**: `1337`
-- **Currency Symbol**: `ETH`
-- **Block Explorer URL**: `https://explorer.yourdomain.com`
-
----
-
-## 💰 How to Get Funds (Faucet)
-
-1.  Open the Faucet URL (`https://faucet.yourdomain.com`).
-2.  Paste your MetaMask address.
-3.  Click **"Send Me ETH"**.
-4.  You will receive **10 ETH** instantly.
+| Setting | Value |
+| :--- | :--- |
+| **Network Name** | `Akadal Chain` |
+| **New RPC URL** | `https://rpc.blockchain.akadal.tr` |
+| **Chain ID** | `1337` |
+| **Currency Symbol** | `ETH` |
+| **Block Explorer URL** | `https://explorer.blockchain.akadal.tr` |
 
 ---
 
-## 🔧 Troubleshooting
+## 💰 Faucet (Get Free Test ETH)
 
-### 1. MetaMask says "Failed to fetch chain ID"
-*   **Cause**: This is usually a CORS (Cross-Origin Resource Sharing) issue.
-*   **Fix**: Ensure you are connecting to the `rpc-proxy` domain, **NOT** the raw Geth domain. The Proxy (`nginx/default.conf`) is specially configured to add the necessary `Access-Control-Allow-Origin: *` headers.
+To interact with the network and deploy smart contracts, you'll need test ETH to pay for gas fees. You can instantly request test ETH via our Faucet, which has an unlimited supply.
 
-### 2. Faucet says "Insufficient funds"
-*   **Cause**: The master account might be empty (unlikely as it has 1 Billion ETH).
-*   **Fix**: Check the `faucet` logs. Ensure the `PRIVATE_KEY` in `docker-compose.yml` matches the one in `genesis.json` (Hint: It is `0xac09...`).
-
-### 3. Explorer shows nothing
-*   **Cause**: Explorer cannot reach the RPC.
-*   **Fix**: Check the `APP_NODE_URL` environment variable in `docker-compose.yml`. It must point to the **public** HTTPS RPC URL (`https://rpc.yourdomain.com`).
+1. Go to [https://faucet.blockchain.akadal.tr](https://faucet.blockchain.akadal.tr) (or the homepage [https://blockchain.akadal.tr](https://blockchain.akadal.tr)).
+2. Copy and paste your MetaMask address into the input field.
+3. Click the **"Send Me ETH"** button.
+4. You will instantly receive **10 ETH** in your wallet!
 
 ---
 
-## 📂 File Structure
+## 🏗️ Architecture & Technical Details
 
-- `docker-compose.yml`: Main orchestration file.
-- `geth-config/`:
-    - `genesis.json`: Defines the blockchain rules (Chain ID 1337).
-    - `geth-boot.sh`: Startup script (Initializes genesis if empty).
-    - `Dockerfile`: Builds the custom Geth image.
-- `nginx/`:
-    - `default.conf`: Proxy configuration for CORS.
-    - `Dockerfile`: Builds the Proxy image.
-- `faucet/`: Source code for the Node.js Faucet app.
+Akadal Chain consists of 5 core services orchestrated via `docker-compose.yml`:
+
+### 1. Geth Node (`geth`)
+- **Version:** `ethereum/client-go:v1.13.15` (The most stable v1.13 series is used targeting the **Paris EVM**, avoiding complex PoS/Merge setups for educational purposes.)
+- **Consensus:** Proof-of-Authority (PoA - Clique), 15-second block time.
+- **Features:** Persistent data storage (`geth_data_v2` volume), high gas limit (`800000000`).
+
+### 2. RPC Proxy (`rpc-proxy`)
+- **Role:** An **Nginx** reverse proxy positioned in front of the Geth node.
+- **Why it's necessary:** It handles **CORS** (Cross-Origin Resource Sharing) and Preflight (`OPTIONS`) headers correctly so browser-based wallets (like MetaMask) can connect seamlessly. It acts as the bridge between the network and the outside world.
+
+### 3. Explorer (`explorer`)
+- **Role:** A lightweight block explorer visualizing blocks, transactions, and wallet balances (Alethio Lite Explorer).
+- **Connection:** Pulls data directly by connecting to the public RPC address (https://rpc.blockchain.akadal.tr).
+
+### 4. Faucet & Landing Page (`faucet`)
+- **Role:** A custom Node.js/Express application distributing test ETH. The front end of the Faucet also serves as the Landing Page, explaining network features and displaying live block data.
+
+### 5. Interactive Learning Demos (`demo`)
+- **Role:** A visual and interactive blockchain learning laboratory ([demo.blockchain.akadal.tr](https://demo.blockchain.akadal.tr)). It provides hands-on learning for concepts like hashing, block structure, network distribution, and compiling/deploying smart contracts. It is an isolated Node.js service.
 
 ---
 
-**Happy Hacking!** 🚀
+## 🔑 Master Account Information
+
+When setting up the test network in your own environment, you can use the master account which is pre-funded with a massive amount of ETH in the genesis block and possesses mining authority:
+
+- **Address:** `0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266`
+- **Private Key:** `0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80`
+
+*(Note: You can use this Private Key for automated tests, scripts, or custom faucet setups. The Geth service automatically unlocks this account upon startup.)*
+
+---
+
+## 🛠️ Deployment (Run Your Own Network)
+
+Deploying the project on your own server (especially using **Coolify**) is very straightforward. The network architecture is designed to use SSL-certified subdomains via Cloudflare or a similar DNS manager (e.g., `rpc.domain.com`) to prevent port conflicts.
+
+### Setup Steps via Coolify
+
+1. Create a new **Docker Compose** service.
+2. Copy the contents of the `docker-compose.yml` from this repository and paste it into Coolify (or connect the GitHub repo directly).
+3. **Very Important: Domain Settings!**
+   Define the domains for the respective services in Coolify (including port numbers) as follows:
+   - For the **rpc-proxy** service: `https://rpc.your-domain.com:80` *(MetaMask will connect here! Do not expose the Geth port directly!)*
+   - For the **explorer** service: `https://explorer.your-domain.com:4000`
+   - For the **faucet** service: `https://faucet.your-domain.com:3000`
+   - For the **demo** service: `https://demo.your-domain.com:5454`
+4. Update the Environment Variables (`DEMO_URL`, `RPC_URL`, `EXPLORER_URL`, `MAIN_URL`) via the Coolify interface to match your new URLs.
+5. Click **Deploy** and watch your network spin up!
+
+---
+
+## 📂 Project Structure
+
+```text
+├── geth-config/      # Geth node settings, genesis.json, and startup script
+├── nginx/            # RPC Proxy configuration for CORS issues
+├── faucet/           # Source code for the Faucet and Landing Page
+├── demo/             # Source code for the Interactive Learning Demos
+├── tests/            # Integration and system test scripts
+├── GEMINI.md         # Project AI context and structural documentation
+└── docker-compose.yml# Main orchestration file
+```
+
+**Happy Coding & Learning!** 🚀🎓
