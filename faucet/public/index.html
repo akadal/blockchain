@@ -2066,12 +2066,23 @@
         }
 
         // Faucet Logic
-        window.onload = () => {
+        function initPage() {
+            if (window.akadalFaucetInitialized) return;
+            window.akadalFaucetInitialized = true;
+
             initTheme();
             fetchUsdtToken();
             checkRpcConnectionAndFetchBlocks();
             hydrateWalletAddress();
         }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initPage, { once: true });
+        } else {
+            initPage();
+        }
+
+        window.addEventListener('load', initPage, { once: true });
 
         function hydrateWalletAddress() {
             if (!window.ethereum) return;
