@@ -5,6 +5,7 @@
 
 var nftEngine = {
     initialized: false,
+    mode: 'simulated',
     nextId: 1,
     nfts: [],           // { id, name, desc, image, attrs, owner, forSale, price, fractional, shares, history }
     collections: {},    // collectionName -> [nftIds]
@@ -25,6 +26,7 @@ var nftEngine = {
 function initNFT() {
     if (nftEngine.initialized) return;
     nftEngine.initialized = true;
+    ensureNftUnifiedControls();
     populateNFTSelects();
     updateNFTGallery();
     updateNFTStats();
@@ -32,10 +34,21 @@ function initNFT() {
 }
 
 window.setNftMode = function setNftMode(mode) {
+    nftEngine.mode = mode;
     document.getElementById('nftModeSimulated').classList.toggle('active', mode === 'simulated');
     document.getElementById('nftModeWeb3').classList.toggle('active', mode === 'web3');
-    document.getElementById('nftSimulatedContainer').style.display = mode === 'simulated' ? 'block' : 'none';
+    document.getElementById('nftSimulatedContainer').style.display = 'block';
     document.getElementById('nftWeb3Container').style.display = mode === 'web3' ? 'block' : 'none';
+    var web3Interaction = document.getElementById('web3NftInteractionContainer');
+    if (web3Interaction) web3Interaction.style.display = 'none';
+    ensureNftUnifiedControls();
+    if (mode === 'web3') {
+        syncNftSharedFromWeb3();
+    } else {
+        updateNFTGallery();
+        updateNFTStats();
+        updateNFTLog();
+    }
 }
 
 // ==========================================
@@ -150,7 +163,7 @@ window.web3NftLoadContract = async function web3NftLoadContract() {
         document.getElementById('web3NftSymbol').textContent = symbol;
         document.getElementById('web3NftTotalSupply').textContent = totalSupply.toString();
 
-        document.getElementById('web3NftInteractionContainer').style.display = 'block';
+        document.getElementById('web3NftInteractionContainer').style.display = 'none';
         updateWeb3NftGallery();
         web3NftLog('mint', 'Contract loaded: ' + name);
         showToast('Contract Loaded!');
@@ -464,6 +477,7 @@ window.updateWeb3NftGallery = async function updateWeb3NftGallery() {
 
         if (totalSupply == 0) {
             grid.innerHTML = '<p style="color:var(--text-muted);grid-column:1/-1;text-align:center;">No NFTs minted yet on this contract.</p>';
+            syncNftSharedFromWeb3();
             return;
         }
 
@@ -601,9 +615,11 @@ window.updateWeb3NftGallery = async function updateWeb3NftGallery() {
         let el = document.getElementById('web3NftStatsTotal'); if (el) el.textContent = totalSupply.toString();
         el = document.getElementById('web3NftStatsForSale'); if (el) el.textContent = totalForSale;
         el = document.getElementById('web3NftStatsOwners'); if (el) el.textContent = uniqueOwners.size;
+        syncNftSharedFromWeb3();
 
     } catch (e) {
         grid.innerHTML = '<p style="color:var(--text-red);grid-column:1/-1;text-align:center;">Error loading gallery: ' + e.message + '</p>';
+        syncNftSharedFromWeb3();
     }
 }
 
@@ -1058,3 +1074,164 @@ window.escapeHtmlNft = function escapeHtmlNft(t) {
     d.appendChild(document.createTextNode(t));
     return d.innerHTML;
 }
+
+function ensureNftUnifiedControls() {
+    if (document.getElementById('nftTransferToAddress')) return;
+
+    var transferSelect = document.getElementById('nftTransferTo');
+    if (transferSelect && transferSelect.parentElement) {
+        var transferInput = document.createElement('input');
+        transferInput.type = 'text';
+        transferInput.id = 'nftTransferToAddress';
+        transferInput.className = 'form-input form-input-sm';
+        transferInput.placeholder = '0x... recipient address';
+        transferInput.style.display = 'none';
+        transferSelect.parentElement.appendChild(transferInput);
+    }
+
+    var shareSelect = document.getElementById('nftShareTo');
+    if (shareSelect && shareSelect.parentElement) {
+        var shareInput = document.createElement('input');
+        shareInput.type = 'text';
+        shareInput.id = 'nftShareToAddress';
+        shareInput.className = 'form-input form-input-sm';
+        shareInput.placeholder = '0x... recipient address';
+        shareInput.style.display = 'none';
+        shareSelect.parentElement.appendChild(shareInput);
+    }
+}
+
+function copySelectOptions(fromId, toId) {
+    var from = document.getElementById(fromId);
+    var to = document.getElementById(toId);
+    if (!from || !to) return;
+    to.innerHTML = from.innerHTML;
+}
+
+function syncNftRecipientControls() {
+    ensureNftUnifiedControls();
+    var web3Mode = nftEngine.mode === 'web3';
+    var transferSelect = document.getElementById('nftTransferTo');
+    var transferInput = document.getElementById('nftTransferToAddress');
+    var shareSelect = document.getElementById('nftShareTo');
+    var shareInput = document.getElementById('nftShareToAddress');
+
+    if (transferSelect) transferSelect.style.display = web3Mode ? 'none' : '';
+    if (transferInput) transferInput.style.display = web3Mode ? '' : 'none';
+    if (shareSelect) shareSelect.style.display = web3Mode ? 'none' : '';
+    if (shareInput) shareInput.style.display = web3Mode ? '' : 'none';
+}
+
+function syncNftSharedFromWeb3() {
+    if (nftEngine.mode !== 'web3') {
+        syncNftRecipientControls();
+        return;
+    }
+
+    var sharedGrid = document.getElementById('nftGalleryGrid');
+    var web3Grid = document.getElementById('web3NftGalleryGrid');
+    if (sharedGrid && web3Grid) sharedGrid.innerHTML = web3Grid.innerHTML;
+
+    var log = document.getElementById('nftEventLog');
+    var web3Log = document.getElementById('web3NftEventLog');
+    if (log && web3Log) log.innerHTML = web3Log.innerHTML;
+
+    [
+        ['web3NftStatsTotal', 'nftStatsTotal'],
+        ['web3NftStatsForSale', 'nftStatsForSale'],
+        ['web3NftStatsOwners', 'nftStatsOwners'],
+        ['web3NftStatsVolume', 'nftStatsVolume']
+    ].forEach(function (pair) {
+        var from = document.getElementById(pair[0]);
+        var to = document.getElementById(pair[1]);
+        if (from && to) to.textContent = from.textContent;
+    });
+
+    copySelectOptions('web3TransferId', 'nftTransferId');
+    copySelectOptions('web3SellId', 'nftSellId');
+    copySelectOptions('web3FracId', 'nftFracId');
+    copySelectOptions('web3ShareNftId', 'nftShareNftId');
+    syncNftRecipientControls();
+}
+
+function requireWeb3NftContract() {
+    if (nftEngine.mode !== 'web3') return false;
+    if (!web3NftState.contract) {
+        showToast('Connect MetaMask and load or deploy an NFT contract first.');
+        return true;
+    }
+    return false;
+}
+
+function setValue(id, value) {
+    var el = document.getElementById(id);
+    if (el) el.value = value || '';
+}
+
+var nftBrowserActions = {
+    mint: window.nftMint,
+    mintRWA: window.nftMintRWA,
+    transfer: window.nftTransfer,
+    listForSale: window.nftListForSale,
+    fractionalize: window.nftFractionalize,
+    transferShares: window.nftTransferShares
+};
+
+window.nftMint = async function nftMintUnified() {
+    if (nftEngine.mode !== 'web3') return nftBrowserActions.mint();
+    if (requireWeb3NftContract()) return;
+    setValue('web3MintName', document.getElementById('nftName').value);
+    setValue('web3MintDesc', document.getElementById('nftDesc').value);
+    setValue('web3MintCategory', document.getElementById('nftCategory').value);
+    setValue('web3MintRarity', document.getElementById('nftRarity').value);
+    await web3NftMint();
+    await updateWeb3NftGallery();
+};
+
+window.nftMintRWA = async function nftMintRWAUnified() {
+    if (nftEngine.mode !== 'web3') return nftBrowserActions.mintRWA();
+    if (requireWeb3NftContract()) return;
+    setValue('web3RwaType', document.getElementById('rwaType').value);
+    setValue('web3RwaName', document.getElementById('rwaName').value);
+    setValue('web3RwaValue', document.getElementById('rwaValue').value);
+    setValue('web3RwaDoc', document.getElementById('rwaDoc').value);
+    await web3NftMintRWA();
+    await updateWeb3NftGallery();
+};
+
+window.nftTransfer = async function nftTransferUnified() {
+    if (nftEngine.mode !== 'web3') return nftBrowserActions.transfer();
+    if (requireWeb3NftContract()) return;
+    setValue('web3TransferId', document.getElementById('nftTransferId').value);
+    setValue('web3TransferTo', document.getElementById('nftTransferToAddress').value);
+    await web3NftTransfer();
+    await updateWeb3NftGallery();
+};
+
+window.nftListForSale = async function nftListForSaleUnified() {
+    if (nftEngine.mode !== 'web3') return nftBrowserActions.listForSale();
+    if (requireWeb3NftContract()) return;
+    setValue('web3SellId', document.getElementById('nftSellId').value);
+    setValue('web3SellPrice', document.getElementById('nftSellPrice').value);
+    await web3NftList();
+    await updateWeb3NftGallery();
+};
+
+window.nftFractionalize = async function nftFractionalizeUnified() {
+    if (nftEngine.mode !== 'web3') return nftBrowserActions.fractionalize();
+    if (requireWeb3NftContract()) return;
+    setValue('web3FracId', document.getElementById('nftFracId').value);
+    setValue('web3FracShares', document.getElementById('nftFracShares').value);
+    await web3NftFractionalize();
+    await updateWeb3NftGallery();
+};
+
+window.nftTransferShares = async function nftTransferSharesUnified() {
+    if (nftEngine.mode !== 'web3') return nftBrowserActions.transferShares();
+    if (requireWeb3NftContract()) return;
+    setValue('web3ShareNftId', document.getElementById('nftShareNftId').value);
+    setValue('web3ShareTo', document.getElementById('nftShareToAddress').value);
+    setValue('web3ShareAmount', document.getElementById('nftShareAmount').value);
+    await web3NftTransferShares();
+    await updateWeb3NftGallery();
+};

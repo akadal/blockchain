@@ -5,6 +5,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Akadal Chain - Educational PoA EVM</title>
+    <meta name="description" content="Akadal Chain faucet, RPC details, block explorer search, and educational Web3 tooling for a free PoA EVM test network.">
+    <meta name="theme-color" content="#07111c">
+    <link rel="preload" as="image" href="assets/akadal-chain-hero.png">
     <style>
         :root {
             --primary: #6366f1;
@@ -842,6 +845,948 @@
                 width: 100%;
             }
         }
+
+        /* Modern Faucet Landing Refresh */
+        :root {
+            --primary: #16c7d8;
+            --primary-hover: #0ea5b7;
+            --accent: #f7b955;
+            --accent-2: #48d597;
+            --bg: #07111c;
+            --card: rgba(12, 22, 34, 0.84);
+            --text: #f6fbff;
+            --text-muted: #9fb0c3;
+            --border: rgba(177, 202, 228, 0.16);
+            --input-bg: rgba(4, 11, 19, 0.82);
+            --success-bg: rgba(72, 213, 151, 0.12);
+            --success-text: #5ee5a7;
+            --error-bg: rgba(248, 113, 113, 0.13);
+            --error-text: #ff8a8a;
+            --warning-bg: rgba(247, 185, 85, 0.1);
+            --warning-text: #ffd28a;
+            --warning-border: rgba(247, 185, 85, 0.2);
+            --surface-strong: rgba(9, 18, 29, 0.96);
+            --shadow: 0 24px 70px rgba(0, 0, 0, 0.34);
+            --shadow-soft: 0 16px 44px rgba(0, 0, 0, 0.24);
+        }
+
+        [data-theme="light"] {
+            --primary: #047f91;
+            --primary-hover: #036879;
+            --accent: #a66308;
+            --accent-2: #12845b;
+            --bg: #f5f8fb;
+            --card: rgba(255, 255, 255, 0.9);
+            --text: #111827;
+            --text-muted: #536174;
+            --border: rgba(18, 33, 52, 0.14);
+            --input-bg: rgba(242, 247, 251, 0.94);
+            --success-bg: rgba(18, 132, 91, 0.1);
+            --success-text: #0f7a53;
+            --error-bg: rgba(216, 60, 69, 0.1);
+            --error-text: #c8333c;
+            --warning-bg: rgba(166, 99, 8, 0.1);
+            --warning-text: #8b5407;
+            --warning-border: rgba(166, 99, 8, 0.18);
+            --surface-strong: rgba(255, 255, 255, 0.96);
+            --shadow: 0 24px 70px rgba(32, 50, 74, 0.12);
+            --shadow-soft: 0 16px 44px rgba(32, 50, 74, 0.1);
+        }
+
+        *,
+        *::before,
+        *::after {
+            letter-spacing: 0 !important;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background:
+                linear-gradient(120deg, rgba(22, 199, 216, 0.1), transparent 34%),
+                linear-gradient(300deg, rgba(247, 185, 85, 0.09), transparent 36%),
+                repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.034) 0 1px, transparent 1px 96px),
+                repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.026) 0 1px, transparent 1px 96px),
+                var(--bg);
+            color: var(--text);
+            text-rendering: geometricPrecision;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: -1;
+            background:
+                linear-gradient(110deg, transparent 0 28%, rgba(22, 199, 216, 0.12) 28.1% 28.3%, transparent 28.4%),
+                linear-gradient(32deg, transparent 0 60%, rgba(72, 213, 151, 0.11) 60.1% 60.3%, transparent 60.4%),
+                linear-gradient(180deg, rgba(255, 255, 255, 0.06), transparent 32%);
+        }
+
+        [data-theme="light"] body {
+            background:
+                linear-gradient(120deg, rgba(4, 127, 145, 0.08), transparent 34%),
+                linear-gradient(300deg, rgba(166, 99, 8, 0.08), transparent 36%),
+                repeating-linear-gradient(90deg, rgba(17, 24, 39, 0.045) 0 1px, transparent 1px 96px),
+                repeating-linear-gradient(0deg, rgba(17, 24, 39, 0.035) 0 1px, transparent 1px 96px),
+                var(--bg);
+        }
+
+        .container {
+            max-width: 1240px;
+        }
+
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 30;
+            margin-bottom: 0;
+            padding: 1rem 0;
+            border-bottom: 1px solid transparent;
+            backdrop-filter: blur(18px);
+        }
+
+        header::before {
+            content: "";
+            position: fixed;
+            inset: 0 0 auto 0;
+            height: 76px;
+            z-index: -1;
+            background: linear-gradient(180deg, rgba(7, 17, 28, 0.9), rgba(7, 17, 28, 0.58), transparent);
+            pointer-events: none;
+        }
+
+        [data-theme="light"] header::before {
+            background: linear-gradient(180deg, rgba(245, 248, 251, 0.94), rgba(245, 248, 251, 0.7), transparent);
+        }
+
+        .logo {
+            color: var(--text);
+            font-size: 1.1rem;
+            gap: 0.65rem;
+        }
+
+        .logo svg {
+            width: 2.25rem;
+            height: 2.25rem;
+            padding: 0.45rem;
+            border-radius: 8px;
+            background: linear-gradient(135deg, var(--primary), var(--accent-2) 58%, var(--accent));
+            color: #03111a;
+            box-shadow: 0 12px 30px rgba(22, 199, 216, 0.18);
+        }
+
+        .theme-toggle,
+        .github-btn {
+            min-height: 2.6rem;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.055);
+            border-color: var(--border);
+            color: var(--text);
+            font-weight: 700;
+        }
+
+        [data-theme="light"] .theme-toggle,
+        [data-theme="light"] .github-btn {
+            background: rgba(255, 255, 255, 0.72);
+        }
+
+        .github-btn:hover,
+        .theme-toggle:hover {
+            border-color: rgba(22, 199, 216, 0.48);
+            background: rgba(22, 199, 216, 0.12);
+            color: var(--text);
+        }
+
+        main {
+            position: relative;
+        }
+
+        .hero {
+            position: relative;
+            width: 100vw;
+            min-height: clamp(620px, 78vh, 820px);
+            margin-left: 50%;
+            margin-bottom: -5.5rem;
+            padding: clamp(6rem, 10vh, 8rem) max(1.5rem, calc((100vw - 1240px) / 2 + 1.5rem)) 10rem;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            justify-content: center;
+            overflow: hidden;
+            text-align: left;
+            background-image:
+                linear-gradient(90deg, rgba(7, 17, 28, 0.96) 0%, rgba(7, 17, 28, 0.8) 36%, rgba(7, 17, 28, 0.35) 68%, rgba(7, 17, 28, 0.76) 100%),
+                linear-gradient(180deg, rgba(7, 17, 28, 0.14), var(--bg) 96%),
+                url("assets/akadal-chain-hero.png");
+            background-position: center;
+            background-size: cover;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        [data-theme="light"] .hero {
+            background-image:
+                linear-gradient(90deg, rgba(245, 248, 251, 0.96) 0%, rgba(245, 248, 251, 0.78) 34%, rgba(245, 248, 251, 0.28) 66%, rgba(245, 248, 251, 0.78) 100%),
+                linear-gradient(180deg, rgba(245, 248, 251, 0.08), var(--bg) 96%),
+                url("assets/akadal-chain-hero.png");
+        }
+
+        .hero::after {
+            content: "";
+            position: absolute;
+            inset: auto 0 0;
+            height: 38%;
+            background: linear-gradient(180deg, transparent, var(--bg));
+            pointer-events: none;
+        }
+
+        .badge {
+            position: relative;
+            z-index: 1;
+            border-radius: 8px;
+            background: rgba(22, 199, 216, 0.14);
+            border: 1px solid rgba(22, 199, 216, 0.28);
+            color: var(--primary);
+            margin-bottom: 1rem;
+            text-transform: none;
+        }
+
+        .hero-eyebrow {
+            position: relative;
+            z-index: 1;
+            width: fit-content;
+            margin: 0 0 1rem;
+            color: var(--primary);
+            font-size: 0.92rem;
+            font-weight: 800;
+        }
+
+        .hero h1 {
+            position: relative;
+            z-index: 1;
+            max-width: 680px;
+            margin-bottom: 1.25rem;
+            font-size: clamp(3.25rem, 8vw, 6.75rem);
+            line-height: 0.94;
+            color: var(--text);
+            background: none;
+            -webkit-text-fill-color: currentColor;
+        }
+
+        .hero p {
+            position: relative;
+            z-index: 1;
+            max-width: 620px;
+            margin: 0 0 1.4rem;
+            color: var(--text-muted);
+            font-size: clamp(1.08rem, 1.5vw, 1.35rem);
+        }
+
+        .hero-meta {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.6rem;
+            max-width: 720px;
+            margin-bottom: 1.4rem;
+        }
+
+        .hero-meta span {
+            padding: 0.55rem 0.72rem;
+            border-radius: 8px;
+            border: 1px solid rgba(177, 202, 228, 0.2);
+            background: rgba(4, 11, 19, 0.48);
+            color: var(--text);
+            font-size: 0.88rem;
+            font-weight: 700;
+            backdrop-filter: blur(14px);
+        }
+
+        [data-theme="light"] .hero-meta span {
+            background: rgba(255, 255, 255, 0.7);
+        }
+
+        .search-bar {
+            position: relative;
+            z-index: 1;
+            width: min(680px, 100%);
+            margin: 0;
+            padding: 0.35rem;
+            border-radius: 8px;
+            border: 1px solid rgba(177, 202, 228, 0.22);
+            background: rgba(4, 11, 19, 0.72);
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(16px);
+        }
+
+        [data-theme="light"] .search-bar {
+            background: rgba(255, 255, 255, 0.78);
+        }
+
+        .search-bar input,
+        .search-bar button,
+        .faucet-input,
+        .amount-btn,
+        .asset-btn,
+        .submit-btn,
+        .add-metamask,
+        .token-address-row a,
+        .copy-token-btn,
+        .network-details span.value,
+        .block-number,
+        .block-hash,
+        .donation-address {
+            border-radius: 8px;
+        }
+
+        .search-bar input {
+            min-height: 3.65rem;
+            background: transparent;
+            border: 0;
+            color: var(--text);
+            box-shadow: none;
+            text-align: left;
+        }
+
+        .search-bar input:focus {
+            box-shadow: none;
+        }
+
+        .search-bar button {
+            min-width: 8rem;
+            background: linear-gradient(135deg, var(--primary), var(--accent-2));
+            color: #03111a;
+            font-weight: 800;
+        }
+
+        .grid {
+            position: relative;
+            z-index: 2;
+            grid-template-columns: minmax(0, 1.04fr) minmax(0, 0.96fr);
+            align-items: stretch;
+            gap: 1rem;
+            margin-bottom: 4.5rem;
+        }
+
+        .card,
+        .pricing-card,
+        .block-item,
+        .donation-box,
+        section.info-section[style] {
+            border-radius: 8px !important;
+            background:
+                linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.025)),
+                var(--card) !important;
+            border: 1px solid var(--border) !important;
+            box-shadow: var(--shadow-soft) !important;
+        }
+
+        .card,
+        .pricing-card {
+            padding: clamp(1.35rem, 2.3vw, 2rem);
+        }
+
+        .card h2,
+        .section-title,
+        .blocks-section h2 {
+            color: var(--text);
+        }
+
+        .card h2 {
+            font-size: clamp(1.45rem, 2vw, 1.9rem);
+        }
+
+        .card > p {
+            color: var(--text-muted);
+            margin-bottom: 1.5rem;
+        }
+
+        .asset-toggle {
+            border-radius: 8px;
+            background: rgba(4, 11, 19, 0.58);
+            border-color: var(--border);
+        }
+
+        [data-theme="light"] .asset-toggle {
+            background: rgba(242, 247, 251, 0.84);
+        }
+
+        .asset-btn.active,
+        .amount-btn.active {
+            background: linear-gradient(135deg, var(--primary), var(--accent-2));
+            color: #03111a;
+            border-color: transparent;
+        }
+
+        .faucet-input,
+        .token-address-panel,
+        .network-details {
+            background: var(--input-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+        }
+
+        .faucet-input {
+            min-height: 3.5rem;
+            text-align: left;
+        }
+
+        .submit-btn {
+            min-height: 3.65rem;
+            background: linear-gradient(135deg, var(--accent), #e47f2f);
+            color: #160d03;
+        }
+
+        .submit-btn:hover:not(:disabled),
+        .demo-btn:hover,
+        .add-metamask:hover {
+            transform: translateY(-1px);
+        }
+
+        .add-metamask {
+            min-height: 3.35rem;
+            border-width: 1px;
+            color: var(--primary);
+            background: rgba(22, 199, 216, 0.07);
+        }
+
+        .add-metamask:hover {
+            background: rgba(22, 199, 216, 0.14);
+            color: var(--text);
+        }
+
+        .network-details {
+            padding: 0.35rem 1rem;
+        }
+
+        #rpc-status {
+            display: inline-flex;
+            width: fit-content;
+            max-width: 100%;
+            padding: 0.55rem 0.7rem;
+            border-radius: 8px;
+            background: var(--input-bg);
+            border: 1px solid var(--border);
+        }
+
+        .pricing-grid {
+            gap: 1rem;
+        }
+
+        .section-title {
+            font-size: clamp(2rem, 4vw, 3.4rem);
+            line-height: 1;
+            margin-bottom: 1.35rem;
+            text-align: left;
+        }
+
+        .pricing-price {
+            font-size: clamp(2.4rem, 4vw, 3.4rem);
+        }
+
+        .pricing-features li {
+            align-items: flex-start;
+        }
+
+        .pricing-features li svg {
+            margin-top: 0.1rem;
+            color: var(--accent-2);
+        }
+
+        .demo-btn,
+        section.info-section[style] .demo-btn {
+            border-radius: 8px !important;
+            background: linear-gradient(135deg, var(--primary), var(--accent-2)) !important;
+            color: #03111a !important;
+            box-shadow: 0 16px 44px rgba(22, 199, 216, 0.2) !important;
+        }
+
+        section.info-section[style] {
+            padding: clamp(2rem, 4vw, 3rem) !important;
+            text-align: left !important;
+            position: relative;
+            overflow: hidden;
+        }
+
+        section.info-section[style] h2,
+        section.info-section[style] p {
+            margin-left: 0 !important;
+            margin-right: 0 !important;
+        }
+
+        section.info-section[style] .demo-cta {
+            justify-content: flex-start !important;
+        }
+
+        .blocks-section {
+            margin-bottom: 4.5rem;
+        }
+
+        .block-list {
+            gap: 0.55rem;
+        }
+
+        .block-item {
+            padding: 1rem 1.1rem;
+        }
+
+        .block-item:hover {
+            transform: translateY(-1px);
+        }
+
+        footer {
+            background: rgba(4, 11, 19, 0.62);
+            border-color: var(--border);
+            backdrop-filter: blur(14px);
+        }
+
+        [data-theme="light"] footer {
+            background: rgba(255, 255, 255, 0.72);
+        }
+
+        .donation-box {
+            max-width: 100%;
+        }
+
+        @media (min-width: 1024px) {
+            .grid .card:first-child {
+                transform: translateY(-1.1rem);
+            }
+
+            .grid .card:nth-child(2) {
+                transform: translateY(1.1rem);
+            }
+        }
+
+        @media (max-width: 900px) {
+            .grid,
+            .pricing-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .hero {
+                min-height: 680px;
+                padding-top: 6.5rem;
+                background-position: 58% center;
+            }
+        }
+
+        @media (max-width: 640px) {
+            header {
+                align-items: stretch;
+                padding: 0.85rem 0;
+            }
+
+            .header-controls {
+                gap: 0.5rem;
+            }
+
+            .theme-toggle,
+            .github-btn {
+                flex: 1;
+                justify-content: center;
+                padding: 0.6rem 0.75rem;
+            }
+
+            .hero {
+                min-height: 720px;
+                margin-bottom: -4rem;
+                padding: 6rem 1rem 8rem;
+                background-position: 62% center;
+            }
+
+            .hero h1 {
+                font-size: clamp(3rem, 17vw, 4.2rem);
+            }
+
+            .hero-meta {
+                gap: 0.45rem;
+            }
+
+            .hero-meta span {
+                font-size: 0.78rem;
+            }
+
+            .search-bar {
+                flex-direction: column;
+            }
+
+            .search-bar input {
+                min-height: 3.25rem;
+                width: 100%;
+            }
+
+            .search-bar button {
+                min-height: 3.2rem;
+                width: 100%;
+            }
+
+            .network-details li {
+                align-items: stretch;
+            }
+
+            .network-details span.value,
+            .token-address-row a,
+            .block-hash {
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            section.info-section[style] .demo-btn {
+                width: 100%;
+                justify-content: center;
+                padding: 1rem !important;
+                font-size: 1rem !important;
+            }
+        }
+
+        /* UX refinement: network lives in the hero, faucet is the primary task below */
+        .hero {
+            min-height: clamp(600px, 74vh, 760px);
+            margin-bottom: 2.5rem;
+            padding-top: clamp(5.5rem, 8vh, 7rem);
+            padding-bottom: clamp(3.5rem, 7vh, 5.5rem);
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(360px, 460px);
+            align-items: center;
+            gap: clamp(2rem, 6vw, 5rem);
+        }
+
+        .hero-copy,
+        .hero-network-card {
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-copy {
+            max-width: 720px;
+        }
+
+        .hero-network-card {
+            align-self: center;
+            width: 100%;
+            padding: clamp(1.25rem, 2vw, 1.65rem);
+            backdrop-filter: blur(20px);
+        }
+
+        .card-kicker {
+            width: fit-content;
+            margin-bottom: 0.8rem;
+            color: var(--primary);
+            font-size: 0.78rem;
+            font-weight: 800;
+        }
+
+        .hero-network-card h2 {
+            margin-bottom: 0.55rem;
+            font-size: clamp(1.55rem, 2.5vw, 2.1rem);
+        }
+
+        .hero-network-card p {
+            max-width: none;
+            margin: 0 0 1rem;
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        .network-search {
+            margin-bottom: 1rem;
+        }
+
+        .hero-network-card .search-bar {
+            width: 100%;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            gap: 0.35rem;
+            padding: 0.3rem;
+            background: var(--input-bg);
+            box-shadow: none;
+        }
+
+        .hero-network-card .search-bar input {
+            min-height: 3rem;
+            padding: 0.8rem 0.9rem;
+            font-size: 0.92rem;
+        }
+
+        .hero-network-card .search-bar button {
+            min-width: 6.5rem;
+            min-height: 3rem;
+            padding: 0 1rem;
+        }
+
+        .hero-network-card .network-details {
+            margin-bottom: 1rem;
+        }
+
+        .hero-network-card .network-details li {
+            padding: 0.78rem 0;
+        }
+
+        .faucet-grid {
+            grid-template-columns: minmax(0, 740px);
+            justify-content: center;
+            align-items: start;
+            margin-bottom: 4.5rem;
+        }
+
+        .faucet-grid .card,
+        .grid .card:first-child,
+        .grid .card:nth-child(2) {
+            transform: none;
+        }
+
+        .faucet-card {
+            width: 100%;
+        }
+
+        .faucet-card h2 {
+            font-size: clamp(1.75rem, 2.5vw, 2.35rem);
+        }
+
+        @media (min-width: 1024px) {
+            .faucet-card {
+                padding: clamp(1.6rem, 2.6vw, 2.35rem);
+            }
+        }
+
+        @media (max-width: 980px) {
+            .hero {
+                min-height: auto;
+                grid-template-columns: 1fr;
+                align-items: start;
+                gap: 1.25rem;
+                padding-top: 6rem;
+                padding-bottom: 3rem;
+                background-position: 58% center;
+            }
+
+            .hero-copy {
+                max-width: 680px;
+            }
+
+            .hero-network-card {
+                max-width: 680px;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .hero {
+                min-height: auto;
+                margin-bottom: 1.5rem;
+                gap: 1rem;
+                padding: 4.75rem 1rem 1.5rem;
+            }
+
+            .hero h1 {
+                margin-bottom: 0.85rem;
+                font-size: clamp(2.6rem, 14.5vw, 3.55rem);
+                line-height: 0.98;
+            }
+
+            .hero p {
+                margin-bottom: 1rem;
+                font-size: 1rem;
+            }
+
+            .hero-network-card .search-bar {
+                display: flex;
+                flex-direction: column;
+            }
+
+            .hero-network-card .search-bar button {
+                width: 100%;
+            }
+
+            .hero-network-card {
+                padding: 1.25rem;
+            }
+
+            .hero-network-card h2 {
+                font-size: 1.65rem;
+            }
+
+            .hero-network-card p {
+                font-size: 0.9rem;
+            }
+
+            .hero-network-card .network-details li {
+                padding: 0.65rem 0;
+            }
+
+            .faucet-grid {
+                margin-bottom: 3rem;
+            }
+        }
+
+        /* Final content polish */
+        .section-eyebrow {
+            margin: 0 0 0.35rem;
+            color: var(--primary);
+            font-size: 0.82rem;
+            font-weight: 800;
+        }
+
+        .blocks-section {
+            max-width: 1100px;
+            margin: 0 auto 4.5rem;
+        }
+
+        .blocks-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            gap: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .blocks-header h2 {
+            margin: 0;
+            font-size: clamp(2rem, 4vw, 3.4rem);
+            line-height: 1;
+        }
+
+        .blocks-header > p {
+            max-width: 440px;
+            margin: 0;
+            color: var(--text-muted);
+            font-size: 0.96rem;
+            line-height: 1.6;
+        }
+
+        .block-list-shell {
+            padding: 0.65rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background:
+                linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02)),
+                var(--card);
+            box-shadow: var(--shadow-soft);
+        }
+
+        .block-list {
+            gap: 0.5rem;
+        }
+
+        .block-item {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            gap: 1rem;
+            align-items: center;
+            padding: 0.9rem 1rem;
+            background: var(--input-bg) !important;
+            box-shadow: none !important;
+        }
+
+        .block-item-empty {
+            display: flex;
+            justify-content: center;
+            min-height: 4rem;
+            color: var(--text-muted);
+            text-align: center;
+        }
+
+        .block-info {
+            min-width: 0;
+            gap: 1rem;
+        }
+
+        .block-number {
+            min-width: 5.2rem;
+            text-align: center;
+        }
+
+        .block-hash {
+            max-width: 360px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(280px, 420px);
+            align-items: center;
+            text-align: left;
+        }
+
+        .footer-text {
+            max-width: 720px;
+        }
+
+        .footer-text a {
+            color: var(--primary);
+            font-weight: 800;
+            text-decoration: none;
+        }
+
+        .footer-text a:hover {
+            text-decoration: underline;
+        }
+
+        .donation-box {
+            width: 100%;
+        }
+
+        .donation-title {
+            justify-content: flex-start;
+        }
+
+        .donation-note {
+            margin: -0.25rem 0 0.85rem;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            line-height: 1.45;
+        }
+
+        .donation-address {
+            display: block;
+            width: 100%;
+            line-height: 1.45;
+        }
+
+        @media (max-width: 760px) {
+            .blocks-header,
+            .footer-content {
+                grid-template-columns: 1fr;
+                display: grid;
+                gap: 1rem;
+            }
+
+            .blocks-header {
+                align-items: start;
+            }
+
+            .block-item {
+                grid-template-columns: 1fr;
+                gap: 0.65rem;
+            }
+
+            .block-info {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .block-hash {
+                width: 100%;
+                max-width: none;
+            }
+
+            .footer-content {
+                text-align: center;
+            }
+
+            .donation-title {
+                justify-content: center;
+            }
+        }
     </style>
 </head>
 
@@ -867,52 +1812,26 @@
         <main>
             <!-- Hero Section -->
             <section class="hero">
-                <div class="badge">Educational PoA EVM</div>
-                <h1>Welcome to Akadal Chain</h1>
-                <p>A fast, persistent, and free Ethereum test network designed specifically for educational purposes, smart contract testing, and learning Web3 development.</p>
-
-                <div class="search-bar">
-                    <input type="text" id="searchInput" placeholder="Search by Address, Tx Hash, or Block Number..." onkeypress="handleSearch(event)">
-                    <button onclick="performSearch()">Search</button>
+                <div class="hero-copy">
+                    <p class="hero-eyebrow">Ethereum Test Network</p>
+                    <h1>Akadal Chain</h1>
+                    <p>A fast, persistent, and free Ethereum test network designed specifically for educational purposes, smart contract testing, and learning Web3 development.</p>
                 </div>
 
-                </section>
-
-            <!-- Main Interactive Grid -->
-            <div class="grid">
-                <!-- Faucet Card -->
-                <div class="card">
-                    <h2>Testnet Faucet</h2>
-                    <p id="faucetDescription">Choose ETH for gas or USDT for token tests. The faucet sends 1 ETH or mints 1000 USDT per request.</p>
-
-                    <div class="asset-toggle" role="group" aria-label="Faucet asset">
-                        <button type="button" class="asset-btn active" id="assetEthBtn" onclick="selectAsset('ETH')">ETH</button>
-                        <button type="button" class="asset-btn" id="assetUsdtBtn" onclick="selectAsset('USDT')">USDT</button>
-                    </div>
-
-                    <div class="token-address-panel" id="usdtAddressPanel" hidden>
-                        <div class="token-address-label">USDT Contract</div>
-                        <div class="token-address-row">
-                            <a id="usdtAddress" href="#" target="_blank" rel="noopener">Loading...</a>
-                            <button type="button" class="copy-token-btn" id="copyUsdtBtn" onclick="copyUsdtAddress()" title="Copy contract address" aria-label="Copy USDT contract address" disabled>
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-                            </button>
-                        </div>
-                        <div class="token-address-status" id="usdtStatus">Checking token...</div>
-                    </div>
-
-                    <input type="text" id="address" class="faucet-input" placeholder="0x..." autocomplete="off">
-
-                    <button class="submit-btn" id="submitBtn" onclick="requestFunds()">Send Me ETH</button>
-                    <div id="status"></div>
-                </div>
-
-                <!-- Network Info Card -->
-                <div class="card">
+                <div class="card hero-network-card">
+                    <div class="card-kicker">Network & Explorer</div>
                     <h2>Network Details</h2>
-                    <p>Connect your Web3 wallet (like MetaMask) using these RPC details to start building on Akadal Chain.</p>
+                    <p>Connect your Web3 wallet, check RPC health, or jump straight to a block, account, or transaction in the explorer.</p>
 
                     <div id="rpc-status" style="margin-bottom: 1rem; font-weight: 500; font-size: 0.9rem;">Checking RPC connectivity...</div>
+
+                    <div class="network-search">
+                        <div class="token-address-label">Explorer Search</div>
+                        <div class="search-bar">
+                            <input type="text" id="searchInput" placeholder="Search address, tx hash, or block number..." onkeypress="handleSearch(event)">
+                            <button onclick="performSearch()">Search</button>
+                        </div>
+                    </div>
 
                     <ul class="network-details">
                         <li>
@@ -937,6 +1856,36 @@
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg>
                         Add to MetaMask
                     </button>
+                </div>
+            </section>
+
+            <!-- Faucet Section -->
+            <div class="grid faucet-grid">
+                <!-- Faucet Card -->
+                <div class="card faucet-card">
+                    <h2>Testnet Faucet</h2>
+                    <p id="faucetDescription">Choose ETH for gas or USDT for token tests. The faucet sends 1 ETH or mints 1000 USDT per request.</p>
+
+                    <div class="asset-toggle" role="group" aria-label="Faucet asset">
+                        <button type="button" class="asset-btn active" id="assetEthBtn" onclick="selectAsset('ETH')">ETH</button>
+                        <button type="button" class="asset-btn" id="assetUsdtBtn" onclick="selectAsset('USDT')">USDT</button>
+                    </div>
+
+                    <div class="token-address-panel" id="usdtAddressPanel" hidden>
+                        <div class="token-address-label">USDT Contract</div>
+                        <div class="token-address-row">
+                            <a id="usdtAddress" href="#" target="_blank" rel="noopener">Loading...</a>
+                            <button type="button" class="copy-token-btn" id="copyUsdtBtn" onclick="copyUsdtAddress()" title="Copy contract address" aria-label="Copy USDT contract address" disabled>
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                            </button>
+                        </div>
+                        <div class="token-address-status" id="usdtStatus">Checking token...</div>
+                    </div>
+
+                    <input type="text" id="address" class="faucet-input" placeholder="0x..." autocomplete="off">
+
+                    <button class="submit-btn" id="submitBtn" onclick="requestFunds()">Send Me ETH</button>
+                    <div id="status"></div>
                 </div>
             </div>
 
@@ -1000,10 +1949,18 @@
 
             <!-- Latest Blocks Section -->
             <section class="blocks-section">
-                <h2>Latest Blocks</h2>
-                <div class="block-list" id="blockList">
-                    <div class="block-item" style="justify-content: center; color: var(--text-muted);">
-                        Fetching latest blocks...
+                <div class="blocks-header">
+                    <div>
+                        <p class="section-eyebrow">Live Chain Activity</p>
+                        <h2>Latest Blocks</h2>
+                    </div>
+                    <p>Recent blocks fetched directly from the Akadal Chain RPC. Use the explorer search above for deeper inspection.</p>
+                </div>
+                <div class="block-list-shell">
+                    <div class="block-list" id="blockList">
+                        <div class="block-item block-item-empty">
+                            Fetching latest blocks...
+                        </div>
                     </div>
                 </div>
             </section>
@@ -1015,14 +1972,17 @@
             <p class="footer-text">
                 &copy; 2026 Akadal Chain. Built for educational purposes to help developers learn Web3 technologies in a safe, cost-free environment.
                 <br>
+                Made by <a href="https://akadal.tr" target="_blank" rel="noopener">Emre Akadal</a>.
+                <br>
                 Licensed under <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener" style="color: inherit; text-decoration: underline;">Creative Commons Non-Commercial (CC BY-NC 4.0)</a>. Not for commercial use.
             </p>
 
             <div class="donation-box">
                 <div class="donation-title">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
-                    Donate if you want (Mainnet ETH)
+                    Donate if you want
                 </div>
+                <div class="donation-note">Mainnet ETH, not Akadal Chain please. The testnet money is very emotionally rich, financially less so.</div>
                 <div class="donation-address">0x955a58c4A182C185D269F8E41396f548c1fc483c</div>
             </div>
         </div>
@@ -1157,7 +2117,7 @@
                 console.error("RPC Check Failed:", e);
                 statusDiv.innerHTML = `❌ RPC Connection Failed! (${e.message})`;
                 statusDiv.style.color = "var(--error-text)";
-                document.getElementById('blockList').innerHTML = `<div class="block-item" style="justify-content: center; color: var(--error-text);">Failed to fetch blocks from RPC.</div>`;
+                document.getElementById('blockList').innerHTML = `<div class="block-item block-item-empty" style="color: var(--error-text);">Failed to fetch blocks from RPC.</div>`;
             }
         }
 
@@ -1223,7 +2183,13 @@
             }
 
             const isUsdt = selectedAsset === 'USDT';
-            btn.disabled = isUsdt && !usdtToken.ready;
+            if (isUsdt && !usdtToken.ready) {
+                btn.disabled = true;
+                btn.innerHTML = "USDT Faucet Not Ready";
+                return;
+            }
+
+            btn.disabled = false;
             btn.innerHTML = isUsdt ? "Send Me USDT" : "Send Me ETH";
         }
 
@@ -1265,10 +2231,24 @@
                 statusEl.textContent = `${usdtToken.faucetAmount || '1000'} USDT per request`;
                 statusEl.style.color = "var(--success-text)";
             } else {
-                addressEl.textContent = usdtToken.status === 'deploying' ? 'Deploying...' : 'Preparing...';
+                const statusText = {
+                    initializing: 'Backend initializing',
+                    checking: 'Checking contract',
+                    deploying: 'Deploying contract',
+                    error: 'Unavailable'
+                };
+
+                const helperText = {
+                    initializing: 'The faucet wallet is not ready yet, so the token address is not available.',
+                    checking: 'Checking the saved USDT contract before enabling token requests.',
+                    deploying: 'The faucet backend is deploying the USDT contract.',
+                    error: usdtToken.error || 'USDT faucet is unavailable right now.'
+                };
+
+                addressEl.textContent = statusText[usdtToken.status] || 'Not ready';
                 addressEl.removeAttribute('href');
                 copyBtn.disabled = true;
-                statusEl.textContent = usdtToken.error || 'USDT faucet is getting ready';
+                statusEl.textContent = helperText[usdtToken.status] || 'USDT faucet is not ready yet.';
                 statusEl.style.color = usdtToken.status === 'error' ? "var(--error-text)" : "var(--text-muted)";
             }
 

@@ -69,13 +69,15 @@ window.setDefiMode = function(mode) {
     document.getElementById('defiModeSimulated').classList.toggle('active', mode === 'simulated');
     document.getElementById('defiModeWeb3').classList.toggle('active', mode === 'web3');
 
-    document.getElementById('defiSimulatedContainer').style.display = mode === 'simulated' ? 'block' : 'none';
+    document.getElementById('defiSimulatedContainer').style.display = 'block';
     document.getElementById('defiWeb3Container').style.display = mode === 'web3' ? 'block' : 'none';
+    var web3Interaction = document.getElementById('web3DefiInteractionContainer');
+    if (web3Interaction) web3Interaction.style.display = 'none';
 
     if (mode === 'simulated') {
         updateDefiUI();
     } else {
-        updateWeb3DefiUI();
+        syncDefiSharedFromWeb3();
     }
 };
 
@@ -644,7 +646,7 @@ async function web3DefiLoadAmmContract(ammAddr, tokenAAddr, tokenBAddr, lendingA
     dirSel.options[1].text = defi.web3.symbolB + " \u2192 " + defi.web3.symbolA;
 
     document.getElementById('web3DefiAmmSection').style.display = 'none';
-    document.getElementById('web3DefiInteractionContainer').style.display = 'block';
+    document.getElementById('web3DefiInteractionContainer').style.display = 'none';
 
     await web3DefiRefreshPool();
 }
@@ -669,7 +671,7 @@ window.web3DefiRefreshPool = async function() {
 
         // Lending stats
         if (defi.web3.lendingContract) {
-            defi.web3.collateral = await defi.web3.lendingContract.collateral(defi.web3.address);
+            defi.web3.collateral = await defi.web3.lendingContract.deposited(defi.web3.address);
             defi.web3.borrowed = await defi.web3.lendingContract.borrowed(defi.web3.address);
             
             var colVal = parseFloat(ethers.formatUnits(defi.web3.collateral, 18));
@@ -687,8 +689,9 @@ window.web3DefiRefreshPool = async function() {
 
         // Farm stats
         if (defi.web3.farmContract) {
-            defi.web3.stakedLP = await defi.web3.farmContract.stakedBalance(defi.web3.address);
-            defi.web3.pendingFarm = await defi.web3.farmContract.pendingRewards(defi.web3.address);
+            var userInfo = await defi.web3.farmContract.userInfo(defi.web3.address);
+            defi.web3.stakedLP = userInfo.amount || userInfo[0] || 0n;
+            defi.web3.pendingFarm = await defi.web3.farmContract.pendingReward(defi.web3.address);
         }
 
         updateWeb3DefiUI();
@@ -715,6 +718,7 @@ function updateWeb3DefiUI() {
 
     setT('web3DefiStakedLP', ethers.formatUnits(defi.web3.stakedLP, 18));
     setT('web3DefiPendingFarm', ethers.formatUnits(defi.web3.pendingFarm, 18));
+    syncDefiSharedFromWeb3();
 }
 
 window.web3DefiCalcPreview = async function() {
@@ -987,3 +991,182 @@ function shortAddrDeFi(addr) {
     if (!addr) return '';
     return addr.substring(0, 6) + '...' + addr.substring(addr.length - 4);
 }
+
+function defiWeb3Ready() {
+    if (defi.mode !== 'web3') return false;
+    if (!defi.web3.ammContract) {
+        showToast('Connect MetaMask and load or deploy the DeFi bundle first.');
+        return false;
+    }
+    return true;
+}
+
+function syncDefiSharedFromWeb3() {
+    if (defi.mode !== 'web3') return;
+
+    var web3Interaction = document.getElementById('web3DefiInteractionContainer');
+    if (web3Interaction) web3Interaction.style.display = 'none';
+
+    var symA = defi.web3.symbolA || 'Token A';
+    var symB = defi.web3.symbolB || 'Token B';
+    var reserveA = parseFloat(ethers.formatUnits(defi.web3.resA || 0n, 18));
+    var reserveB = parseFloat(ethers.formatUnits(defi.web3.resB || 0n, 18));
+    var totalShares = parseFloat(ethers.formatUnits(defi.web3.totalShares || 0n, 18));
+    var price = reserveA > 0 ? reserveB / reserveA : 0;
+    var tvl = reserveB + (reserveA * price);
+
+    setT('defiPrice', reserveA > 0 ? '1 ' + symA + ' = ' + fmtD(price) + ' ' + symB : 'Pool empty');
+    setT('defiTVL', reserveA > 0 ? fmtD(tvl) + ' token units' : '0');
+    setT('defiVolume', 'On-chain');
+    setT('defiFees', 'AMM contract');
+    setT('defiPoolA', fmtD(reserveA) + ' ' + symA);
+    setT('defiPoolB', fmtD(reserveB) + ' ' + symB);
+    setT('defiTotalLP', fmtD(totalShares));
+
+    setT('defiBalA', ethers.formatUnits(defi.web3.userBalA || 0n, 18) + ' ' + symA);
+    setT('defiBalB', ethers.formatUnits(defi.web3.userBalB || 0n, 18) + ' ' + symB);
+    setT('defiUserLP', ethers.formatUnits(defi.web3.userShares || 0n, 18));
+
+    setT('defiDeposited', ethers.formatUnits(defi.web3.collateral || 0n, 18) + ' ' + symA);
+    setT('defiBorrowed', ethers.formatUnits(defi.web3.borrowed || 0n, 18) + ' ' + symA);
+    setT('defiHealth', defi.web3.health || '∞');
+    var collateral = parseFloat(ethers.formatUnits(defi.web3.collateral || 0n, 18));
+    var borrowed = parseFloat(ethers.formatUnits(defi.web3.borrowed || 0n, 18));
+    setT('defiMaxBorrow', fmtD(Math.max(0, (collateral / 1.5) - borrowed)) + ' ' + symA);
+
+    setT('defiFarmStaked', ethers.formatUnits(defi.web3.stakedLP || 0n, 18) + ' LP');
+    setT('defiFarmPending', ethers.formatUnits(defi.web3.pendingFarm || 0n, 18) + ' FARM');
+    setT('defiFarmAPY', 'On-chain');
+
+    var dirSel = document.getElementById('defiSwapDir');
+    if (dirSel && dirSel.options.length >= 2) {
+        dirSel.options[0].text = symA + ' → ' + symB;
+        dirSel.options[1].text = symB + ' → ' + symA;
+    }
+}
+
+function copyInputValue(fromId, toId) {
+    var from = document.getElementById(fromId);
+    var to = document.getElementById(toId);
+    if (from && to) to.value = from.value;
+}
+
+function calcWeb3PairAmountForA(amountA) {
+    var a = parseFloat(amountA) || 0;
+    var reserveA = parseFloat(ethers.formatUnits(defi.web3.resA || 0n, 18));
+    var reserveB = parseFloat(ethers.formatUnits(defi.web3.resB || 0n, 18));
+    if (reserveA <= 0 || reserveB <= 0) return String(a);
+    return String(a * (reserveB / reserveA));
+}
+
+var defiBrowserActions = {
+    swap: window.defiSwap,
+    calcPreview: window.defiCalcPreview,
+    addLiquidity: window.defiAddLiquidity,
+    removeLiquidity: window.defiRemoveLiquidity,
+    deposit: window.defiDeposit,
+    withdraw: window.defiWithdrawCollateral,
+    borrow: window.defiBorrow,
+    repay: window.defiRepay,
+    farmStake: window.defiFarmStake,
+    farmUnstake: window.defiFarmUnstake,
+    farmHarvest: window.defiFarmHarvest
+};
+
+window.defiCalcPreview = async function defiCalcPreviewUnified() {
+    if (defi.mode !== 'web3') return defiBrowserActions.calcPreview();
+    if (!defi.web3.ammContract) {
+        setT('defiSwapPreview', 'Load a DeFi bundle first.');
+        return;
+    }
+    copyInputValue('defiSwapAmount', 'web3DefiSwapAmount');
+    copyInputValue('defiSwapDir', 'web3DefiSwapDir');
+    await web3DefiCalcPreview();
+    var from = document.getElementById('web3DefiSwapPreview');
+    var to = document.getElementById('defiSwapPreview');
+    if (from && to) to.textContent = from.textContent;
+};
+
+window.defiSwap = async function defiSwapUnified() {
+    if (defi.mode !== 'web3') return defiBrowserActions.swap();
+    if (!defiWeb3Ready()) return;
+    copyInputValue('defiSwapAmount', 'web3DefiSwapAmount');
+    copyInputValue('defiSwapDir', 'web3DefiSwapDir');
+    await web3DefiSwap();
+    syncDefiSharedFromWeb3();
+};
+
+window.defiAddLiquidity = async function defiAddLiquidityUnified() {
+    if (defi.mode !== 'web3') return defiBrowserActions.addLiquidity();
+    if (!defiWeb3Ready()) return;
+    copyInputValue('defiLiqA', 'web3DefiAddLiqA');
+    var pairInput = document.getElementById('web3DefiAddLiqB');
+    if (pairInput) pairInput.value = calcWeb3PairAmountForA(document.getElementById('defiLiqA').value);
+    await web3DefiAddLiquidity();
+    syncDefiSharedFromWeb3();
+};
+
+window.defiRemoveLiquidity = async function defiRemoveLiquidityUnified() {
+    if (defi.mode !== 'web3') return defiBrowserActions.removeLiquidity();
+    if (!defiWeb3Ready()) return;
+    copyInputValue('defiRemoveLP', 'web3DefiRemoveShares');
+    await web3DefiRemoveLiquidity();
+    syncDefiSharedFromWeb3();
+};
+
+window.defiDeposit = async function defiDepositUnified() {
+    if (defi.mode !== 'web3') return defiBrowserActions.deposit();
+    if (!defiWeb3Ready()) return;
+    copyInputValue('defiDepositAmt', 'web3DefiDepositAmt');
+    await web3DefiLendingDeposit();
+    syncDefiSharedFromWeb3();
+};
+
+window.defiWithdrawCollateral = async function defiWithdrawUnified() {
+    if (defi.mode !== 'web3') return defiBrowserActions.withdraw();
+    if (!defiWeb3Ready()) return;
+    copyInputValue('defiDepositAmt', 'web3DefiDepositAmt');
+    await web3DefiLendingWithdraw();
+    syncDefiSharedFromWeb3();
+};
+
+window.defiBorrow = async function defiBorrowUnified() {
+    if (defi.mode !== 'web3') return defiBrowserActions.borrow();
+    if (!defiWeb3Ready()) return;
+    copyInputValue('defiBorrowAmt', 'web3DefiBorrowAmt');
+    await web3DefiLendingBorrow();
+    syncDefiSharedFromWeb3();
+};
+
+window.defiRepay = async function defiRepayUnified() {
+    if (defi.mode !== 'web3') return defiBrowserActions.repay();
+    if (!defiWeb3Ready()) return;
+    var repay = document.getElementById('defiRepayAmt');
+    var borrow = document.getElementById('web3DefiBorrowAmt');
+    if (repay && borrow) borrow.value = repay.value;
+    await web3DefiLendingRepay();
+    syncDefiSharedFromWeb3();
+};
+
+window.defiFarmStake = async function defiFarmStakeUnified() {
+    if (defi.mode !== 'web3') return defiBrowserActions.farmStake();
+    if (!defiWeb3Ready()) return;
+    copyInputValue('defiFarmAmt', 'web3DefiFarmAmt');
+    await web3DefiFarmStake();
+    syncDefiSharedFromWeb3();
+};
+
+window.defiFarmUnstake = async function defiFarmUnstakeUnified() {
+    if (defi.mode !== 'web3') return defiBrowserActions.farmUnstake();
+    if (!defiWeb3Ready()) return;
+    copyInputValue('defiFarmAmt', 'web3DefiFarmAmt');
+    await web3DefiFarmUnstake();
+    syncDefiSharedFromWeb3();
+};
+
+window.defiFarmHarvest = async function defiFarmHarvestUnified() {
+    if (defi.mode !== 'web3') return defiBrowserActions.farmHarvest();
+    if (!defiWeb3Ready()) return;
+    await web3DefiFarmHarvest();
+    syncDefiSharedFromWeb3();
+};

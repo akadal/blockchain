@@ -53,15 +53,29 @@ window.setDaoMode = function(mode) {
     document.getElementById('daoModeSimulated').classList.toggle('active', mode === 'simulated');
     document.getElementById('daoModeWeb3').classList.toggle('active', mode === 'web3');
 
-    document.getElementById('daoSimulatedContainer').style.display = mode === 'simulated' ? 'block' : 'none';
+    document.getElementById('daoSimulatedContainer').style.display = 'block';
     document.getElementById('daoWeb3Container').style.display = mode === 'web3' ? 'block' : 'none';
+    var web3Interaction = document.getElementById('web3DaoInteractionContainer');
+    if (web3Interaction) web3Interaction.style.display = 'none';
 
     if (mode === 'simulated') {
+        var hint = document.getElementById('daoWeb3SharedHint');
+        if (hint) hint.style.display = 'none';
         updateDAOUI();
     } else {
-        updateWeb3DaoUI();
+        syncDaoSharedFromWeb3();
     }
 };
+
+function getDefaultDaoMembers() {
+    return {
+        '0xYou': { name: 'You (Founder)', tokens: 0 },
+        '0xAlice': { name: 'Alice', tokens: 0 },
+        '0xBob': { name: 'Bob', tokens: 0 },
+        '0xCharlie': { name: 'Charlie', tokens: 0 },
+        '0xDave': { name: 'Dave', tokens: 0 }
+    };
+}
 
 // ==========================================
 // SIMULATED: INIT / CREATE DAO
@@ -75,6 +89,7 @@ window.daoCreate = function() {
     var period = parseInt(document.getElementById('daoVotingPeriod').value) || 30;
     var treasury = parseInt(document.getElementById('daoTreasury').value) || 1000;
 
+    dao.members = getDefaultDaoMembers();
     dao.name = name;
     dao.token = token;
     dao.quorum = quorum;
@@ -101,11 +116,13 @@ window.daoCreate = function() {
     document.getElementById('daoLabel').textContent = name + ' (' + token + ')';
 
     updateDAOUI();
+    syncDaoSharedFromWeb3();
     showToast(name + ' DAO created!');
 };
 
 window.daoReset = function() {
     dao.created = false;
+    dao.members = getDefaultDaoMembers();
     dao.proposals = [];
     dao.eventLog = [];
     dao.nextProposalId = 1;
@@ -286,7 +303,7 @@ window.daoSimulateVoting = function(proposalId) {
 // ==========================================
 
 function updateDAOUI() {
-    if (dao.mode !== 'simulated' || !dao.created) return;
+    if (!dao.created) return;
 
     setDAO('daoTotalSupply', dao.totalSupply.toLocaleString() + ' ' + dao.token);
     setDAO('daoTreasuryBal', dao.treasury.toLocaleString() + ' ' + dao.token);
@@ -316,7 +333,7 @@ function updateDAOUI() {
     }
 
     var sel = document.getElementById('daoPropTarget');
-    if (sel && sel.options.length <= 1) {
+    if (sel && (dao.mode === 'web3' || sel.options.length <= 1)) {
         sel.innerHTML = '';
         Object.keys(dao.members).forEach(function (addr) {
             var opt = document.createElement('option');
@@ -346,17 +363,20 @@ function updateDAOUI() {
 
             var typeLabel = { transfer: '💰 Treasury Transfer', mint: '➕ Mint Tokens', quorum: '⚖️ Change Quorum', burn: '🔥 Burn Tokens', general: '📋 General' };
 
+            var proposerName = getDaoMemberName(prop.proposer);
+            var targetName = prop.target ? getDaoMemberName(prop.target) : '';
+
             var div = document.createElement('div');
             div.className = 'dao-proposal-card';
             div.innerHTML =
                 '<div class="dao-prop-header">' +
                 '<div><strong>#' + prop.id + ' — ' + escapeHtmlDao(prop.title) + '</strong><br>' +
-                '<span style="color:var(--text-muted);font-size:12px;">' + (typeLabel[prop.type] || prop.type) + ' · Proposed by ' + dao.members[prop.proposer].name + '</span></div>' +
+                '<span style="color:var(--text-muted);font-size:12px;">' + (typeLabel[prop.type] || prop.type) + ' · Proposed by ' + proposerName + '</span></div>' +
                 statusBadge +
                 '</div>' +
                 '<p style="font-size:13px;color:var(--text-secondary);">' + escapeHtmlDao(prop.desc) + '</p>' +
                 (prop.amount ? '<p style="font-size:13px;">Amount: <strong>' + prop.amount + (prop.type === 'quorum' ? '%' : ' ' + dao.token) + '</strong>' +
-                    (prop.target ? ' → ' + dao.members[prop.target].name : '') + '</p>' : '') +
+                    (prop.target ? ' → ' + targetName : '') + '</p>' : '') +
                 '<div class="dao-vote-bar">' +
                 '<div class="dao-vote-for" style="width:' + forPct + '%;"></div>' +
                 '<div class="dao-vote-against" style="width:' + againstPct + '%;"></div>' +
@@ -571,7 +591,7 @@ async function web3DaoLoadDaoContract(daoAddr, tokenAddr) {
     dao.web3.govTokenContract = new ethers.Contract(tokenAddr, gData.abi, dao.web3.signer);
 
     document.getElementById('web3DaoSetupSection').style.display = 'none';
-    document.getElementById('web3DaoInteractionContainer').style.display = 'block';
+    document.getElementById('web3DaoInteractionContainer').style.display = 'none';
 
     await web3DaoRefreshMemberInfo();
 }
@@ -587,6 +607,7 @@ window.web3DaoRefreshMemberInfo = async function() {
         dao.web3.userBalance = await dao.web3.govTokenContract.balanceOf(dao.web3.address);
         dao.web3.userVotes = await dao.web3.govTokenContract.getVotes(dao.web3.address);
 
+        await syncDaoOnChainState();
         updateWeb3DaoUI();
     } catch(e) {
         console.error(e);
@@ -599,6 +620,7 @@ function updateWeb3DaoUI() {
 
     setDAO('web3DaoUserBal', ethers.formatUnits(dao.web3.userBalance, 18) + ' GOV');
     setDAO('web3DaoUserVotes', ethers.formatUnits(dao.web3.userVotes, 18));
+    syncDaoSharedFromWeb3();
 }
 
 window.web3DaoMintGovTokens = async function() {
@@ -776,3 +798,229 @@ function shortAddrDAO(addr) {
     if (!addr) return '';
     return addr.substring(0, 6) + '...' + addr.substring(addr.length - 4);
 }
+
+function syncDaoSharedFromWeb3() {
+    if (dao.mode !== 'web3') return;
+
+    var web3Interaction = document.getElementById('web3DaoInteractionContainer');
+    if (web3Interaction) web3Interaction.style.display = 'none';
+
+    if (!dao.web3.address) return;
+
+    var label = document.getElementById('daoLabel');
+    if (label && dao.created) {
+        label.textContent = dao.name + ' (' + dao.token + ') · MetaMask ' + shortAddrDAO(dao.web3.address);
+    }
+
+    var hint = document.getElementById('daoWeb3SharedHint');
+    if (!hint) {
+        var active = document.getElementById('daoActiveUI');
+        if (active) {
+            hint = document.createElement('div');
+            hint.id = 'daoWeb3SharedHint';
+            hint.className = 'info-box info-purple';
+            hint.style.marginBottom = 'var(--space-md)';
+            active.insertBefore(hint, active.firstChild);
+        }
+    }
+
+    if (hint) {
+        hint.style.display = 'block';
+        var balance = dao.web3.govTokenContract ? ethers.formatUnits(dao.web3.userBalance || 0n, 18) : '0';
+        var votes = dao.web3.govTokenContract ? ethers.formatUnits(dao.web3.userVotes || 0n, 18) : '0';
+        hint.innerHTML = '<strong>MetaMask mode:</strong> Same DAO lab controls are active. Wallet: <strong>' +
+            shortAddrDAO(dao.web3.address) + '</strong> · On-chain GOV: <strong>' + balance +
+            '</strong> · Voting power: <strong>' + votes + '</strong>';
+    }
+}
+
+function getDaoMemberName(addr) {
+    if (!addr) return '';
+    if (dao.members[addr]) return dao.members[addr].name;
+    return shortAddrDAO(addr);
+}
+
+function formatDaoUnits(value) {
+    var raw = ethers.formatUnits(value || 0n, 18);
+    var numeric = Number(raw);
+    if (!Number.isFinite(numeric)) return 0;
+    return Math.round(numeric * 10000) / 10000;
+}
+
+function daoWeb3Ready() {
+    if (dao.mode !== 'web3') return false;
+    if (!dao.web3.daoContract || !dao.web3.govTokenContract) {
+        showToast('Connect MetaMask and load or deploy a DAO first.');
+        return false;
+    }
+    return true;
+}
+
+function ensureDaoSharedWeb3Shell(totalSupply, userVotes) {
+    dao.created = true;
+    dao.name = dao.name || 'On-chain DAO';
+    dao.token = 'GOV';
+    dao.quorum = 0;
+    dao.votingPeriod = 600;
+    dao.totalSupply = totalSupply;
+    dao.treasury = 0;
+    dao.members = {};
+    dao.members['0xYou'] = { name: 'You (MetaMask)', tokens: userVotes };
+    if (dao.web3.address) {
+        dao.members[dao.web3.address] = { name: 'MetaMask Wallet', tokens: userVotes };
+    }
+
+    var createCard = document.getElementById('daoCreateCard');
+    var activeUI = document.getElementById('daoActiveUI');
+    if (createCard) createCard.style.display = 'none';
+    if (activeUI) activeUI.style.display = 'block';
+
+    var mintBtn = document.getElementById('daoWeb3MintSharedBtn');
+    if (!mintBtn && activeUI && dao.web3.govTokenContract) {
+        mintBtn = document.createElement('button');
+        mintBtn.id = 'daoWeb3MintSharedBtn';
+        mintBtn.className = 'btn btn-sm btn-pink';
+        mintBtn.textContent = 'Mint 100 GOV';
+        mintBtn.onclick = function () { web3DaoMintGovTokens(); };
+        var header = activeUI.querySelector('div');
+        if (header) header.appendChild(mintBtn);
+    }
+}
+
+async function syncDaoOnChainState() {
+    if (dao.mode !== 'web3' || !dao.web3.daoContract || !dao.web3.govTokenContract) return;
+
+    var totalSupply = formatDaoUnits(await dao.web3.govTokenContract.totalSupply());
+    var userVotes = formatDaoUnits(dao.web3.userVotes || 0n);
+    ensureDaoSharedWeb3Shell(totalSupply, userVotes);
+
+    var proposalCount = Number(await dao.web3.daoContract.proposalCount());
+    var proposals = [];
+    for (var i = 1; i <= proposalCount; i++) {
+        var p = await dao.web3.daoContract.getProposal(i);
+        var votesFor = formatDaoUnits(p.votesFor);
+        var votesAgainst = formatDaoUnits(p.votesAgainst);
+        var status = p.executed ? (p.votesFor > p.votesAgainst ? 'passed' : 'rejected') : 'active';
+        proposals.push({
+            id: Number(p.id),
+            title: 'On-chain Proposal',
+            desc: p.description || 'No description',
+            type: 'general',
+            amount: 0,
+            target: '',
+            proposer: p.proposer,
+            votesFor: votesFor,
+            votesAgainst: votesAgainst,
+            votesAbstain: 0,
+            voters: {},
+            status: status,
+            createdAt: Number(p.deadline) * 1000
+        });
+    }
+    dao.proposals = proposals;
+    dao.nextProposalId = proposalCount + 1;
+
+    updateDAOUI();
+}
+
+function buildWeb3DaoProposalDescription() {
+    var title = document.getElementById('daoPropTitle').value.trim();
+    var desc = document.getElementById('daoPropDesc').value.trim();
+    var type = document.getElementById('daoPropType').value;
+    var amount = document.getElementById('daoPropAmount').value;
+    var target = document.getElementById('daoPropTarget').value;
+    var parts = [];
+    if (title) parts.push(title);
+    if (desc) parts.push(desc);
+    if (type && type !== 'general') parts.push('Type: ' + type);
+    if (amount) parts.push('Amount: ' + amount);
+    if (target) parts.push('Target: ' + target);
+    return parts.join(' | ');
+}
+
+var daoBrowserActions = {
+    createProposal: window.daoCreateProposal,
+    vote: window.daoVote,
+    checkProposal: window.daoCheckProposal,
+    simulateVoting: window.daoSimulateVoting
+};
+
+window.daoCreateProposal = async function daoCreateProposalUnified() {
+    if (dao.mode !== 'web3') return daoBrowserActions.createProposal();
+    if (!daoWeb3Ready()) return;
+
+    var description = buildWeb3DaoProposalDescription();
+    if (!description) { showToast('Enter proposal title or description'); return; }
+    if ((dao.web3.userVotes || 0n) === 0n) {
+        showToast('No voting power. Mint GOV first.');
+        return;
+    }
+
+    try {
+        showToast('Creating proposal on-chain...');
+        var tx = await dao.web3.daoContract.createProposal(description);
+        await tx.wait();
+        document.getElementById('daoPropTitle').value = '';
+        document.getElementById('daoPropDesc').value = '';
+        document.getElementById('daoPropAmount').value = '';
+        await web3DaoRefreshMemberInfo();
+        daoLog('propose', 'On-chain proposal submitted');
+        updateDAOUI();
+        syncDaoSharedFromWeb3();
+        showToast('Proposal created!');
+    } catch (e) {
+        console.error(e);
+        showToast('Failed: ' + (e.reason || e.message));
+    }
+};
+
+window.daoVote = async function daoVoteUnified(proposalId, voterAddr, vote) {
+    if (dao.mode !== 'web3' || !dao.web3.daoContract || voterAddr !== '0xYou') {
+        return daoBrowserActions.vote(proposalId, voterAddr, vote);
+    }
+    if (vote === 'abstain') {
+        showToast('The on-chain DAO supports For/Against votes only.');
+        return;
+    }
+
+    try {
+        showToast('Submitting vote...');
+        var tx = await dao.web3.daoContract.castVote(proposalId, vote === 'for');
+        await tx.wait();
+        await web3DaoRefreshMemberInfo();
+        daoLog('vote', 'You voted ' + vote.toUpperCase() + ' on-chain on Proposal #' + proposalId);
+        updateDAOUI();
+        syncDaoSharedFromWeb3();
+        showToast('Vote cast successfully!');
+    } catch (e) {
+        console.error(e);
+        showToast('Vote failed: ' + (e.reason || e.message));
+    }
+};
+
+window.daoCheckProposal = async function daoCheckProposalUnified(proposalId) {
+    if (dao.mode !== 'web3' || !dao.web3.daoContract) {
+        return daoBrowserActions.checkProposal(proposalId);
+    }
+
+    try {
+        showToast('Executing proposal...');
+        var tx = await dao.web3.daoContract.executeProposal(proposalId);
+        await tx.wait();
+        await web3DaoRefreshMemberInfo();
+        daoLog('execute', 'Proposal #' + proposalId + ' executed on-chain');
+        updateDAOUI();
+        syncDaoSharedFromWeb3();
+        showToast('Proposal executed!');
+    } catch (e) {
+        console.error(e);
+        showToast('Execution failed: ' + (e.reason || e.message));
+    }
+};
+
+window.daoSimulateVoting = function daoSimulateVotingUnified(proposalId) {
+    if (dao.mode === 'web3' && dao.web3.daoContract) {
+        showToast('Simulating other voters locally; MetaMask signs only your vote.');
+    }
+    return daoBrowserActions.simulateVoting(proposalId);
+};

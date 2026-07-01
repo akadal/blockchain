@@ -16,6 +16,220 @@ var contractState = {
     simStorage: {}
 };
 
+var CONTRACT_LAB_TEMPLATES = [
+    { key: 'storage', icon: '📦', label: 'Storage' },
+    { key: 'counter', icon: '🔢', label: 'Counter' },
+    { key: 'greeting', icon: '💬', label: 'Greeting' },
+    { key: 'todolist', icon: '📝', label: 'TodoList' },
+    { key: 'owner', icon: '👤', label: 'Owner' },
+    { key: 'voting', icon: '🗳️', label: 'Voting' },
+    { key: 'lottery', icon: '🎰', label: 'Lottery' },
+    { key: 'token', icon: '🪙', label: 'Token' },
+    { key: 'nft', icon: '🖼️', label: 'NFT' },
+    { key: 'piggybank', icon: '🐷', label: 'PiggyBank' },
+    { key: 'escrow', icon: '🤝', label: 'Escrow' },
+    { key: 'crowdfund', icon: '🎯', label: 'Crowdfund' }
+];
+
+var ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
+
+function getContractTemplate(templateKey) {
+    return CONTRACT_TEMPLATES && CONTRACT_TEMPLATES[templateKey] ? CONTRACT_TEMPLATES[templateKey] : null;
+}
+
+function parseConstructorArg(arg, index) {
+    if (typeof arg === 'string') {
+        var parts = arg.trim().split(/\s+/);
+        var type = parts[0] || 'string';
+        var name = parts.slice(1).join(' ') || 'Argument ' + (index + 1);
+        return { name: name.replace(/^_/, ''), type: type, default: '' };
+    }
+    return {
+        name: arg.name || 'Argument ' + (index + 1),
+        type: arg.type || 'string',
+        default: arg.default || ''
+    };
+}
+
+function getConstructorDefinitions(template) {
+    return (template.constructorArgs || []).map(parseConstructorArg);
+}
+
+function getConstructorAbi(template) {
+    return (template.abi || []).find(function (item) { return item.type === 'constructor'; }) || null;
+}
+
+function hasPayableConstructor(template) {
+    var constructorAbi = getConstructorAbi(template);
+    return constructorAbi && constructorAbi.stateMutability === 'payable';
+}
+
+function hasPayableReceive(abi) {
+    return (abi || []).some(function (item) {
+        return (item.type === 'receive' || item.type === 'fallback') && item.stateMutability === 'payable';
+    });
+}
+
+function isUintType(type) {
+    return /^uint([0-9]+)?$/.test(type || '');
+}
+
+function isIntType(type) {
+    return /^int([0-9]+)?$/.test(type || '');
+}
+
+function isAddressType(type) {
+    return type === 'address' || type === 'address payable';
+}
+
+function sameAddress(a, b) {
+    return String(a || '').toLowerCase() === String(b || '').toLowerCase();
+}
+
+function getDefaultInputValue(type, fallback) {
+    if (fallback !== undefined && fallback !== null && fallback !== '') return String(fallback);
+    if (isAddressType(type) && contractState.address) return contractState.address;
+    if (isUintType(type) || isIntType(type)) return '0';
+    if (type === 'bool') return 'false';
+    return '';
+}
+
+function getInputPlaceholder(type) {
+    if (isAddressType(type)) return '0x...';
+    if (isUintType(type) || isIntType(type)) return '0';
+    if (type === 'bool') return 'true / false';
+    if (type === 'bytes4') return '0x01ffc9a7';
+    if (type && type.indexOf('bytes') === 0) return '0x...';
+    return type || 'value';
+}
+
+function parseTypedInput(value, type, fieldName, options) {
+    options = options || {};
+    var raw = String(value || '').trim();
+    if (!raw && options.defaultValue !== undefined && options.defaultValue !== null && options.defaultValue !== '') {
+        raw = String(options.defaultValue).trim();
+    }
+
+    if (isAddressType(type)) {
+        if (!raw) throw new Error(fieldName + ' address is required.');
+        if (!ethers.isAddress(raw)) throw new Error(fieldName + ' must be a valid Ethereum address.');
+        return ethers.getAddress(raw);
+    }
+
+    if (isUintType(type) || isIntType(type)) {
+        if (!raw) raw = '0';
+        try {
+            var n = BigInt(raw);
+            if (isUintType(type) && n < 0n) throw new Error('negative');
+            return n;
+        } catch (e) {
+            throw new Error(fieldName + ' must be an integer.');
+        }
+    }
+
+    if (type === 'bool') {
+        if (!raw) return false;
+        if (['true', '1', 'yes', 'evet'].indexOf(raw.toLowerCase()) >= 0) return true;
+        if (['false', '0', 'no', 'hayir', 'hayır'].indexOf(raw.toLowerCase()) >= 0) return false;
+        throw new Error(fieldName + ' must be true or false.');
+    }
+
+    if ((type || '').indexOf('bytes') === 0) {
+        if (!raw) return '0x';
+        if (!/^0x[0-9a-fA-F]*$/.test(raw)) throw new Error(fieldName + ' must be hex data starting with 0x.');
+        return raw;
+    }
+
+    return raw;
+}
+
+function getSimulatedConstructorFallbackArgs(template) {
+    return getConstructorDefinitions(template).map(function (arg) {
+        if (isAddressType(arg.type)) return contractState.address || ZERO_ADDRESS;
+        return parseTypedInput('', arg.type, arg.name, { defaultValue: arg.default });
+    });
+}
+
+function formatContractValue(value) {
+    if (value === null || value === undefined) return '—';
+    if (typeof value === 'bigint') return value.toString();
+    if (Array.isArray(value)) return value.map(formatContractValue).join(', ');
+    if (typeof value === 'object' && typeof value.length === 'number') {
+        return Array.prototype.map.call(value, formatContractValue).join(', ');
+    }
+    return String(value);
+}
+
+function getFunctionSignature(abiItem) {
+    var inputTypes = (abiItem.inputs || []).map(function (input) { return input.type; }).join(',');
+    return abiItem.name + '(' + inputTypes + ')';
+}
+
+function getContractFunction(contract, abiItem) {
+    return contract[getFunctionSignature(abiItem)] || contract[abiItem.name];
+}
+
+function getDeployGasLimit(template) {
+    var byteLength = Math.max(0, ((template.bytecode || '').length - 2) / 2);
+    var fallback = Math.ceil(byteLength * 280 + 1200000);
+    return BigInt(Math.min(Math.max(fallback, 3000000), 12000000));
+}
+
+function getConstructorValue() {
+    var input = document.getElementById('constructorPayableValue');
+    if (!input || !input.value.trim()) return 0n;
+    try {
+        return ethers.parseEther(input.value.trim());
+    } catch (e) {
+        throw new Error('Initial ETH value must be a valid ETH amount.');
+    }
+}
+
+async function getDeployOverrides(factory, constructorArgs, template, baseOverrides) {
+    baseOverrides = baseOverrides || {};
+    var fallbackGas = getDeployGasLimit(template);
+    try {
+        var deployTx = await factory.getDeployTransaction(...constructorArgs);
+        if (baseOverrides.value && baseOverrides.value > 0n) deployTx.value = baseOverrides.value;
+        var estimated = await contractState.signer.estimateGas(deployTx);
+        baseOverrides.gasLimit = (estimated * 120n) / 100n;
+        return baseOverrides;
+    } catch (e) {
+        console.warn('[Contracts] Gas estimation failed, using fallback gas limit:', e);
+        baseOverrides.gasLimit = fallbackGas;
+        return baseOverrides;
+    }
+}
+
+function renderContractTemplateControls() {
+    var row = document.getElementById('contractTemplateGrid');
+    var select = document.getElementById('existingTemplate');
+    if (!row || !select || row.dataset.rendered === 'true') return;
+
+    row.innerHTML = '';
+    select.innerHTML = '';
+
+    CONTRACT_LAB_TEMPLATES.forEach(function (meta, index) {
+        var template = getContractTemplate(meta.key);
+        if (!template) return;
+
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'contract-select-btn' + (index === 0 ? ' active' : '');
+        btn.dataset.template = meta.key;
+        btn.textContent = meta.icon + ' ' + meta.label;
+        btn.onclick = function () { selectContract(meta.key); };
+        row.appendChild(btn);
+
+        var option = document.createElement('option');
+        option.value = meta.key;
+        option.textContent = meta.label + (template.name && template.name !== meta.label ? ' (' + template.name + ')' : '');
+        select.appendChild(option);
+    });
+
+    row.dataset.rendered = 'true';
+}
+
 // ==========================================
 // WALLET MODE TOGGLE
 // ==========================================
@@ -312,6 +526,9 @@ function connectSimulated() {
     document.querySelector('.wallet-mode-toggle').style.display = 'none';
     document.getElementById('walletDisconnectBtn').style.display = 'inline-flex';
     document.getElementById('deployBtn').disabled = false;
+    if (contractState.selectedTemplate && !contractState.deployedAddress) {
+        selectContract(contractState.selectedTemplate);
+    }
     showToast('Simulated wallet connected — no real gas needed!');
 }
 
@@ -360,6 +577,9 @@ async function showWalletInfo(modeLabel) {
     document.querySelector('.wallet-mode-toggle').style.display = 'none';
     document.getElementById('walletDisconnectBtn').style.display = 'inline-flex';
     document.getElementById('deployBtn').disabled = false;
+    if (contractState.selectedTemplate && !contractState.deployedAddress) {
+        selectContract(contractState.selectedTemplate);
+    }
     showToast('Wallet connected on ' + networkName);
 }
 
@@ -398,7 +618,11 @@ async function handleAccountChange(accounts) {
 
 function selectContract(templateKey) {
     contractState.selectedTemplate = templateKey;
-    var template = CONTRACT_TEMPLATES[templateKey];
+    var template = getContractTemplate(templateKey);
+    if (!template) {
+        showToast('Unknown contract template: ' + templateKey);
+        return;
+    }
 
     document.querySelectorAll('.contract-select-btn').forEach(function (btn) { btn.classList.remove('active'); });
     var activeBtn = document.querySelector('.contract-select-btn[data-template="' + templateKey + '"]');
@@ -414,25 +638,59 @@ function selectContract(templateKey) {
     var argsContainer = document.getElementById('constructorArgsInputs');
     argsContainer.innerHTML = '';
 
-    if (template.constructorArgs && template.constructorArgs.length > 0) {
+    var constructorDefs = getConstructorDefinitions(template);
+    if (constructorDefs.length > 0 || hasPayableConstructor(template)) {
         argsSection.style.display = 'block';
-        template.constructorArgs.forEach(function (arg) {
+        constructorDefs.forEach(function (arg) {
             var group = document.createElement('div');
             group.className = 'form-group';
             group.style.marginBottom = '8px';
             var label = document.createElement('label');
             label.className = 'form-label';
-            label.textContent = arg.name;
-            var input = document.createElement('input');
-            input.type = 'text';
+            label.textContent = arg.name + ' (' + arg.type + ')';
+            var input = document.createElement(arg.type === 'bool' ? 'select' : 'input');
+            if (arg.type === 'bool') {
+                var falseOpt = document.createElement('option');
+                falseOpt.value = 'false';
+                falseOpt.textContent = 'false';
+                var trueOpt = document.createElement('option');
+                trueOpt.value = 'true';
+                trueOpt.textContent = 'true';
+                input.appendChild(falseOpt);
+                input.appendChild(trueOpt);
+            } else {
+                input.type = 'text';
+                input.placeholder = getInputPlaceholder(arg.type);
+            }
             input.className = 'form-input form-input-sm';
-            input.placeholder = arg.type;
-            input.value = arg.default || '';
+            input.value = getDefaultInputValue(arg.type, arg.default);
             input.dataset.argType = arg.type;
+            input.dataset.argName = arg.name;
+            input.dataset.defaultValue = arg.default || '';
             group.appendChild(label);
             group.appendChild(input);
             argsContainer.appendChild(group);
         });
+
+        if (hasPayableConstructor(template)) {
+            var valueGroup = document.createElement('div');
+            valueGroup.className = 'form-group';
+            valueGroup.style.marginBottom = '8px';
+            var valueLabel = document.createElement('label');
+            valueLabel.className = 'form-label';
+            valueLabel.textContent = 'Initial ETH value (payable constructor)';
+            var valueInput = document.createElement('input');
+            valueInput.id = 'constructorPayableValue';
+            valueInput.type = 'number';
+            valueInput.min = '0';
+            valueInput.step = '0.000000000000000001';
+            valueInput.className = 'form-input form-input-sm';
+            valueInput.placeholder = '0.01';
+            valueInput.value = '';
+            valueGroup.appendChild(valueLabel);
+            valueGroup.appendChild(valueInput);
+            argsContainer.appendChild(valueGroup);
+        }
     } else {
         argsSection.style.display = 'none';
     }
@@ -443,12 +701,14 @@ function selectContract(templateKey) {
 // ==========================================
 
 function getConstructorArgs() {
-    var inputs = document.querySelectorAll('#constructorArgsInputs input');
     var args = [];
-    inputs.forEach(function (input) {
-        var val = input.value;
-        if (input.dataset.argType === 'uint256') val = val || '0';
-        args.push(val);
+    document.querySelectorAll('#constructorArgsInputs [data-arg-type]').forEach(function (input) {
+        args.push(parseTypedInput(
+            input.value,
+            input.dataset.argType,
+            input.dataset.argName || 'Constructor argument',
+            { defaultValue: input.dataset.defaultValue }
+        ));
     });
     return args;
 }
@@ -460,23 +720,32 @@ async function deployContract() {
     }
 
     var templateKey = contractState.selectedTemplate;
-    var template = CONTRACT_TEMPLATES[templateKey];
+    var template = getContractTemplate(templateKey);
+    if (!template) {
+        showToast('Unknown contract template: ' + templateKey);
+        return;
+    }
     var btn = document.getElementById('deployBtn');
     btn.disabled = true;
     btn.innerHTML = '<span class="mining-spinner"></span> Deploying...';
 
     if (contractState.walletMode === 'simulated') {
-        await simulatedDeploy(templateKey, template, btn);
+        try {
+            await simulatedDeploy(templateKey, template, btn);
+        } catch (e) {
+            showToast('Error: ' + (e.message || e));
+            btn.disabled = false;
+            btn.textContent = 'Deploy Contract 🚀';
+        }
         return;
     }
 
     try {
         var factory = new ethers.ContractFactory(template.abi, template.bytecode, contractState.signer);
         var constructorArgs = getConstructorArgs();
-
-        // Explicit gasLimit bypasses "estimateGas" which fails on networks with EVM incompatibilities
-        // or unexpected RPC configurations (like 'missing revert data' errors).
-        var overrides = { gasLimit: 3000000 };
+        var constructorValue = getConstructorValue();
+        var deployOverrides = constructorValue > 0n ? { value: constructorValue } : {};
+        var overrides = await getDeployOverrides(factory, constructorArgs, template, deployOverrides);
 
         var contract = constructorArgs.length > 0
             ? await factory.deploy(...constructorArgs, overrides)
@@ -526,6 +795,8 @@ async function deployContract() {
 // ==========================================
 
 async function simulatedDeploy(templateKey, template, btn) {
+    var cArgs = getConstructorArgs();
+    var constructorValue = getConstructorValue();
     await new Promise(function (r) { setTimeout(r, 800); });
 
     var randomAddr = new Uint8Array(20);
@@ -546,10 +817,10 @@ async function simulatedDeploy(templateKey, template, btn) {
 
     // Initialize simulated contract state
     var store = contractState.simStorage[fakeAddress];
-    var cArgs = getConstructorArgs();
-    initSimulatedState(templateKey, store, cArgs);
+    initSimulatedState(templateKey, store, cArgs, constructorValue);
 
     var simContract = createSimulatedContract(templateKey, fakeAddress);
+    contractState.deployedContract = simContract;
     buildInteractionUI(template.abi, simContract);
     showToast('Contract deployed (simulated) at ' + shortAddr(fakeAddress));
 
@@ -557,7 +828,8 @@ async function simulatedDeploy(templateKey, template, btn) {
     btn.textContent = 'Deploy Contract 🚀';
 }
 
-function initSimulatedState(templateKey, store, cArgs) {
+function initSimulatedState(templateKey, store, cArgs, constructorValue) {
+    constructorValue = constructorValue || 0n;
     if (templateKey === 'storage') {
         store._number = 0n;
     } else if (templateKey === 'counter') {
@@ -573,6 +845,7 @@ function initSimulatedState(templateKey, store, cArgs) {
         store._name = cArgs[0] || 'DemoToken';
         store._symbol = cArgs[1] || 'DMT';
         store._decimals = 18;
+        store._owner = contractState.address;
         var supply = BigInt(cArgs[2] || '1000000') * (10n ** 18n);
         store._totalSupply = supply;
         store._balances = {};
@@ -596,6 +869,21 @@ function initSimulatedState(templateKey, store, cArgs) {
         store._lastWinner = '0x0000000000000000000000000000000000000000';
         store._ticketPrice = BigInt(cArgs[0] || '1000000000000000');
         store._balance = 0n;
+    } else if (templateKey === 'piggybank') {
+        store._owner = contractState.address;
+        store._balance = 0n;
+    } else if (templateKey === 'escrow') {
+        store._arbiter = cArgs[0];
+        store._beneficiary = cArgs[1];
+        store._depositor = contractState.address;
+        store._isApproved = false;
+        store._balance = constructorValue;
+    } else if (templateKey === 'crowdfund') {
+        store._creator = contractState.address;
+        store._goal = BigInt(cArgs[0] || '0');
+        store._pledged = 0n;
+        store._claimed = false;
+        store._pledges = {};
     }
 }
 
@@ -606,6 +894,9 @@ function createSimulatedContract(templateKey, address) {
         return { hash: h, wait: async function () { await new Promise(function (r) { setTimeout(r, 300); }); } };
     };
     var delay = function () { return new Promise(function (r) { setTimeout(r, 400); }); };
+    var msgValue = function (overrides) {
+        return overrides && overrides.value ? BigInt(overrides.value) : 0n;
+    };
 
     if (templateKey === 'storage') {
         return {
@@ -646,11 +937,20 @@ function createSimulatedContract(templateKey, address) {
             target: address,
             admin: async function () { return store._admin; },
             proposalCount: async function () { return BigInt(store._proposals.length); },
-            addProposal: async function (name) { await delay(); store._proposals.push({ name: name, votes: 0n }); return fakeTx(); },
+            addProposal: async function (name) {
+                if (!sameAddress(contractState.address, store._admin)) throw new Error('Only admin');
+                await delay();
+                store._proposals.push({ name: name, votes: 0n });
+                return fakeTx();
+            },
             vote: async function (id) {
                 var i = Number(id);
+                if (store._hasVoted[contractState.address]) throw new Error('Already voted');
                 if (i >= store._proposals.length) throw new Error('Invalid proposal');
-                await delay(); store._proposals[i].votes += 1n; return fakeTx();
+                await delay();
+                store._hasVoted[contractState.address] = true;
+                store._proposals[i].votes += 1n;
+                return fakeTx();
             },
             getProposal: async function (id) {
                 var i = Number(id);
@@ -681,6 +981,7 @@ function createSimulatedContract(templateKey, address) {
             transfer: async function (to, amount) {
                 var amt = BigInt(amount);
                 var from = contractState.address;
+                if (sameAddress(to, ZERO_ADDRESS)) throw new Error('Transfer to zero address');
                 if ((store._balances[from] || 0n) < amt) throw new Error('Insufficient balance');
                 await delay();
                 store._balances[from] = (store._balances[from] || 0n) - amt;
@@ -695,14 +996,19 @@ function createSimulatedContract(templateKey, address) {
             },
             transferFrom: async function (from, to, amount) {
                 var amt = BigInt(amount);
+                if (sameAddress(to, ZERO_ADDRESS)) throw new Error('Transfer to zero address');
                 if ((store._balances[from] || 0n) < amt) throw new Error('Insufficient balance');
+                var allowance = (store._allowances[from] && store._allowances[from][contractState.address]) || 0n;
+                if (allowance < amt) throw new Error('Insufficient allowance');
                 await delay();
+                store._allowances[from][contractState.address] = allowance - amt;
                 store._balances[from] = (store._balances[from] || 0n) - amt;
                 store._balances[to] = (store._balances[to] || 0n) + amt;
                 return fakeTx();
             },
             mint: async function (to, amount) {
                 var amt = BigInt(amount);
+                if (!sameAddress(contractState.address, store._owner) && store._owner) throw new Error('Only owner can mint');
                 await delay();
                 store._totalSupply += amt;
                 store._balances[to] = (store._balances[to] || 0n) + amt;
@@ -826,19 +1132,107 @@ function createSimulatedContract(templateKey, address) {
                 if (i >= store._players.length) throw new Error('Invalid index');
                 return store._players[i];
             },
-            buyTicket: async function () {
+            buyTicket: async function (overrides) {
+                var paid = msgValue(overrides);
+                if (paid < store._ticketPrice) throw new Error('Not enough ETH for ticket');
                 await delay();
                 store._players.push(contractState.address);
-                store._balance += store._ticketPrice;
+                store._balance += paid;
                 return fakeTx();
             },
             pickWinner: async function () {
+                if (!sameAddress(contractState.address, store._manager)) throw new Error('Only manager');
                 if (store._players.length < 2) throw new Error('Need at least 2 players');
                 await delay();
                 var idx = Math.floor(Math.random() * store._players.length);
                 store._lastWinner = store._players[idx];
                 store._players = [];
                 store._balance = 0n;
+                return fakeTx();
+            }
+        };
+    }
+
+    if (templateKey === 'piggybank') {
+        return {
+            target: address,
+            owner: async function () { return store._owner; },
+            getBalance: async function () { return store._balance; },
+            __receive: async function (amountWei) {
+                var amount = BigInt(amountWei || 0);
+                if (amount <= 0n) throw new Error('Enter an ETH amount greater than zero');
+                await delay();
+                store._balance += amount;
+                return fakeTx();
+            },
+            withdraw: async function () {
+                if (!sameAddress(contractState.address, store._owner)) throw new Error('Only owner can withdraw');
+                if (store._balance <= 0n) throw new Error('Piggy bank is empty');
+                await delay();
+                store._balance = 0n;
+                return fakeTx();
+            }
+        };
+    }
+
+    if (templateKey === 'escrow') {
+        return {
+            target: address,
+            arbiter: async function () { return store._arbiter; },
+            beneficiary: async function () { return store._beneficiary; },
+            depositor: async function () { return store._depositor; },
+            isApproved: async function () { return store._isApproved; },
+            getBalance: async function () { return store._balance; },
+            approve: async function () {
+                if (!sameAddress(contractState.address, store._arbiter)) throw new Error('Only arbiter can approve');
+                if (store._isApproved) throw new Error('Already approved');
+                await delay();
+                store._isApproved = true;
+                store._balance = 0n;
+                return fakeTx();
+            },
+            refund: async function () {
+                if (!sameAddress(contractState.address, store._arbiter)) throw new Error('Only arbiter can refund');
+                if (store._isApproved) throw new Error('Already approved');
+                await delay();
+                store._balance = 0n;
+                return fakeTx();
+            }
+        };
+    }
+
+    if (templateKey === 'crowdfund') {
+        return {
+            target: address,
+            creator: async function () { return store._creator; },
+            goal: async function () { return store._goal; },
+            pledged: async function () { return store._pledged; },
+            claimed: async function () { return store._claimed; },
+            pledges: async function (addr) { return store._pledges[addr] || 0n; },
+            pledge: async function (overrides) {
+                if (store._claimed) throw new Error('Funding is closed');
+                var amount = msgValue(overrides);
+                if (amount <= 0n) throw new Error('Enter a pledge amount greater than zero');
+                await delay();
+                store._pledges[contractState.address] = (store._pledges[contractState.address] || 0n) + amount;
+                store._pledged += amount;
+                return fakeTx();
+            },
+            claim: async function () {
+                if (!sameAddress(contractState.address, store._creator)) throw new Error('Not creator');
+                if (store._pledged < store._goal) throw new Error('Goal not reached yet');
+                if (store._claimed) throw new Error('Already claimed');
+                await delay();
+                store._claimed = true;
+                return fakeTx();
+            },
+            refund: async function () {
+                if (store._pledged >= store._goal) throw new Error('Goal reached, no refunds');
+                var amount = store._pledges[contractState.address] || 0n;
+                if (amount <= 0n) throw new Error('No pledge to refund');
+                await delay();
+                store._pledges[contractState.address] = 0n;
+                store._pledged -= amount;
                 return fakeTx();
             }
         };
@@ -857,6 +1251,11 @@ function updateExplorerLink(address) {
     } else {
         linkEl.style.display = 'none';
     }
+}
+
+function getSolcVerifyVersion(template) {
+    var match = String(template.compiler || '').match(/\d+\.\d+\.\d+/);
+    return 'v' + (match ? match[0] : '0.8.24') + '+commit.e11b9ed9';
 }
 
 // ==========================================
@@ -884,10 +1283,17 @@ async function autoVerify(templateKey, address) {
         params.append('sourceCode', template.source);
         params.append('codeformat', 'solidity-single-file');
         params.append('contractname', template.name);
-        params.append('compilerversion', 'v' + template.compiler + '+commit.e11b9ed9');
+        params.append('compilerversion', getSolcVerifyVersion(template));
         params.append('optimizationUsed', '0');
         params.append('runs', '200');
         params.append('licenseType', '3');
+        var constructorDefs = getConstructorDefinitions(template);
+        if (constructorDefs.length > 0) {
+            var encodedArgs = ethers.AbiCoder.defaultAbiCoder()
+                .encode(constructorDefs.map(function (arg) { return arg.type; }), getConstructorArgs())
+                .replace(/^0x/, '');
+            params.append('constructorArguements', encodedArgs);
+        }
         var response = await fetch(explorer.api, { method: 'POST', body: params });
         var data = await response.json();
         if (data.status === '1' || data.message === 'OK') {
@@ -934,15 +1340,24 @@ function buildInteractionUI(abi, contract) {
     readContainer.innerHTML = '';
     writeContainer.innerHTML = '';
     var readCount = 0, writeCount = 0;
+    var readFragment = document.createDocumentFragment();
+    var writeFragment = document.createDocumentFragment();
 
     abi.forEach(function (item) {
         if (item.type !== 'function') return;
         var isRead = item.stateMutability === 'view' || item.stateMutability === 'pure';
         var fnCard = createFunctionCard(item, contract);
-        if (isRead) { readContainer.appendChild(fnCard); readCount++; }
-        else { writeContainer.appendChild(fnCard); writeCount++; }
+        if (isRead) { readFragment.appendChild(fnCard); readCount++; }
+        else { writeFragment.appendChild(fnCard); writeCount++; }
     });
 
+    if (hasPayableReceive(abi)) {
+        writeFragment.appendChild(createReceiveCard(contract));
+        writeCount++;
+    }
+
+    readContainer.appendChild(readFragment);
+    writeContainer.appendChild(writeFragment);
     document.getElementById('readSection').style.display = readCount > 0 ? 'block' : 'none';
     document.getElementById('writeSection').style.display = writeCount > 0 ? 'block' : 'none';
 }
@@ -955,9 +1370,14 @@ function createFunctionCard(abiItem, contract) {
 
     var header = document.createElement('div');
     header.className = 'fn-header';
-    header.innerHTML = '<span class="fn-name">' + abiItem.name + '</span>' +
-        '<span class="badge ' + (isRead ? 'badge-valid' : 'badge-write') + '">' +
-        (isRead ? 'view' : (isPayable ? 'payable' : 'write')) + '</span>';
+    var nameEl = document.createElement('span');
+    nameEl.className = 'fn-name';
+    nameEl.textContent = abiItem.name;
+    var badgeEl = document.createElement('span');
+    badgeEl.className = 'badge ' + (isRead ? 'badge-valid' : 'badge-write');
+    badgeEl.textContent = isRead ? 'view' : (isPayable ? 'payable' : 'write');
+    header.appendChild(nameEl);
+    header.appendChild(badgeEl);
     card.appendChild(header);
 
     var inputs = [];
@@ -969,11 +1389,26 @@ function createFunctionCard(abiItem, contract) {
             var label = document.createElement('label');
             label.className = 'form-label';
             label.textContent = (inp.name || 'param' + idx) + ' (' + inp.type + ')';
-            var input = document.createElement('input');
-            input.type = 'text';
+            var input = document.createElement(inp.type === 'bool' ? 'select' : 'input');
+            if (inp.type === 'bool') {
+                ['false', 'true'].forEach(function (value) {
+                    var opt = document.createElement('option');
+                    opt.value = value;
+                    opt.textContent = value;
+                    input.appendChild(opt);
+                });
+            } else {
+                input.type = 'text';
+                input.placeholder = getInputPlaceholder(inp.type);
+                if (isAddressType(inp.type) && contractState.address) {
+                    input.value = contractState.address;
+                } else if (isUintType(inp.type) || isIntType(inp.type)) {
+                    input.value = '0';
+                }
+            }
             input.className = 'form-input form-input-sm';
-            input.placeholder = inp.type;
             input.dataset.type = inp.type;
+            input.dataset.name = inp.name || 'param' + idx;
             group.appendChild(label);
             group.appendChild(input);
             card.appendChild(group);
@@ -991,6 +1426,7 @@ function createFunctionCard(abiItem, contract) {
         label.textContent = 'Payable Value (ETH)';
         var input = document.createElement('input');
         input.type = 'number';
+        input.min = '0';
         input.step = '0.000000000000000001';
         input.className = 'form-input form-input-sm';
         input.placeholder = 'ETH amount (e.g., 0.01)';
@@ -1018,6 +1454,51 @@ function createFunctionCard(abiItem, contract) {
     return card;
 }
 
+function createReceiveCard(contract) {
+    var card = document.createElement('div');
+    card.className = 'fn-card';
+
+    var header = document.createElement('div');
+    header.className = 'fn-header';
+    var nameEl = document.createElement('span');
+    nameEl.className = 'fn-name';
+    nameEl.textContent = 'receive()';
+    var badgeEl = document.createElement('span');
+    badgeEl.className = 'badge badge-write';
+    badgeEl.textContent = 'payable';
+    header.appendChild(nameEl);
+    header.appendChild(badgeEl);
+    card.appendChild(header);
+
+    var group = document.createElement('div');
+    group.className = 'form-group';
+    group.style.marginBottom = '8px';
+    var label = document.createElement('label');
+    label.className = 'form-label';
+    label.style.color = 'var(--accent-orange)';
+    label.textContent = 'ETH to send';
+    var input = document.createElement('input');
+    input.type = 'number';
+    input.min = '0';
+    input.step = '0.000000000000000001';
+    input.className = 'form-input form-input-sm';
+    input.placeholder = '0.01';
+    group.appendChild(label);
+    group.appendChild(input);
+    card.appendChild(group);
+
+    var btn = document.createElement('button');
+    btn.className = 'btn btn-sm btn-orange';
+    btn.textContent = 'Send ETH';
+    var resultEl = document.createElement('div');
+    resultEl.className = 'fn-result';
+    resultEl.style.display = 'none';
+    btn.onclick = function () { executeReceive(contract, input, btn, resultEl); };
+    card.appendChild(btn);
+    card.appendChild(resultEl);
+    return card;
+}
+
 async function executeFn(abiItem, contract, inputs, btn, resultEl) {
     var isRead = abiItem.stateMutability === 'view' || abiItem.stateMutability === 'pure';
     var isPayable = abiItem.stateMutability === 'payable';
@@ -1030,24 +1511,16 @@ async function executeFn(abiItem, contract, inputs, btn, resultEl) {
         var payableInput = inputs.find(inp => inp.dataset.isPayableValue === 'true');
 
         var args = normalInputs.map(function (input) {
-            var val = input.value;
-            var typ = input.dataset.type;
-            if (typ.startsWith('uint') || typ.startsWith('int')) return val;
-            if (typ === 'bool') return val.toLowerCase() === 'true';
-            return val;
+            return parseTypedInput(input.value, input.dataset.type, input.dataset.name || 'Parameter');
         });
+        var fn = getContractFunction(contract, abiItem);
+        if (typeof fn !== 'function') throw new Error('Function not available in this contract instance.');
 
         if (isRead) {
-            var result = await contract[abiItem.name](...args);
+            var result = await fn(...args);
             resultEl.style.display = 'block';
             resultEl.className = 'fn-result fn-result-success';
-            // Format multi-return values
-            if (Array.isArray(result)) {
-                var parts = result.map(function (v) { return v.toString(); });
-                resultEl.textContent = '→ ' + parts.join(', ');
-            } else {
-                resultEl.textContent = '→ ' + result.toString();
-            }
+            resultEl.textContent = '→ ' + formatContractValue(result);
         } else {
             var overrides = {};
             if (isPayable && payableInput && payableInput.value) {
@@ -1055,9 +1528,9 @@ async function executeFn(abiItem, contract, inputs, btn, resultEl) {
             }
             var tx;
             if (Object.keys(overrides).length > 0) {
-                tx = await contract[abiItem.name](...args, overrides);
+                tx = await fn(...args, overrides);
             } else {
-                tx = await contract[abiItem.name](...args);
+                tx = await fn(...args);
             }
 
             resultEl.style.display = 'block';
@@ -1081,6 +1554,40 @@ async function executeFn(abiItem, contract, inputs, btn, resultEl) {
     btn.textContent = oldText;
 }
 
+async function executeReceive(contract, input, btn, resultEl) {
+    var oldText = btn.textContent;
+    btn.disabled = true;
+    btn.innerHTML = '<span class="mining-spinner"></span>';
+
+    try {
+        if (!input.value) throw new Error('Enter an ETH amount.');
+        var value = ethers.parseEther(input.value);
+        var tx;
+        if (contractState.walletMode === 'simulated') {
+            if (typeof contract.__receive !== 'function') throw new Error('This simulated contract cannot receive ETH.');
+            tx = await contract.__receive(value);
+        } else {
+            if (!contractState.signer) throw new Error('Connect your wallet first.');
+            tx = await contractState.signer.sendTransaction({ to: contract.target, value: value });
+        }
+
+        resultEl.style.display = 'block';
+        resultEl.className = 'fn-result';
+        resultEl.textContent = '⏳ Tx: ' + shortAddr(tx.hash);
+        await tx.wait();
+        resultEl.className = 'fn-result fn-result-success';
+        resultEl.textContent = '✔ Confirmed: ' + shortAddr(tx.hash);
+        showToast('ETH sent to contract!');
+    } catch (e) {
+        resultEl.style.display = 'block';
+        resultEl.className = 'fn-result fn-result-error';
+        resultEl.textContent = '✘ ' + (e.message || 'Transfer failed');
+    }
+
+    btn.disabled = false;
+    btn.textContent = oldText;
+}
+
 // ==========================================
 // LOAD EXISTING CONTRACT
 // ==========================================
@@ -1089,13 +1596,15 @@ async function loadExistingContract() {
     var address = document.getElementById('existingAddr').value.trim();
     var templateKey = document.getElementById('existingTemplate').value;
     if (!address) { showToast('Enter a contract address.'); return; }
+    if (!ethers.isAddress(address)) { showToast('Enter a valid Ethereum address.'); return; }
+    address = ethers.getAddress(address);
 
-    var template = CONTRACT_TEMPLATES[templateKey];
+    var template = getContractTemplate(templateKey);
     if (!template) { showToast('Unknown contract type.'); return; }
 
     if (contractState.walletMode === 'simulated') {
         contractState.simStorage[address] = contractState.simStorage[address] || {};
-        initSimulatedState(templateKey, contractState.simStorage[address], []);
+        initSimulatedState(templateKey, contractState.simStorage[address], getSimulatedConstructorFallbackArgs(template), 0n);
         var simContract = createSimulatedContract(templateKey, address);
 
         document.getElementById('deployResult').style.display = 'block';
@@ -1134,6 +1643,7 @@ async function loadExistingContract() {
 // ==========================================
 
 function initContracts() {
+    renderContractTemplateControls();
     selectContract('storage');
     updateRpcUrl();
 }

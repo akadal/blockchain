@@ -8,6 +8,7 @@
     <meta name="description"
         content="Learn blockchain fundamentals step by step: hashing, encryption, digital signatures, blocks, chains, wallets, and transactions.">
     <meta name="author" content="akadal">
+    <meta name="theme-color" content="#080b10">
     <link rel="stylesheet" href="css/style.css">
 </head>
 
@@ -822,7 +823,7 @@
                 <!-- Contract Selection -->
                 <div class="card">
                     <div class="card-title" style="color: var(--accent-cyan);">Select Contract Example</div>
-                    <div class="contract-select-row">
+                    <div class="contract-select-row" id="contractTemplateGrid">
                         <button class="contract-select-btn active" data-template="storage"
                             onclick="selectContract('storage')">📦 Storage</button>
                         <button class="contract-select-btn" data-template="counter"
