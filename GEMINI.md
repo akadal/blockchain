@@ -35,9 +35,10 @@ The system is orchestrated via `docker-compose.yml` and consists of 4 main servi
 - **Exposure:** Port `80` internal, mapped externally via Coolify (e.g., `https://rpc.yourdomain.com`).
 
 ### 2.3 Faucet & Landing Page (`faucet`)
-- **Role:** Node.js Express application distributing test ETH (10 ETH per request) and serving as the primary **Landing Page** for the Akadal Educational Chain. The frontend (`faucet/public/index.html`) includes network details, MetaMask integration, a search bar directing to the Explorer, and a dynamic display of recent blocks fetched from the RPC.
+- **Role:** Node.js Express application distributing test ETH (1 ETH per request), minting Akadal Test USDT (1000 USDT per request), and serving as the primary **Landing Page** for the Akadal Educational Chain. The frontend (`faucet/public/index.html`) includes network details, MetaMask integration, a search bar directing to the Explorer, a copyable USDT contract address, and a dynamic display of recent blocks fetched from the RPC.
 - **Setup:** Connects to `geth` via `RPC_URL=http://geth:8545`.
-- **Funding Source:** It uses the unlocked master account (`0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266`) which is heavily funded in the genesis block.
+- **Funding Source:** It signs with the genesis private key from `PRIVATE_KEY` (`0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266`), falling back to the unlocked Geth account if no private key is configured.
+- **USDT Persistence:** On startup, the service reads `/app/data/usdt-token.json` from the `faucet_data` volume. If the saved address has valid contract code, `symbol() == "USDT"`, `decimals() == 6`, and the owner is the faucet address, it reuses that contract. Otherwise it deploys `AkadalUSDT`, writes the address to the volume, and mints from that contract for future faucet requests.
 - **Exposure:** Port `3000` internal and host.
 
 ### 2.4 Explorer (`explorer`)

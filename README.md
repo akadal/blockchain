@@ -5,7 +5,7 @@ This project provides a **production-ready, lightweight Ethereum Blockchain Envi
 It includes everything you need to start teaching or learning Ethereum development:
 1.  **Geth Node**: A stable Proof-of-Authority (Clique) blockchain.
 2.  **Explorer**: A lightweight block explorer (Alethio) to view transactions.
-3.  **Faucet**: A web interface to get free test ETH (`10 ETH` per request).
+3.  **Faucet**: A web interface to get free test ETH (`1 ETH` per request) and test USDT (`1000 USDT` per request).
 4.  **RPC Proxy**: A pre-configured Nginx proxy to handle CORS and SSL correctly for MetaMask connectivity.
 
 ---
@@ -19,7 +19,7 @@ The system is composed of 4 Docker services:
 | **geth** | `8545`, `8546` | The Ethereum Node (v1.13.15). Runs via `geth-boot.sh`. |
 | **rpc-proxy** | `80` | **Crucial Component**. Nginx proxy that forwards requests to Geth and handles **CORS headers** to ensure MetaMask works. |
 | **explorer** | `80` | Alethio Lite Explorer. Visualizes blocks/txs. |
-| **faucet** | `3000` | Node.js App. Sends ETH to users using the Genesis Master Key. |
+| **faucet** | `3000` | Node.js App. Sends ETH and mints test USDT using the Genesis Master Key. |
 
 ### Why Geth v1.13?
 We explicitly use **Geth v1.13.15** because newer versions (v1.14+) require complex Proof-of-Stake (Merge) configurations (Beacon Chain, Prysm, etc.) which are overkill for a simple educational chain. v1.13 is the "Gold Standard" for stable, simple PoA chains supporting Paris EVM features.
@@ -67,8 +67,11 @@ To use this blockchain, users (Students/Developers) should configure their **Met
 
 1.  Open the Faucet URL (`https://faucet.yourdomain.com`).
 2.  Paste your MetaMask address.
-3.  Click **"Send Me ETH"**.
-4.  You will receive **10 ETH** instantly.
+3.  Choose **ETH** or **USDT**.
+4.  Click **"Send Me ETH"** or **"Send Me USDT"**.
+5.  You will receive **1 ETH** or **1000 USDT** instantly.
+
+The faucet deploys `AkadalUSDT` automatically on startup if no saved token exists. Its address is stored in the persistent `faucet_data` volume at `/app/data/usdt-token.json`, so later deployments reuse the same contract instead of deploying a new one.
 
 ---
 

@@ -9,6 +9,6 @@ COPY password.txt /tmp/password
 RUN apk add --no-cache jq
 
 # Ensure script is executable
-RUN chmod +x /root/geth-boot.sh
+RUN sed -i 's/\r$//' /root/geth-boot.sh && chmod +x /root/geth-boot.sh
 
 ENTRYPOINT ["/root/geth-boot.sh"]

@@ -1,5 +1,6 @@
 const { ethers } = require('ethers');
 const assert = require('assert');
+const usdtArtifact = require('../faucet/contracts/AkadalUSDT.json');
 
 // Mock dependencies
 console.log("🧪 Starting Unit Tests for Faucet Logic...");
@@ -44,7 +45,18 @@ const runTransactionTest = async () => {
 
 runTransactionTest();
 
-// 3. Environment Variable Check
+// 3. USDT Faucet Amount and Artifact Check
+try {
+    const usdtAmount = ethers.parseUnits("1000", 6);
+    assert.strictEqual(usdtAmount.toString(), "1000000000", "USDT faucet amount should be 1000 tokens with 6 decimals");
+    assert.ok(Array.isArray(usdtArtifact.abi), "USDT ABI should exist");
+    assert.ok(usdtArtifact.bytecode && usdtArtifact.bytecode.startsWith("0x"), "USDT bytecode should exist");
+    console.log("[OK] USDT Faucet Logic: PASS");
+} catch (e) {
+    console.error("[FAIL] USDT Faucet Logic: FAIL", e);
+}
+
+// 4. Environment Variable Check
 // Just ensuring our defaults logic in server.js would work
 const getEnv = (key, def) => process.env[key] || def;
 assert.strictEqual(getEnv('PORT', 3000), 3000, "Default PORT check");
