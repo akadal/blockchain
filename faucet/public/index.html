@@ -2066,22 +2066,25 @@
         }
 
         // Faucet Logic
-        window.onload = async () => {
+        window.onload = () => {
             initTheme();
+            fetchUsdtToken();
+            checkRpcConnectionAndFetchBlocks();
+            hydrateWalletAddress();
+        }
 
-            if (window.ethereum) {
-                try {
-                    const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+        function hydrateWalletAddress() {
+            if (!window.ethereum) return;
+
+            window.ethereum.request({ method: 'eth_accounts' })
+                .then((accounts) => {
                     if (accounts.length > 0) {
                         document.getElementById('address').value = accounts[0];
                     }
-                } catch (e) {
+                })
+                .catch(() => {
                     console.log("Could not fetch eth_accounts");
-                }
-            }
-
-            fetchUsdtToken();
-            checkRpcConnectionAndFetchBlocks();
+                });
         }
 
         async function rpcCall(method, params = []) {
