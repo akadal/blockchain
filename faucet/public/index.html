@@ -890,7 +890,7 @@
                         <button type="button" class="asset-btn" id="assetUsdtBtn" onclick="selectAsset('USDT')">USDT</button>
                     </div>
 
-                    <div class="token-address-panel" id="usdtAddressPanel">
+                    <div class="token-address-panel" id="usdtAddressPanel" hidden>
                         <div class="token-address-label">USDT Contract</div>
                         <div class="token-address-row">
                             <a id="usdtAddress" href="#" target="_blank" rel="noopener">Loading...</a>
@@ -1202,7 +1202,15 @@
             selectedAsset = asset;
             document.getElementById('assetEthBtn').classList.toggle('active', asset === 'ETH');
             document.getElementById('assetUsdtBtn').classList.toggle('active', asset === 'USDT');
+            updateUsdtPanelVisibility();
             updateFaucetButton();
+        }
+
+        function updateUsdtPanelVisibility() {
+            const panel = document.getElementById('usdtAddressPanel');
+            if (panel) {
+                panel.hidden = selectedAsset !== 'USDT';
+            }
         }
 
         function updateFaucetButton() {
@@ -1248,6 +1256,7 @@
             const addressEl = document.getElementById('usdtAddress');
             const statusEl = document.getElementById('usdtStatus');
             const copyBtn = document.getElementById('copyUsdtBtn');
+            updateUsdtPanelVisibility();
 
             if (usdtToken.ready && usdtToken.address) {
                 addressEl.textContent = usdtToken.address;
