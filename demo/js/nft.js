@@ -33,10 +33,19 @@ function initNFT() {
     updateNFTLog();
 }
 
+function placeNftWeb3SetupFirst() {
+    var web3 = document.getElementById('nftWeb3Container');
+    var shared = document.getElementById('nftSimulatedContainer');
+    if (web3 && shared && web3.nextElementSibling !== shared) {
+        shared.parentNode.insertBefore(web3, shared);
+    }
+}
+
 window.setNftMode = function setNftMode(mode) {
     nftEngine.mode = mode;
     document.getElementById('nftModeSimulated').classList.toggle('active', mode === 'simulated');
     document.getElementById('nftModeWeb3').classList.toggle('active', mode === 'web3');
+    if (mode === 'web3') placeNftWeb3SetupFirst();
     document.getElementById('nftSimulatedContainer').style.display = 'block';
     document.getElementById('nftWeb3Container').style.display = mode === 'web3' ? 'block' : 'none';
     var web3Interaction = document.getElementById('web3NftInteractionContainer');

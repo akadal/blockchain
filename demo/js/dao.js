@@ -48,11 +48,20 @@ function initDAO() {
     dao.initialized = true;
 }
 
+function placeDaoWeb3SetupFirst() {
+    var web3 = document.getElementById('daoWeb3Container');
+    var shared = document.getElementById('daoSimulatedContainer');
+    if (web3 && shared && web3.nextElementSibling !== shared) {
+        shared.parentNode.insertBefore(web3, shared);
+    }
+}
+
 window.setDaoMode = function(mode) {
     dao.mode = mode;
     document.getElementById('daoModeSimulated').classList.toggle('active', mode === 'simulated');
     document.getElementById('daoModeWeb3').classList.toggle('active', mode === 'web3');
 
+    if (mode === 'web3') placeDaoWeb3SetupFirst();
     document.getElementById('daoSimulatedContainer').style.display = 'block';
     document.getElementById('daoWeb3Container').style.display = mode === 'web3' ? 'block' : 'none';
     var web3Interaction = document.getElementById('web3DaoInteractionContainer');

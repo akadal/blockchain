@@ -64,11 +64,20 @@ function initDeFi() {
     updateDefiUI();
 }
 
+function placeDefiWeb3SetupFirst() {
+    var web3 = document.getElementById('defiWeb3Container');
+    var shared = document.getElementById('defiSimulatedContainer');
+    if (web3 && shared && web3.nextElementSibling !== shared) {
+        shared.parentNode.insertBefore(web3, shared);
+    }
+}
+
 window.setDefiMode = function(mode) {
     defi.mode = mode;
     document.getElementById('defiModeSimulated').classList.toggle('active', mode === 'simulated');
     document.getElementById('defiModeWeb3').classList.toggle('active', mode === 'web3');
 
+    if (mode === 'web3') placeDefiWeb3SetupFirst();
     document.getElementById('defiSimulatedContainer').style.display = 'block';
     document.getElementById('defiWeb3Container').style.display = mode === 'web3' ? 'block' : 'none';
     var web3Interaction = document.getElementById('web3DefiInteractionContainer');
