@@ -266,21 +266,21 @@ const METAMASK_NETWORKS = {
         chainId: '0xaa36a7', // 11155111
         chainName: 'Sepolia test network',
         nativeCurrency: { name: 'SepoliaETH', symbol: 'SEP', decimals: 18 },
-        rpcUrls: ['https://sepolia.infura.io/v3/'],
+        rpcUrls: ['https://ethereum-sepolia-rpc.publicnode.com'],
         blockExplorerUrls: ['https://sepolia.etherscan.io']
     },
     1: {
         chainId: '0x1', // 1
         chainName: 'Ethereum Mainnet',
         nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
-        rpcUrls: ['https://mainnet.infura.io/v3/'],
+        rpcUrls: ['https://ethereum-rpc.publicnode.com'],
         blockExplorerUrls: ['https://etherscan.io']
     },
     137: {
         chainId: '0x89', // 137
         chainName: 'Polygon Mainnet',
-        nativeCurrency: { name: 'MATIC', symbol: 'MATIC', decimals: 18 },
-        rpcUrls: ['https://polygon-rpc.com/'],
+        nativeCurrency: { name: 'POL', symbol: 'POL', decimals: 18 },
+        rpcUrls: ['https://polygon-bor-rpc.publicnode.com'],
         blockExplorerUrls: ['https://polygonscan.com/']
     },
     56: {

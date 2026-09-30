@@ -32,12 +32,12 @@ exec geth \
   --http.port 8545 \
   --http.corsdomain "*" \
   --http.vhosts "*" \
-  --http.api "eth,net,web3,debug,txpool,miner" \
+  --http.api "eth,net,web3,debug,txpool" \
   --ws \
   --ws.addr "0.0.0.0" \
   --ws.port 8546 \
   --ws.origins "*" \
-  --ws.api "eth,net,web3,debug,txpool,miner" \
+  --ws.api "eth,net,web3" \
   --mine \
   --miner.etherbase 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 \
   --miner.gaslimit 800000000 \

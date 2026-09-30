@@ -24,19 +24,22 @@ The system is orchestrated via `docker-compose.yml` and consists of 4 main servi
 - **Initialization:** Managed by `geth-boot.sh`.
   - Automatically imports the pre-funded signer key from `genesis.json` (extraData).
 - **Execution flags:** Runs with `--dev` avoided to ensure data persistence. Uses `--mine`, `--miner.gaslimit 800000000`, `--allow-insecure-unlock`, `--nodiscover`, and `--gcmode archive`.
-- **Ports:** `8545` (HTTP RPC) & `8546` (WS).
+- **APIs:** `--http.api eth,net,web3,debug,txpool` (no `miner`), `--ws.api eth,net,web3`. The signer stays unlocked for Clique sealing, so the HTTP port must never be public without `rpc-proxy` in front.
+- **Ports:** `8545` (HTTP RPC) & `8546` (WS), published on host **`127.0.0.1` only**.
 - **Memory Limit:** 1.5GB
 - **Persistence:** Volume `geth_data_v2` mapped to `/root/.ethereum`. Data persistence is critical.
 
 ### 2.2 RPC Proxy (`rpc-proxy`)
 - **Role:** Nginx reverse proxy sitting in front of the `geth` node.
 - **Why it exists:** Handles **CORS (Cross-Origin Resource Sharing)** and preflight (`OPTIONS`) requests correctly so browser wallets like MetaMask can connect without issues.
+- **Method filter:** `nginx/rpc_filter.js` (njs, loaded in `nginx/Dockerfile`) parses every JSON-RPC call (single or batch, max 100) and only forwards `eth_*`/`net_*`/`web3_*`, `debug_traceTransaction` (built-in tracers, no custom `timeout`), `debug_storageRangeAt` and `txpool_status/content/inspect`. It refuses `eth_sendTransaction`, `eth_resend`, `eth_sign*`, `miner_*`, `debug_setHead`, `debug_traceCall`/`traceBlock*` and every other namespace, and answers `eth_accounts` with `[]`. Fully allowed requests are `internalRedirect`ed to the internal `/_geth` location (streamed, no size cap); only mixed batches use a buffered subrequest (8 MB). CORS headers live at `server` level so they apply after the redirect. Coolify's predefined network lets other apps on the server reach `geth:8545` unfiltered; keep that in mind if unrelated apps share the host.
 - **Routing:** Forwards requests to `http://geth:8545`. Uses Docker's internal DNS (`127.0.0.11`) dynamically so Nginx doesn't crash if Geth is slow to start.
 - **Exposure:** Port `80` internal, mapped externally via Coolify (e.g., `https://rpc.yourdomain.com`).
 
 ### 2.3 Faucet & Landing Page (`faucet`)
 - **Role:** Node.js Express application distributing test ETH (1 ETH per request), minting Akadal Test USDT (1000 USDT per request), and serving as the primary **Landing Page** for the Akadal Educational Chain. The frontend (`faucet/public/index.html`) includes network details, MetaMask integration, a search bar directing to the Explorer, a copyable USDT contract address, and a dynamic display of recent blocks fetched from the RPC.
 - **Setup:** Connects to `geth` via `RPC_URL=http://geth:8545`.
+- **Abuse limits:** The ETH amount is fixed server-side (`FAUCET_ETH_AMOUNT`, default 1); the client `amount` is ignored. `faucet/limits.js` enforces a per-address, per-asset cooldown (`FAUCET_ADDRESS_COOLDOWN_SECONDS`, 3600) and a per-IP budget (`FAUCET_IP_MAX_REQUESTS` per `FAUCET_IP_WINDOW_SECONDS`, 120/3600; generous because a classroom shares one NAT IP). State is in memory. `trust proxy` is `TRUST_PROXY_HOPS` (default 1, the Coolify proxy; 2 behind a CDN); the faucet host port is bound to `127.0.0.1` so `X-Forwarded-For` cannot be spoofed by hitting port 3000 directly.
 - **Funding Source:** It signs with the genesis private key from `PRIVATE_KEY` (`0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266`), falling back to the unlocked Geth account if no private key is configured.
 - **USDT Persistence:** On startup, the service reads `/app/data/usdt-token.json` from the `faucet_data` volume. If the saved address has valid contract code, `symbol() == "USDT"`, `decimals() == 6`, and the owner is the faucet address, it reuses that contract. Otherwise it deploys `AkadalUSDT`, writes the address to the volume, and mints from that contract for future faucet requests.
 - **Exposure:** Port `3000` internal and host.
@@ -55,6 +58,7 @@ The system is orchestrated via `docker-compose.yml` and consists of 4 main servi
 - **Pre-funded Master Account:**
   - **Address:** `0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266`
   - **Private Key:** `0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80` (Used in `docker-compose.yml` for Faucet and `geth-boot.sh` for auto-unlock).
+  - **Known weakness:** this is the public Hardhat/Anvil #0 key, so anyone can sign for the signer and faucet account offline (drain the ETH, mint USDT as owner) through `eth_sendRawTransaction`. The RPC filter cannot stop that. The fix is rotating to a private signer (Clique vote to add the new signer and drop the old one, then move the balance and `transferOwnership` of USDT) or a new genesis. The faucet key is read from `FAUCET_PRIVATE_KEY` in Coolify, with the public key as fallback until rotation.
 - **Subdomains (Typical Coolify Setup):**
   - RPC/MetaMask: `rpc.domain.com` -> `rpc-proxy:80`
   - Explorer: `explorer.domain.com` -> `explorer:4000`

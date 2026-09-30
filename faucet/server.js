@@ -3,9 +3,15 @@ const { ethers } = require('ethers');
 const fs = require('fs');
 const path = require('path');
 const usdtArtifact = require('./contracts/AkadalUSDT.json');
+const { createLimiter } = require('./limits');
 
 const app = express();
-app.use(express.json());
+// Behind Coolify's reverse proxy the client address arrives in X-Forwarded-For;
+// trust exactly one hop so a client-supplied header cannot spoof it.
+// Set TRUST_PROXY_HOPS=2 if a CDN is ever put in front of Coolify.
+const trustProxyHops = Number(process.env.TRUST_PROXY_HOPS);
+app.set('trust proxy', Number.isInteger(trustProxyHops) && trustProxyHops >= 0 ? trustProxyHops : 1);
+app.use(express.json({ limit: '2kb' }));
 app.use(express.static('public'));
 
 // Configuration from ENV
@@ -15,6 +21,8 @@ const CHAIN_ID = parseInt(process.env.CHAIN_ID || '1337');
 const EXPLORER_URL = process.env.EXPLORER_URL || "https://explorer.blockchain.akadal.tr";
 const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, 'data');
 const USDT_STATE_FILE = process.env.USDT_STATE_FILE || path.join(DATA_DIR, 'usdt-token.json');
+// The ETH amount is fixed server-side; a client-supplied `amount` is ignored.
+const ETH_FAUCET_AMOUNT = process.env.FAUCET_ETH_AMOUNT || '1';
 const USDT_FAUCET_AMOUNT = '1000';
 const USDT_DECIMALS = 6;
 const USDT_SYMBOL = 'USDT';
@@ -212,7 +220,22 @@ function createSigner() {
 }
 
 function validateRecipient(address) {
-    return address && ethers.isAddress(address);
+    return typeof address === 'string' && ethers.isAddress(address);
+}
+
+const limiter = createLimiter();
+setInterval(() => limiter.sweep(), 10 * 60 * 1000).unref();
+
+function rejectIfLimited(asset, address, req, res) {
+    const hit = limiter.check(asset, address, req.ip);
+    if (!hit) return false;
+
+    const message = hit.reason === 'address'
+        ? `This address already received ${asset} recently. Try again in ${Math.ceil(hit.retryAfterSeconds / 60)} min.`
+        : `Too many faucet requests from your network. Try again in ${Math.ceil(hit.retryAfterSeconds / 60)} min.`;
+    res.set('Retry-After', String(hit.retryAfterSeconds));
+    res.status(429).json({ error: message, retryAfterSeconds: hit.retryAfterSeconds });
+    return true;
 }
 
 const connect = async () => {
@@ -243,13 +266,14 @@ connect();
 app.post('/fund', async (req, res) => {
     if (!signer) return res.status(503).json({ error: "Faucet not ready" });
 
-    const { address, amount } = req.body;
+    const { address } = req.body || {};
 
     if (!validateRecipient(address)) {
         return res.status(400).json({ error: "Invalid address" });
     }
+    if (rejectIfLimited('ETH', address, req, res)) return;
 
-    const ethAmount = amount ? amount.toString() : "1";
+    const ethAmount = ETH_FAUCET_AMOUNT;
 
     try {
         const tx = await signer.sendTransaction({
@@ -261,6 +285,7 @@ app.post('/fund', async (req, res) => {
         res.json({ success: true, txHash: tx.hash, amount: ethAmount, asset: 'ETH', explorerUrl: EXPLORER_URL });
     } catch (error) {
         console.error("Transaction failed:", error);
+        limiter.release('ETH', address, req.ip);
         res.status(500).json({ error: error.message });
     }
 });
@@ -268,11 +293,12 @@ app.post('/fund', async (req, res) => {
 app.post('/fund-usdt', async (req, res) => {
     if (!signer) return res.status(503).json({ error: "Faucet not ready" });
 
-    const { address } = req.body;
+    const { address } = req.body || {};
 
     if (!validateRecipient(address)) {
         return res.status(400).json({ error: "Invalid address" });
     }
+    if (rejectIfLimited('USDT', address, req, res)) return;
 
     try {
         if (!usdtContract) {
@@ -293,6 +319,7 @@ app.post('/fund-usdt', async (req, res) => {
         });
     } catch (error) {
         console.error("USDT faucet failed:", error);
+        limiter.release('USDT', address, req.ip);
         res.status(500).json({ error: error.message });
     }
 });

@@ -66,7 +66,7 @@ flowchart LR
 
 | Service | Internal port | Default public role |
 | --- | ---: | --- |
-| `geth` | `8545`, `8546` | Ethereum JSON-RPC and WebSocket node |
+| `geth` | `8545`, `8546` | Ethereum JSON-RPC and WebSocket node (host port bound to `127.0.0.1`) |
 | `rpc-proxy` | `80` | Public RPC endpoint with CORS handling |
 | `explorer` | `80` | Browser explorer UI |
 | `faucet` | `3000` | Main app, ETH faucet, USDT faucet, token metadata API |
@@ -171,8 +171,17 @@ Example ETH faucet request:
 ```bash
 curl -X POST http://localhost:3000/fund \
   -H "Content-Type: application/json" \
-  -d '{"address":"0x0000000000000000000000000000000000000000","amount":"1"}'
+  -d '{"address":"0x0000000000000000000000000000000000000000"}'
 ```
+
+The amount is fixed on the server (`FAUCET_ETH_AMOUNT`, default `1`); a
+client-supplied `amount` is ignored. Each address can receive each asset once
+per `FAUCET_ADDRESS_COOLDOWN_SECONDS` (default `3600`), and each client IP is
+limited to `FAUCET_IP_MAX_REQUESTS` (default `120`) per
+`FAUCET_IP_WINDOW_SECONDS` (default `3600`). The IP budget is generous because
+a classroom usually shares one NAT address. Limited requests get HTTP `429`
+with a `Retry-After` header. The client IP is taken from one trusted proxy hop
+(`TRUST_PROXY_HOPS`, default `1`; use `2` if a CDN sits in front of Coolify).
 
 Example USDT metadata request:
 
@@ -233,8 +242,15 @@ node tests/integration_test.js
 - This is an educational chain, not a production financial network.
 - The bundled private key is public and intentionally pre-funded in genesis.
 - Do not send mainnet ETH, real tokens, or private production keys to this network.
-- The RPC surface exposes development-friendly methods such as `debug`, `txpool`, and `miner`.
-- Add authentication, rate limiting, monitoring, and a private signer strategy before adapting this pattern to a real environment.
+- The public RPC goes through `nginx/rpc_filter.js`: `eth_*`, `net_*`, `web3_*`, read-only tracing
+  (`debug_traceTransaction` with built-in tracers only, `debug_storageRangeAt`) and
+  `txpool_status/content/inspect` are allowed; `eth_sendTransaction`, `eth_resend` and the `eth_sign*`
+  family, `miner_*`, other `debug_*` (such as `debug_setHead`, `debug_traceCall`)
+  and every other namespace are refused. `eth_accounts` returns `[]` so the node's unlocked signer is
+  not advertised. Sign transactions in the wallet and send them with `eth_sendRawTransaction`.
+- Geth's own ports are bound to `127.0.0.1` on the host; only `rpc-proxy` is public.
+- While the signer is the public Hardhat #0 key, anyone can still sign transactions for it offline.
+  Rotating the signer to a private key is the only fix for that; see `GEMINI.md`.
 
 ## Troubleshooting
 
