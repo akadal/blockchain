@@ -14,7 +14,7 @@ The public instance is live at [blockchain.akadal.tr](https://blockchain.akadal.
 Use it directly, or fork this repository and run your own version.
 
 > Akadal Chain is for education and experimentation. The ETH and USDT on this network have no monetary value.
-> The included genesis private key is intentionally public and must never be reused for real funds.
+> The chain signer's key is generated on first boot and stays in the Geth data volume; it is not part of this repository.
 
 ## Live Network
 
@@ -84,7 +84,7 @@ flowchart LR
 | Geth version | `ethereum/client-go:v1.13.15` |
 | Faucet ETH amount | `1 ETH` per request |
 | Faucet USDT amount | `1000 USDT` per request |
-| Master account | `0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266` |
+| Master account | Generated on first boot; shown by the faucet's `GET /health` |
 
 Geth `v1.13.15` is used deliberately because it keeps a simple PoA development
 chain practical without requiring Beacon Chain or post-Merge validator infrastructure.
@@ -149,7 +149,7 @@ Values to update when forking:
 | `docker-compose.yml` | `APP_NODE_URL`, `EXPLORER_URL`, `RPC_URL`, `DEMO_URL`, `MAIN_URL` defaults |
 | `faucet/public/index.html` | Public RPC, explorer, demo, repository, and visible network URLs |
 | `demo/entrypoint.sh` | Default fallback URLs for the demo container |
-| `genesis.json` / `geth-config/genesis.json` | Chain ID, signer, balances, and Clique signer data if you want a separate network identity |
+| `geth-config/genesis.template.json` | Chain ID, gas limit and balances; `__SIGNER__` is filled with the generated signer address on boot |
 
 If you change the genesis file after a chain has already started, existing Geth
 data may keep the old chain state. Start from a fresh volume only when you
@@ -228,19 +228,19 @@ node tests/integration_test.js
 ```text
 .
 |-- docker-compose.yml          # Main service orchestration
-|-- geth-config/                # Geth image, genesis, boot script, signer password
+|-- geth-config/                # Geth image, genesis template, boot script (generates the signer)
 |-- nginx/                      # RPC proxy image and CORS-aware Nginx config
 |-- faucet/                     # Main app, faucet API, AkadalUSDT contract artifact
 |-- demo/                       # Interactive browser learning lab
 |-- tests/                      # Unit and integration test scripts
-|-- genesis.json                # Root copy of the chain genesis
 `-- GEMINI.md                   # Maintainer/AI project context
 ```
 
 ## Security Notes
 
 - This is an educational chain, not a production financial network.
-- The bundled private key is public and intentionally pre-funded in genesis.
+- The signer key and its password are generated inside the `geth_data_v3` volume on first boot. Back up
+  that volume if you need to keep the chain; losing it means starting a new chain.
 - Do not send mainnet ETH, real tokens, or private production keys to this network.
 - The public RPC goes through `nginx/rpc_filter.js`: `eth_*`, `net_*`, `web3_*`, read-only tracing
   (`debug_traceTransaction` with built-in tracers only, `debug_storageRangeAt`) and
@@ -249,8 +249,8 @@ node tests/integration_test.js
   and every other namespace are refused. `eth_accounts` returns `[]` so the node's unlocked signer is
   not advertised. Sign transactions in the wallet and send them with `eth_sendRawTransaction`.
 - Geth's own ports are bound to `127.0.0.1` on the host; only `rpc-proxy` is public.
-- While the signer is the public Hardhat #0 key, anyone can still sign transactions for it offline.
-  Rotating the signer to a private key is the only fix for that; see `GEMINI.md`.
+- The faucet signs through that unlocked account on the internal network only; the public proxy refuses
+  `eth_sendTransaction`.
 
 ## Troubleshooting
 

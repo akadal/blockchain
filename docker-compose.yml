@@ -9,7 +9,9 @@ services:
       context: ./geth-config
       dockerfile: Dockerfile
     volumes:
-      - geth_data_v2:/root/.ethereum
+      # v3 = chain reset of 2026-09-30 (new private signer). Renaming this
+      # volume starts a brand-new chain; keep it stable otherwise.
+      - geth_data_v3:/root/.ethereum
     # Loopback only: the public reaches Geth through rpc-proxy, which filters
     # methods. A public 8545 would bypass that filter entirely.
     ports:
@@ -56,12 +58,12 @@ services:
       dockerfile: Dockerfile
     restart: always
     volumes:
-      - faucet_data:/app/data
+      - faucet_data_v3:/app/data
     environment:
       - RPC_URL=http://geth:8545
-      # Set FAUCET_PRIVATE_KEY in Coolify once the signer is rotated; the
-      # fallback is the well-known Hardhat #0 key.
-      - PRIVATE_KEY=${FAUCET_PRIVATE_KEY:-0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80}
+      # Empty = sign with Geth's unlocked signer over the internal network.
+      # Set FAUCET_PRIVATE_KEY only to fund from a separate, pre-funded key.
+      - PRIVATE_KEY=${FAUCET_PRIVATE_KEY:-}
       - FAUCET_ETH_AMOUNT=${FAUCET_ETH_AMOUNT:-1}
       - FAUCET_ADDRESS_COOLDOWN_SECONDS=${FAUCET_ADDRESS_COOLDOWN_SECONDS:-3600}
       - FAUCET_IP_WINDOW_SECONDS=${FAUCET_IP_WINDOW_SECONDS:-3600}
@@ -107,5 +109,5 @@ services:
           memory: 256M
 
 volumes:
-  geth_data_v2:
-  faucet_data:
+  geth_data_v3:
+  faucet_data_v3:
