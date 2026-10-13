@@ -38,6 +38,10 @@ echo "Clique signer: $SIGNER"
 sed "s/__SIGNER__/$SIGNER_HEX/g" /root/genesis.template.json > "$GENESIS"
 geth init --datadir "$DATADIR" "$GENESIS"
 
+# Txpool defaults are tuned for a public mempool, not a classroom. A 3h
+# lifetime and 64 queued slots per account silently evict a transaction that
+# a wallet still counts, which opens a nonce gap nobody can see: everything
+# the wallet sends afterwards waits forever. Widened. [2026-10-13]
 echo "Starting Geth Node..."
 exec geth \
   --datadir "$DATADIR" \
@@ -61,4 +65,8 @@ exec geth \
   --allow-insecure-unlock \
   --nodiscover \
   --gcmode archive \
-  --cache 256
+  --cache 256 \
+  --txpool.lifetime 24h \
+  --txpool.accountslots 64 \
+  --txpool.accountqueue 256 \
+  --txpool.globalqueue 4096
