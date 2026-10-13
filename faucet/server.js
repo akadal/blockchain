@@ -3,7 +3,7 @@ const { ethers } = require('ethers');
 const fs = require('fs');
 const path = require('path');
 const usdtArtifact = require('./contracts/AkadalUSDT.json');
-const { createLimiter } = require('./limits');
+const { createLimiter, envInt } = require('./limits');
 
 const app = express();
 // Behind Coolify's reverse proxy the client address arrives in X-Forwarded-For;
@@ -262,6 +262,7 @@ function validateRecipient(address) {
     return typeof address === 'string' && ethers.isAddress(address);
 }
 
+const ADDRESS_MAX_REQUESTS = envInt('FAUCET_ADDRESS_MAX_REQUESTS', 10);
 const limiter = createLimiter();
 setInterval(() => limiter.sweep(), 10 * 60 * 1000).unref();
 
@@ -270,7 +271,9 @@ function rejectIfLimited(asset, address, req, res) {
     if (!hit) return false;
 
     const message = hit.reason === 'address'
-        ? `This address already received ${asset} recently. Try again in ${Math.ceil(hit.retryAfterSeconds / 60)} min.`
+        // The address limit is a budget, not a cooldown; saying "recently" sent
+        // students looking for a wait that is not what is happening.
+        ? `This address has used all ${ADDRESS_MAX_REQUESTS} ${asset} requests for this hour. Try again in ${Math.ceil(hit.retryAfterSeconds / 60)} min.`
         : `Too many faucet requests from your network. Try again in ${Math.ceil(hit.retryAfterSeconds / 60)} min.`;
     res.set('Retry-After', String(hit.retryAfterSeconds));
     res.status(429).json({ error: message, retryAfterSeconds: hit.retryAfterSeconds });
