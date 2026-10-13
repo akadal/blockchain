@@ -2126,8 +2126,25 @@
             el.style.color = kind === 'bad' ? '#b45309' : (kind === 'good' ? '#15803d' : '');
         }
 
+        // The first fetch after a cold page load fails often enough to matter in
+        // front of a class; one retry turns a scary error into a half-second wait.
+        async function rpcRetry(method, params = []) {
+            try {
+                return await rpcCall(method, params);
+            } catch (first) {
+                await new Promise((r) => setTimeout(r, 600));
+                return rpcCall(method, params);
+            }
+        }
+
         async function checkNonceGap() {
             const input = document.getElementById('nonceAddress');
+            if (!input.value && window.ethereum) {
+                try {
+                    const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+                    if (accounts && accounts[0]) input.value = accounts[0];
+                } catch (e) { /* no wallet, the user types the address */ }
+            }
             const address = (input.value || '').trim();
             if (!/^0x[0-9a-fA-F]{40}$/.test(address)) {
                 return nonceSay('Enter a valid 0x address.', 'bad');
@@ -2135,10 +2152,10 @@
             nonceFix = null;
             nonceSay('Checking...');
             try {
-                const expected = parseInt(await rpcCall('eth_getTransactionCount', [address, 'latest']), 16);
+                const expected = parseInt(await rpcRetry('eth_getTransactionCount', [address, 'latest']), 16);
                 let queued = [];
                 try {
-                    const pool = await rpcCall('txpool_inspect');
+                    const pool = await rpcRetry('txpool_inspect');
                     const mine = Object.entries((pool && pool.queued) || {})
                         .find(([a]) => a.toLowerCase() === address.toLowerCase());
                     if (mine) queued = Object.keys(mine[1]).map(Number).sort((a, b) => a - b);
