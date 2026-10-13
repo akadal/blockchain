@@ -219,6 +219,45 @@ function createSigner() {
     return provider.getSigner().then((jsonRpcSigner) => new ethers.NonceManager(jsonRpcSigner));
 }
 
+// Every payout goes through sendFromFaucet, one at a time.
+//
+// NonceManager caches the next nonce and never resyncs on its own. One dropped
+// transaction and the cache runs ahead of the chain: everything the faucet sends
+// afterwards sits in the queued pool behind a gap that nothing clears. When the
+// gap is finally filled the chain overtakes the cache and every request fails
+// with "nonce too low" instead. The faucet died both ways on 2026-10-13, first
+// with fourteen payouts stuck, then refusing every request until restart.
+//
+// Two rules fix it. Serialize, so two requests can never take the same nonce.
+// Resync before each send and once more after a nonce error, so a cache that has
+// drifted is corrected by the next request instead of by a restart.
+let sendQueue = Promise.resolve();
+
+function isNonceError(error) {
+    const text = [error && error.code, error && error.shortMessage, error && error.message]
+        .filter(Boolean).join(' ').toLowerCase();
+    return text.includes('nonce') || text.includes('replacement transaction underpriced');
+}
+
+async function sendFromFaucet(send) {
+    const run = sendQueue.then(async () => {
+        for (let attempt = 0; attempt < 2; attempt += 1) {
+            if (signer && typeof signer.reset === 'function') signer.reset();
+            try {
+                return await send();
+            } catch (error) {
+                if (attempt === 0 && isNonceError(error)) {
+                    console.warn('Nonce out of sync, resyncing and retrying once:', error.shortMessage || error.message);
+                    continue;
+                }
+                throw error;
+            }
+        }
+    });
+    sendQueue = run.then(() => undefined, () => undefined);
+    return run;
+}
+
 function validateRecipient(address) {
     return typeof address === 'string' && ethers.isAddress(address);
 }
@@ -276,10 +315,10 @@ app.post('/fund', async (req, res) => {
     const ethAmount = ETH_FAUCET_AMOUNT;
 
     try {
-        const tx = await signer.sendTransaction({
+        const tx = await sendFromFaucet(() => signer.sendTransaction({
             to: address,
             value: ethers.parseEther(ethAmount)
-        });
+        }));
         console.log(`Sent ${ethAmount} ETH to ${address}. Tx: ${tx.hash}`);
 
         res.json({ success: true, txHash: tx.hash, amount: ethAmount, asset: 'ETH', explorerUrl: EXPLORER_URL });
@@ -306,7 +345,7 @@ app.post('/fund-usdt', async (req, res) => {
         }
 
         const tokenAmount = ethers.parseUnits(USDT_FAUCET_AMOUNT, USDT_DECIMALS);
-        const tx = await usdtContract.mint(address, tokenAmount);
+        const tx = await sendFromFaucet(() => usdtContract.mint(address, tokenAmount));
         console.log(`Minted ${USDT_FAUCET_AMOUNT} USDT to ${address}. Tx: ${tx.hash}`);
 
         res.json({
@@ -347,9 +386,20 @@ app.get('/health', async (req, res) => {
     if (signer) {
         try { address = await signer.getAddress(); } catch { }
     }
+    // Nonce drift is what kills this faucet, and it is invisible from outside:
+    // requests just start failing. Surfacing it here makes it checkable.
+    let nonce = null;
+    if (address && provider) {
+        try {
+            const mined = await provider.getTransactionCount(address, 'latest');
+            const pending = await provider.getTransactionCount(address, 'pending');
+            nonce = { mined, pending, queuedBehindGap: pending === mined ? null : undefined };
+        } catch { }
+    }
     res.json({
         status: signer ? 'ok' : 'initializing',
         address: address,
+        nonce: nonce,
         usdt: {
             status: usdtState.status,
             address: usdtState.address,
