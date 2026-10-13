@@ -65,7 +65,10 @@ services:
       # Set FAUCET_PRIVATE_KEY only to fund from a separate, pre-funded key.
       - PRIVATE_KEY=${FAUCET_PRIVATE_KEY:-}
       - FAUCET_ETH_AMOUNT=${FAUCET_ETH_AMOUNT:-1}
-      - FAUCET_ADDRESS_COOLDOWN_SECONDS=${FAUCET_ADDRESS_COOLDOWN_SECONDS:-3600}
+      # Per-address budget, not a cooldown: ten drips an hour. One an hour
+      # locked students out mid-lab. [2026-10-13]
+      - FAUCET_ADDRESS_WINDOW_SECONDS=${FAUCET_ADDRESS_WINDOW_SECONDS:-3600}
+      - FAUCET_ADDRESS_MAX_REQUESTS=${FAUCET_ADDRESS_MAX_REQUESTS:-10}
       - FAUCET_IP_WINDOW_SECONDS=${FAUCET_IP_WINDOW_SECONDS:-3600}
       - FAUCET_IP_MAX_REQUESTS=${FAUCET_IP_MAX_REQUESTS:-120}
       - PORT=3000

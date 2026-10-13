@@ -1889,6 +1889,23 @@
                 </div>
             </div>
 
+            <!-- Stuck transaction doctor. A wallet's local nonce counter can run
+                 ahead of the chain (a dropped broadcast, a rejected prompt, a chain
+                 reset). Everything the wallet sends afterwards sits in the queued
+                 pool forever, because Geth only mines a gap-free sequence. The fix
+                 is one transaction at the missing nonce, which the wallet itself
+                 signs; nothing here can send on a user's behalf. -->
+            <div class="card" style="margin-top: 1.5rem;">
+                <h2>Transaction stuck?</h2>
+                <p>If a transaction has been pending for minutes while new blocks keep
+                   arriving, your wallet is almost certainly a few nonces ahead of the
+                   chain. Check it here and fix it in one click.</p>
+
+                <input type="text" id="nonceAddress" class="faucet-input" placeholder="0x..." autocomplete="off">
+                <button class="submit-btn" id="nonceCheckBtn" onclick="checkNonceGap()">Check my address</button>
+                <div id="nonceStatus"></div>
+            </div>
+
             <!-- Pricing / Usage Section -->
             <section class="info-section">
                 <h2 class="section-title">Transparent & Free</h2>
@@ -2096,6 +2113,81 @@
                 .catch(() => {
                     console.log("Could not fetch eth_accounts");
                 });
+        }
+
+        // ---- Stuck transaction doctor -------------------------------------
+        // Geth mines only a gap-free nonce sequence. Anything past a missing
+        // nonce waits in the queued pool and never expires on its own.
+        let nonceFix = null; // { from, nonce }
+
+        function nonceSay(html, kind) {
+            const el = document.getElementById('nonceStatus');
+            el.innerHTML = html;
+            el.style.color = kind === 'bad' ? '#b45309' : (kind === 'good' ? '#15803d' : '');
+        }
+
+        async function checkNonceGap() {
+            const input = document.getElementById('nonceAddress');
+            const address = (input.value || '').trim();
+            if (!/^0x[0-9a-fA-F]{40}$/.test(address)) {
+                return nonceSay('Enter a valid 0x address.', 'bad');
+            }
+            nonceFix = null;
+            nonceSay('Checking...');
+            try {
+                const expected = parseInt(await rpcCall('eth_getTransactionCount', [address, 'latest']), 16);
+                let queued = [];
+                try {
+                    const pool = await rpcCall('txpool_inspect');
+                    const mine = Object.entries((pool && pool.queued) || {})
+                        .find(([a]) => a.toLowerCase() === address.toLowerCase());
+                    if (mine) queued = Object.keys(mine[1]).map(Number).sort((a, b) => a - b);
+                } catch (e) {
+                    // The public RPC may refuse txpool methods; the nonce check below
+                    // still works, it just cannot list what is waiting.
+                }
+                if (!queued.length) {
+                    return nonceSay('Nothing is stuck. The chain expects nonce <b>' + expected +
+                        '</b> from this address and no transaction is waiting behind a gap.', 'good');
+                }
+                nonceFix = { from: address, nonce: expected };
+                nonceSay('<b>' + queued.length + '</b> transaction(s) are stuck: nonce ' +
+                    queued[0] + (queued.length > 1 ? ' to ' + queued[queued.length - 1] : '') +
+                    '. The chain is waiting for nonce <b>' + expected + '</b>, which never arrived. ' +
+                    'Send one transaction at that nonce and every stuck one goes through in the next block.' +
+                    '<br><br><button class="submit-btn" onclick="fixNonceGap()">Fix it with MetaMask</button>' +
+                    '<br><small>This sends 0 ETH from your address to itself at nonce ' + expected +
+                    '. Your wallet signs it; this page never touches your key. ' +
+                    'All ' + queued.length + ' queued transactions will then execute.</small>', 'bad');
+            } catch (err) {
+                nonceSay('Could not check: ' + err.message, 'bad');
+            }
+        }
+
+        async function fixNonceGap() {
+            if (!nonceFix) return;
+            if (!window.ethereum) return alert('MetaMask not found! Please install the MetaMask extension.');
+            try {
+                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                if (!accounts.some((a) => a.toLowerCase() === nonceFix.from.toLowerCase())) {
+                    return nonceSay('Select ' + nonceFix.from + ' in MetaMask first, then try again.', 'bad');
+                }
+                nonceSay('Confirm the transaction in MetaMask...');
+                const hash = await window.ethereum.request({
+                    method: 'eth_sendTransaction',
+                    params: [{
+                        from: nonceFix.from,
+                        to: nonceFix.from,
+                        value: '0x0',
+                        gas: '0x5208',
+                        nonce: '0x' + nonceFix.nonce.toString(16)
+                    }]
+                });
+                nonceSay('Sent. <a href="' + EXPLORER_URL + '/tx/' + hash + '" target="_blank" rel="noopener">' +
+                    hash.slice(0, 18) + '...</a> Give it one block, then check again.', 'good');
+            } catch (err) {
+                nonceSay('Wallet refused: ' + (err && err.message ? err.message : err), 'bad');
+            }
         }
 
         async function rpcCall(method, params = []) {

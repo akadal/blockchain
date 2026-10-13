@@ -66,13 +66,13 @@ console.log("✅ Configuration Logic: PASS");
 const { createLimiter } = require('../faucet/limits');
 try {
     let clock = 0;
-    const limiter = createLimiter({ addressCooldownSeconds: 60, ipWindowSeconds: 60, ipMaxRequests: 2, now: () => clock });
+    const limiter = createLimiter({ addressWindowSeconds: 60, addressMaxRequests: 1, ipWindowSeconds: 60, ipMaxRequests: 2, now: () => clock });
     const a = "0x0000000000000000000000000000000000000001";
     const b = "0x0000000000000000000000000000000000000002";
     const c = "0x0000000000000000000000000000000000000003";
 
     assert.strictEqual(limiter.check('ETH', a, '1.1.1.1'), null, "First request passes");
-    assert.strictEqual(limiter.check('ETH', a.toUpperCase().replace('0X', '0x'), '2.2.2.2').reason, 'address', "Same address is on cooldown");
+    assert.strictEqual(limiter.check('ETH', a.toUpperCase().replace('0X', '0x'), '2.2.2.2').reason, 'address', "Same address is over its hourly budget");
     assert.strictEqual(limiter.check('USDT', a, '2.2.2.2'), null, "Cooldown is per asset");
     assert.strictEqual(limiter.check('ETH', b, '1.1.1.1'), null, "Second request from IP passes");
     assert.strictEqual(limiter.check('ETH', c, '1.1.1.1').reason, 'ip', "IP budget is enforced");

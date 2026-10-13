@@ -175,8 +175,9 @@ curl -X POST http://localhost:3000/fund \
 ```
 
 The amount is fixed on the server (`FAUCET_ETH_AMOUNT`, default `1`); a
-client-supplied `amount` is ignored. Each address can receive each asset once
-per `FAUCET_ADDRESS_COOLDOWN_SECONDS` (default `3600`), and each client IP is
+client-supplied `amount` is ignored. Each address gets
+`FAUCET_ADDRESS_MAX_REQUESTS` (default `10`) drips of each asset per
+`FAUCET_ADDRESS_WINDOW_SECONDS` (default `3600`), and each client IP is
 limited to `FAUCET_IP_MAX_REQUESTS` (default `120`) per
 `FAUCET_IP_WINDOW_SECONDS` (default `3600`). The IP budget is generous because
 a classroom usually shares one NAT address. Limited requests get HTTP `429`
